@@ -1,0 +1,10 @@
+{
+  "version": "10.0",
+  "base": "V9 Studio Premium",
+  "date": "2026-10-04",
+  "features": [
+    "suggested_accessories",
+    "complete_printable_proposal"
+  ],
+  "visual_browser_validation": "pending"
+}

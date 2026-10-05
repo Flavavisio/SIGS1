@@ -1,0 +1,21 @@
+SIGS Design V6 — Estado do Supabase (verificado em 2026-09-21)
+
+Catálogo:
+- 176 produtos em public.products
+- 5 marcas em public.product_brands
+- 108 associações em public.product_images
+- 75 ficheiros físicos no bucket product-images
+
+Projetos:
+- projects preparado para updated_by, version_no e last_saved_at
+- project_versions criado com RLS
+- snapshots automáticos no máximo 1 a cada 15 minutos por projeto
+- versões manuais e restauro via RPC autenticada
+
+Segurança:
+- execução anónima das RPC de versões revogada
+- RPC disponíveis apenas para authenticated e fazem validação de acesso/licença
+- proteção contra passwords comprometidas continua dependente de ativação em Supabase Auth
+
+Nota:
+- project_versions está vazio até existir o primeiro projeto real gravado/alterado.

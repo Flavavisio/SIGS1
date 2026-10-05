@@ -1,0 +1,29 @@
+{
+  "currency": "EUR",
+  "billing_period": "month",
+  "plans": [
+    {
+      "code": "FREE",
+      "name": "Gratuito",
+      "monthly_price_eur": 0,
+      "max_projects": 1,
+      "max_items_per_project": 15
+    },
+    {
+      "code": "EXPRESS",
+      "name": "Express",
+      "monthly_price_eur": 4.99,
+      "max_projects": 10,
+      "max_items_per_project": 50
+    },
+    {
+      "code": "PRO",
+      "name": "PRO",
+      "monthly_price_eur": 9.99,
+      "max_projects": 50,
+      "max_items_per_project": 100
+    }
+  ],
+  "backend_applied": true,
+  "backend_verified_at": "2026-10-04"
+}

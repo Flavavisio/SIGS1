@@ -1,0 +1,32 @@
+{
+  "totals": {
+    "cctv": 101,
+    "intrusion": 61,
+    "fire": 14,
+    "equipment": 176,
+    "poeModels": 26,
+    "poeSwitches": 20,
+    "mappedImages": 34
+  },
+  "cctvByBrand": {
+    "unspecified": 11,
+    "hikvision": 30,
+    "dahua": 30,
+    "uniview": 30
+  },
+  "intrusionByCategory": {
+    "acc": 33,
+    "int": 20,
+    "ext": 8
+  },
+  "fireByCategory": {
+    "central": 2,
+    "bateria": 2,
+    "detetor": 7,
+    "sirene": 3
+  },
+  "switchesByBrand": {
+    "Reyee": 10,
+    "Uniview": 10
+  }
+}

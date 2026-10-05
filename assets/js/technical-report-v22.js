@@ -1,0 +1,70 @@
+/* Technical handover: explicitly whitelisted fields, no commercial amounts. */
+(function(){
+'use strict';
+const $=id=>document.getElementById(id),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const n=v=>Number.isFinite(Number(v))?Number(v):0;
+const num=v=>Number.isFinite(Number(v))?Number(v).toLocaleString('pt-PT',{maximumFractionDigits:2}):'Sem limite geométrico';
+const safeURL=v=>typeof v==='string'&&(/^(https?:\/\/)/i.test(v)||/^data:image\/(png|jpeg|webp);base64,/i.test(v))?v:'';
+const specialty=m=>m==='fire'?'Incêndio':m==='alarm'?'Intrusão':'Videovigilância';
+function rows(headers,data){return '<table><thead><tr>'+headers.map(h=>'<th>'+esc(h)+'</th>').join('')+'</tr></thead><tbody>'+data.map(r=>'<tr>'+r.map(v=>'<td>'+esc(v)+'</td>').join('')+'</tr>').join('')+'</tbody></table>';}
+function camera(d){return ['dome','bullet','turret','ptz','fisheye','thermal_bi'].includes(d.type);}
+function snapshot(){
+ saveCurrentFloor();
+ const c=window.SIGS_COMMERCIAL||{};
+ return {project:CLOUD.projectName||'Projeto por identificar',reference:c.reference||'',company:c.company||'',client:c.client||'',description:c.description||'',module:MOD,date:new Date().toLocaleDateString('pt-PT'),
+ floors:FLOORS.map(f=>({name:f.name,scale:{ok:!!f.scale?.ok,ppm:n(f.scale?.ppm)},fp:f.fp?{x:n(f.fp.x),y:n(f.fp.y),w:n(f.fp.w),h:n(f.fp.h),image:safeURL(f.fp.imgData),sourcePath:f.fp.storagePath}:null,
+ devices:(f.placed||[]).map(p=>{const d=gD(p.libId)||{},fov=camera(d)?lFOV(d.fov,p.lens||2.8):n(p.afov??d.fov),range=camera(d)?lRange(d.range,p.lens||2.8):n(p.arange??d.range);
+ const height=n(p.instHeight||3),tilt=n(p.instTilt??30),ground=camera(d)&&typeof sigsGroundGeometry==='function'?sigsGroundGeometry(height,tilt,fov):null;
+ const storage=camera(d)&&typeof calcStorage==='function'?calcStorage(p.mp||d.mp||4,p.codec||'ultra265b',p.days||30):{};const power=camera(d)&&typeof poeDeviceWatts==='function'?poeDeviceWatts(p,d):{};
+ return {bandwidth:camera(d)&&typeof cameraNetworkMbps==='function'?n(cameraNetworkMbps(p)):0,storageGB:n(storage.gb),watts:n(power.w),powerSource:power.source||'',label:p.label||'Equipamento',ref:d.model||d.name||p.libId,name:d.name||'',type:d.type||'',x:n(p.x),y:n(p.y),rotation:n(p.rotation),fov:n(fov),range:n(range),lens:n(p.lens||2.8),height,tilt,blind:ground?.blind,reach:ground?.reach,mp:n(p.mp||d.mp),codec:typeof codecLabel==='function'?codecLabel(p.codec||'ultra265b'):p.codec||'',days:n(p.days||30),zone:p.zone||''};})}))};
+}
+function plan(f,coverage){
+ const fp=f.fp,ds=f.devices||[];let x=fp?.x||0,y=fp?.y||0,w=fp?.w||500,h=fp?.h||320;
+ if(!fp&&ds.length){x=Math.min(...ds.map(d=>d.x))-60;y=Math.min(...ds.map(d=>d.y))-60;w=Math.max(...ds.map(d=>d.x))-x+60;h=Math.max(...ds.map(d=>d.y))-y+60;}
+ let svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="'+[x,y,w,h].map(n).join(' ')+'" role="img" aria-label="Planta técnica '+esc(f.name)+'">';
+ if(safeURL(fp?.image))svg+='<image href="'+esc(fp.image)+'" x="'+n(fp.x)+'" y="'+n(fp.y)+'" width="'+n(fp.w)+'" height="'+n(fp.h)+'"/>';
+ ds.forEach((d,i)=>{const r=Math.max(w,h)/70;
+ if(coverage&&f.scale?.ok&&d.range>0){const radius=Math.min(d.range*f.scale.ppm,Math.max(w,h)*2),a=Math.max(0,Math.min(359,d.fov))*Math.PI/360;
+ if(d.fov>=355)svg+='<circle cx="'+d.x+'" cy="'+d.y+'" r="'+radius+'" fill="#3683c4" fill-opacity=".12"/>';
+ else svg+='<path d="M0 0L'+(radius*Math.cos(a))+' '+(-radius*Math.sin(a))+' A'+radius+' '+radius+' 0 '+(d.fov>180?1:0)+' 1 '+(radius*Math.cos(a))+' '+(radius*Math.sin(a))+' Z" transform="translate('+d.x+' '+d.y+') rotate('+(d.rotation-90)+')" fill="#3683c4" fill-opacity=".2" stroke="#3683c4" stroke-width="'+r/12+'"/>';
+ }
+ svg+='<circle cx="'+d.x+'" cy="'+d.y+'" r="'+r+'" fill="#142b44" stroke="white" stroke-width="'+r/7+'"/><text x="'+d.x+'" y="'+(d.y+r*.35)+'" text-anchor="middle" fill="white" font-size="'+r+'" font-family="Arial">'+(i+1)+'</text>';
+ });return svg+'</svg>';
+}
+function markup(s,opt={}){
+ const floors=s.floors||[],ds=floors.flatMap(f=>f.devices||[]),cams=ds.filter(camera);
+ let html='<header><small>DOSSIER DE INSTALAÇÃO · '+esc(specialty(s.module))+'</small><h1>Relatório técnico</h1><h2>'+esc(s.project)+'</h2><p>'+esc(s.company)+' · '+esc(s.date)+'</p><dl><dt>Referência</dt><dd>'+esc(s.reference||'Por preencher')+'</dd><dt>Cliente</dt><dd>'+esc(s.client||'Por preencher')+'</dd><dt>Equipamentos / pisos</dt><dd>'+ds.length+' / '+floors.length+'</dd></dl><p>'+esc(s.description)+'</p></header>';
+ html+='<section><h2>Estado da preparação</h2>'+rows(['Piso','Equipamentos','Escala'],floors.map(f=>[f.name,f.devices.length,f.scale.ok?num(f.scale.ppm)+' px/m':'Por definir']))+'<p class="note">Documento técnico de apoio à instalação. As coberturas são estimativas geométricas; valida as condições reais no local.</p></section>';
+ if(opt.plans!==false)floors.forEach(f=>{html+='<section class="new-page"><h2>Planta · '+esc(f.name)+'</h2>'+plan(f,opt.coverage!==false)+(safeURL(f.fp?.image)?'':'<p class="note">Imagem de fundo indisponível; confirmam-se apenas as posições relativas.</p>')+'<p class="note">Planta adaptada à página. Não usar a impressão para medir distâncias.</p>'+rows(['N.º','Identificação','Referência','Zona'],f.devices.map((d,i)=>[i+1,d.label,d.ref,d.zone||'—']))+'</section>';});
+ if(opt.devices!==false){html+='<section class="new-page"><h2>Inventário técnico</h2>'+rows(['Piso','Identificação','Referência','Tipo'],floors.flatMap(f=>f.devices.map(d=>[f.name,d.label,d.ref,d.type])))+'</section>';
+ if(cams.length)html+='<section><h2>Parâmetros das câmaras</h2>'+rows(['ID','Focal / FOV','Altura / inclinação','Zona cega','Alcance no chão'],cams.map(d=>[d.label,num(d.lens)+' mm / '+num(d.fov)+'°',num(d.height)+' m / '+num(d.tilt)+'°',num(d.blind)+' m',num(d.reach)+(Number.isFinite(d.reach)?' m':'')]))+'<p class="note">FOV vertical estimado para imagem 16:9. Os obstáculos, a iluminação e a orientação final podem alterar a cobertura útil.</p></section>';
+ }
+ if(opt.system!==false){html+='<section><h2>Dimensionamento e organização</h2>';
+ if(s.module==='cctv'){html+=rows(['Indicador','Estimativa de projeto'],[['Banda de rede',num(cams.reduce((t,d)=>t+n(d.bandwidth),0))+' Mbps'],['Armazenamento para as retenções indicadas',num(cams.reduce((t,d)=>t+n(d.storageGB),0))+' GB'],['Consumo dos equipamentos PoE',num(cams.reduce((t,d)=>t+n(d.watts),0))+' W']]);html+=rows(['ID','Resolução','Compressão','Retenção prevista'],cams.map(d=>[d.label,num(d.mp)+' MP',d.codec||'Não definido',num(d.days)+' dias']))+'<p class="note">A retenção depende do bitrate, atividade, horário e capacidade de disco efetivamente configurados. Confirma bitrate, discos, canais do gravador, portas e reserva de potência no verificador técnico. Os consumos podem ser estimados pela classe do equipamento.</p>';}
+ else html+=rows(['ID','Função','Zona'],ds.map(d=>[d.label,d.type,d.zone||'A atribuir']))+'<p class="note">Confirma centrais, endereçamento, zonas e compatibilidade dos equipamentos antes da instalação.</p>';
+ html+='</section>';}
+ if(opt.checklist!==false)html+='<section class="new-page"><h2>Verificação e entrega</h2>'+rows(['Verificação','Estado / observações'],['Conferir modelos e quantidades','Confirmar a escala e as posições no local','Confirmar alimentação e ligações','Configurar parâmetros, zonas e identificação','Testar deteção, eventos e sinalização','Entregar documentação e registar formação'].map(v=>[v,'□ Por verificar']))+'<p>Responsável: ____________________ &nbsp; Data: __________</p><p class="note">Checklist para preencher após a instalação. A exportação não confirma testes executados nem certifica conformidade.</p></section>';
+ return html+'<footer>'+esc(s.project)+' · Relatório técnico SIGS</footer>';
+}
+const css='*{box-sizing:border-box}body{font:13px Arial,sans-serif;color:#142b44;margin:0;background:#eef2f6}main{max-width:980px;margin:24px auto;background:white;padding:40px}header{border-top:8px solid #142b44;padding:28px 0}header small{color:#467084;letter-spacing:2px}h1{font-size:36px;margin:15px 0}h2{font-size:20px}section{margin:30px 0}p{line-height:1.7}dl{display:grid;grid-template-columns:170px 1fr;gap:9px}dd{margin:0}table{width:100%;border-collapse:collapse;font-size:11px;table-layout:fixed}th{background:#edf3f7;text-align:left}th,td{padding:10px 8px;border-bottom:1px solid #dce4ec;overflow-wrap:anywhere}tr{break-inside:avoid}svg{width:100%;max-height:440px;border:1px solid #dce4ec;background:#f8fafc}.note{font-size:11px;color:#5d7082}footer{font-size:10px;color:#5d7082;border-top:1px solid #dce4ec;padding-top:15px}.bar{padding:14px;background:#142b44;color:white;position:sticky;top:0;z-index:1}.bar button{padding:9px;margin-right:15px;border:0;border-radius:6px;cursor:pointer}@media print{@page{size:A4;margin:15mm}body{background:white}.bar{display:none}main{margin:0;padding:0;max-width:none}.new-page{break-before:page}header{break-after:page}svg{max-height:150mm}}';
+function openOptions(){
+ if(!CLOUD.projectId){sigsV6NewProject();return;}
+ const old=$('technical-options');if(old)old.remove();
+ const o=document.createElement('div');o.id='technical-options';o.className='sigs-v6-overlay';
+ o.innerHTML='<div class="sigs-v6-dialog"><h2>Relatório técnico</h2><p>Plantas, parâmetros e verificações para a equipa de instalação. Os valores e condições comerciais ficam na proposta.</p>'+[['plans','Plantas e localização'],['coverage','Cobertura estimada'],['devices','Inventário e parâmetros'],['system','Dimensionamento e zonas'],['checklist','Checklist de instalação e entrega']].map(([id,label])=>'<label style="display:block;padding:9px"><input type="checkbox" data-report-section="'+id+'" checked> '+label+'</label>').join('')+'<div class="sigs-v6-dialog-foot"><button class="sag-btn" id="technical-cancel">Fechar</button><button class="sag-btn primary" id="technical-export">Preparar relatório / PDF</button></div></div>';
+ document.body.appendChild(o);$('technical-cancel').onclick=()=>o.remove();$('technical-export').onclick=()=>{const opt={};o.querySelectorAll('[data-report-section]').forEach(x=>opt[x.dataset.reportSection]=x.checked);exportReport(opt);o.remove();};
+}
+async function exportReport(opt){
+ const w=window.open('','_blank');if(!w){notify('Permite a abertura do relatório neste navegador.');return;}
+ w.document.write('<!doctype html><html lang="pt-PT"><meta charset="utf-8"><title>Relatório técnico</title><style>'+css+'</style><body><div class="bar">A preparar o relatório…</div></body></html>');w.document.close();
+ try{const s=snapshot();await Promise.all(s.floors.map(async f=>{if(!f.fp?.image&&f.fp?.sourcePath&&typeof sigsV7SignedProjectFile==='function'){try{f.fp.image=safeURL(await Promise.race([sigsV7SignedProjectFile(f.fp.sourcePath),new Promise(resolve=>setTimeout(()=>resolve(''),10000))]));}catch(e){}}}));
+ if(w.closed)return;
+ w.document.body.innerHTML='<div class="bar"><button id="report-print">Imprimir / Guardar PDF</button><span id="report-status">A carregar as plantas…</span></div><main>'+markup(s,opt)+'</main>';
+ const b=w.document.getElementById('report-print');b.disabled=true;
+ await Promise.all([...w.document.querySelectorAll('svg image')].map(img=>new Promise(resolve=>{const preload=new Image();preload.onload=preload.onerror=resolve;preload.src=img.getAttribute('href');if(preload.complete)resolve();setTimeout(resolve,10000);})));
+ if(w.closed)return;b.disabled=false;b.onclick=()=>w.print();w.document.getElementById('report-status').textContent='Relatório técnico pronto. Valores comerciais excluídos.';
+ }catch(e){if(!w.closed)w.document.querySelector('.bar').textContent='Não foi possível preparar o relatório: '+e.message;}
+}
+window.SIGSTechnicalReport={markup,snapshot,plan};
+window.openPrintModal=openOptions;window.doPrint=()=>exportReport({});window.doExportPDF=()=>exportReport({});
+})();

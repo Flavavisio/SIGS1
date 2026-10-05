@@ -1,0 +1,8 @@
+{
+  "version": "9.0",
+  "name": "SIGS Studio",
+  "base": "V8 Materiais e Or\u00e7amento",
+  "entry": "app-Sigs.html",
+  "date": "2026-10-04",
+  "visual_browser_validation": "pending"
+}

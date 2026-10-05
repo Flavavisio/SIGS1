@@ -1,0 +1,8 @@
+{
+  "version": "6.0",
+  "modular_js_files": 8,
+  "data_js_files": 3,
+  "standalone_inline_scripts": 11,
+  "legacy_scan": "clean",
+  "validated_with": "node --check"
+}

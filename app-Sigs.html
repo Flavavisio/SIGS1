@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<script src="assets/js/email-callback-v15.js?v=20261005-2214"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="SIGS Design — ferramenta profissional de design de sistemas CCTV e intrusão: plantas, cobertura de câmaras, DORI, cálculo de armazenamento, PoE e orçamento.">
+<meta name="theme-color" content="#050810">
+<title>SIGS Studio</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23050810'/%3E%3Ccircle cx='32' cy='28' r='13' fill='none' stroke='%233b82f6' stroke-width='4'/%3E%3Ccircle cx='32' cy='28' r='5' fill='%233b82f6'/%3E%3Crect x='26' y='44' width='12' height='12' rx='2' fill='%23ef4444'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/css/sigs.css?v=20261005-2214">
+<script src="assets/js/block-01.js?v=20261005-2214"></script>
+<script src="assets/js/block-02.js?v=20261005-2214"></script>
+
+<link rel="stylesheet" href="assets/css/commercial-v8.css?v=20261005-2214">
+<link rel="stylesheet" href="assets/css/premium-v9.css?v=20261005-2214">
+<link rel="stylesheet" href="assets/css/proposal-v10.css?v=20261005-2214">
+<link rel="stylesheet" href="assets/css/workflow-v12.css?v=20261005-2214">
+<link rel="stylesheet" href="assets/css/sidebar-v13.css?v=20261005-2214">
+</head>
+<body class="sigs-locked sigs-premium">
+
+
+<!-- ══ SIGS ACCESS PORTAL — BEFORE APPLICATION ══ -->
+<div id="sigs-access-gate">
+  <div class="sag-shell">
+    <aside class="sag-side">
+      <div class="sag-mark">🛡</div>
+      <div class="sag-brand">SIGS <span>Design</span></div>
+      <div class="sag-copy">Portal de acesso, licenciamento e gestão de utilizadores. A aplicação de projeto só é aberta depois de uma sessão válida.</div>
+      <button type="button" class="sigs-theme-btn sigs-theme-toggle" onclick="toggleTheme()" aria-label="Alternar modo Dia e Noite">☀️ Modo Dia</button>
+      <div class="sag-role">SUPER ADMIN → emite licenças e cria Admins<br>ADMIN → gere a empresa e os Comerciais<br>COMERCIAL → utiliza o SIGS</div>
+    </aside>
+    <main class="sag-main" id="sigs-gate-main">
+      <div class="sag-title">A entrar no SIGS…</div>
+      <div class="sag-sub">A verificar a sessão e a licença.</div>
+    </main>
+  </div>
+</div>
+
+<!-- ══ LAUNCHER ══ -->
+<div id="launcher">
+  <div class="lau-brand">
+    <div class="lau-brand-icon">🛡</div>
+    <div class="lau-brand-name">SIGS Design</div>
+  </div>
+  <div class="lau-eyebrow">Security Solutions Platform</div>
+  <div class="lau-logo">Designer <span>Pro</span></div>
+  <div class="lau-sub">Sistema Integrado de Gestão de Segurança</div>
+  <div class="lau-cards">
+    <div class="lau-card cctv" onclick="sigsV6NewProject(null,'cctv')">
+      <div class="lau-icon-wrap">📹</div>
+      <div class="lau-title">CCTV</div>
+      <div class="lau-desc">Projeto de videovigilância IP<br>Câmaras · Análise DORI · Cobertura<br>Lentes 2.8–13 mm · Relatórios</div>
+      <span class="lau-badge">Videovigilância</span>
+      <div class="lau-arrow">↗</div>
+    </div>
+    <div class="lau-card alarm" onclick="sigsV6NewProject(null,'alarm')">
+      <div class="lau-icon-wrap">🔴</div>
+      <div class="lau-title">Intrusão Ajax</div>
+      <div class="lau-desc">Projeto de alarme Ajax Systems<br>Detetores · Hubs · Sirenes<br>Zonas de proteção · Relatórios</div>
+      <span class="lau-badge">Ajax Alarm Systems</span>
+      <div class="lau-arrow">↗</div>
+    </div>
+    <div class="lau-card fire" onclick="sigsV6NewProject(null,'fire')">
+      <div class="lau-icon-wrap">🔥</div>
+      <div class="lau-title">Incêndio Ajax</div>
+      <div class="lau-desc">Sistema de incêndio EN54<br>Centrais · Baterias<br>Detetores · Sirenes/VAD</div>
+      <span class="lau-badge">Ajax EN54 Line</span>
+      <div class="lau-arrow">↗</div>
+    </div>
+    <div class="lau-card disk" onclick="startModule('disk')">
+      <div class="lau-icon-wrap">💾</div>
+      <div class="lau-title">Calculador de Disco</div>
+      <div class="lau-desc">Cálculo de armazenamento IP<br>Hikvision · Dahua · Uniview · Safire<br>Codecs exclusivos · Recomendação HDD</div>
+      <span class="lau-badge">Calculador NVR/DVR</span>
+      <div class="lau-arrow">↗</div>
+    </div>
+
+  </div>
+  <div class="lau-version">v6.0 · SIGS Design · Estabilização</div>
+</div>
+
+<!-- ══ DISK CALCULATOR MODULE ══ -->
+<div id="disk-calc-app">
+
+  <!-- NAV -->
+  <div class="dc-nav">
+    <div class="dc-nav-logo" id="dc-nav-logo" onclick="document.getElementById('dc-logo-input').click()" title="Carregar logo">💾</div>
+    <input type="file" id="dc-logo-input" accept="image/*" style="display:none" onchange="dcLoadLogo(event)">
+    <div style="min-width:0">
+      <div class="dc-nav-title" id="dc-nav-title">Calculador de Disco <span style="color:var(--acc4)">NVR</span></div>
+      <div class="dc-nav-sub" id="dc-nav-sub">Selecione a marca para começar</div>
+    </div>
+    <div style="flex:1"></div>
+    <div id="dc-scene-bar" style="display:none;align-items:center;gap:5px;overflow:hidden">
+      <span style="font-size:8px;color:var(--txt3);font-family:var(--m);white-space:nowrap">CENÁRIO</span>
+      <div id="dc-scene-pills" style="display:flex;gap:4px"></div>
+    </div>
+    <div style="width:1px;height:24px;background:var(--bdr2);margin:0 6px;flex-shrink:0"></div>
+    <button class="tb sigs-theme-toggle" onclick="toggleTheme()">☀️</button>
+    <button class="tb" onclick="backToLauncher()" style="color:var(--txt2);font-size:11px">← Menu</button>
+  </div>
+
+  <!-- LAYOUT -->
+  <div class="dc-layout">
+    <div class="dc-scroll">
+
+      <!-- STEP 1 BRAND -->
+      <div class="dc-panel">
+        <div class="dc-step-head">
+          <div class="dc-step-num act" id="dsn1">1</div>
+          <div class="dc-step-title">Marca / Sistema</div>
+          <div id="dc-brand-tag" style="font-size:9px;color:var(--txt3)">Escolha a marca</div>
+        </div>
+        <div class="dc-step-body">
+          <div class="dc-brand-row">
+            <div class="dc-brand-tile" data-brand="hikvision" onclick="dcSelectBrand('hikvision')" style="--bc:#e63946">
+              <div class="dbt-logo" id="dc-blogo-hikvision" style="background:rgba(230,57,70,.12);border:1px solid rgba(230,57,70,.25)">🔴</div>
+              <div class="dbt-name">Hikvision</div>
+              <div class="dbt-codec">H.265 Pro+<br>H.265+ · H.264+</div>
+              <div class="dbt-logo-upload" onclick="event.stopPropagation();dcUploadBrandLogo('hikvision')" title="Carregar logo">📁</div>
+            </div>
+            <div class="dc-brand-tile" data-brand="dahua" onclick="dcSelectBrand('dahua')" style="--bc:#f59e0b">
+              <div class="dbt-logo" id="dc-blogo-dahua" style="background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.25)">🟡</div>
+              <div class="dbt-name">Dahua</div>
+              <div class="dbt-codec">Smart H.265+<br>Smart H.264+</div>
+              <div class="dbt-logo-upload" onclick="event.stopPropagation();dcUploadBrandLogo('dahua')" title="Carregar logo">📁</div>
+            </div>
+            <div class="dc-brand-tile" data-brand="uniview" onclick="dcSelectBrand('uniview')" style="--bc:#3b82f6">
+              <div class="dbt-logo" id="dc-blogo-uniview" style="background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.25)">🔵</div>
+              <div class="dbt-name">Uniview</div>
+              <div class="dbt-codec">Ultra 265 Max<br>Ultra 265</div>
+              <div class="dbt-logo-upload" onclick="event.stopPropagation();dcUploadBrandLogo('uniview')" title="Carregar logo">📁</div>
+            </div>
+            <div class="dc-brand-tile" data-brand="safire" onclick="dcSelectBrand('safire')" style="--bc:#10b981">
+              <div class="dbt-logo" id="dc-blogo-safire" style="background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.25)">🟢</div>
+              <div class="dbt-name">Safire Smart</div>
+              <div class="dbt-codec">SF-Codec<br>H.265 Pro</div>
+              <div class="dbt-logo-upload" onclick="event.stopPropagation();dcUploadBrandLogo('safire')" title="Carregar logo">📁</div>
+            </div>
+            <input type="file" id="dc-brand-logo-input" accept="image/*" style="display:none" onchange="dcOnBrandLogoFile(event)">
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2 ENV -->
+      <div class="dc-panel" id="dc-env-panel" style="display:none;opacity:0;transform:translateY(6px);transition:opacity .22s,transform .22s">
+        <div class="dc-step-head">
+          <div class="dc-step-num act">2</div>
+          <div class="dc-step-title">Tipo de Instalação</div>
+          <div id="dc-env-tag" style="font-size:9px;color:var(--txt3)">Opcional</div>
+        </div>
+        <div class="dc-step-body">
+          <div class="dc-env-strip" id="dc-env-strip"></div>
+          <div class="dc-motion-row" id="dc-motion-row">
+            <div style="flex:1">
+              <div style="font-size:10px;font-weight:600;color:var(--txt);margin-bottom:1px">Simulação de Movimento</div>
+              <div style="font-size:8.5px;color:var(--txt3)" id="dc-motion-desc">Simular impacto do movimento no bitrate</div>
+            </div>
+            <div class="dc-toggle" id="dc-toggle-btn" onclick="dcToggleMotion()"><div class="dc-toggle-knob"></div></div>
+          </div>
+          <div id="dc-motion-detail" style="display:none;margin-top:8px">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div class="dc-slider-wrap">
+                <label>% TEMPO COM MOVIMENTO</label>
+                <input type="range" id="dc-motion-pct" min="5" max="100" value="30" oninput="dcOnMotionChange()">
+                <div class="dc-slider-val" id="dc-mpct-v" style="color:#ef4444">30%</div>
+              </div>
+              <div class="dc-slider-wrap">
+                <label>FACTOR BITRATE (MOV.)</label>
+                <input type="range" id="dc-motion-factor" min="1.2" max="4.0" step="0.1" value="2.0" oninput="dcOnMotionChange()">
+                <div class="dc-slider-val" id="dc-mfactor-v" style="color:var(--acc)">2.0×</div>
+              </div>
+            </div>
+            <div class="dc-mv-track">
+              <div class="dc-mv-still" id="dc-mv-still" style="width:70%"></div>
+              <div class="dc-mv-move" id="dc-mv-move" style="left:70%;width:30%"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--txt3);margin-top:3px">
+              <span>🔵 Sem mov.</span><span>🔴 Com mov. ×<span id="dc-mfactor-tag">2.0</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3 CAMERAS -->
+      <div class="dc-panel" id="dc-cam-panel" style="display:none;opacity:0;transform:translateY(6px);transition:opacity .25s .05s,transform .25s .05s">
+        <div class="dc-step-head">
+          <div class="dc-step-num act">3</div>
+          <div class="dc-step-title">Câmaras do Projeto</div>
+          <span id="dc-total-badge" style="font-family:var(--m);font-size:9px;font-weight:700;color:var(--acc4);background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);border-radius:10px;padding:2px 8px">0 câm.</span>
+        </div>
+        <div class="dc-step-body" style="display:flex;flex-direction:column;gap:7px">
+          <div id="dc-cam-list"></div>
+          <button class="dc-add" onclick="dcAddCam()">＋ Adicionar grupo</button>
+        </div>
+      </div>
+
+      <!-- STEP 4 RETENTION -->
+      <div class="dc-panel" id="dc-ret-panel" style="display:none;opacity:0;transform:translateY(6px);transition:opacity .28s .08s,transform .28s .08s">
+        <div class="dc-step-head">
+          <div class="dc-step-num act">4</div>
+          <div class="dc-step-title">Retenção &amp; NVR</div>
+        </div>
+        <div class="dc-step-body">
+          <div class="dc-ret-grid">
+            <div class="dc-rf"><label>DIAS RETENÇÃO</label><input class="dc-rn" type="number" id="dc-days" value="30" min="1" max="365" oninput="dcCalc()"></div>
+            <div class="dc-rf"><label>HORAS / DIA</label><input class="dc-rn" type="number" id="dc-hours" value="24" min="1" max="24" oninput="dcCalc()"></div>
+            <div class="dc-rf"><label>MODO GRAVAÇÃO</label>
+              <select class="dc-rs" id="dc-record-mode" onchange="dcRecordingModeChanged();dcCalc()">
+                <option value="continuous" selected>Contínua</option>
+                <option value="event">Evento / Movimento</option>
+              </select>
+            </div>
+            <div class="dc-rf"><label>% TEMPO GRAVADO</label>
+              <input class="dc-small" type="number" id="dc-event-pct" value="30" min="1" max="100" oninput="dcCalc()" disabled>
+            </div>
+            <div class="dc-rf"><label>RAID / REDUNDÂNCIA</label>
+              <select class="dc-rs" id="dc-raid" onchange="dcCalc()">
+                <option value="0">Sem RAID</option>
+                <option value="15">Reserva +15%</option>
+                <option value="25" selected>Reserva +25%</option>
+                <option value="100">Espelho +100%</option>
+              </select>
+            </div>
+            <div class="dc-rf"><label>MARGEM TÉCNICA</label>
+              <select class="dc-rs" id="dc-margin" onchange="dcCalc()">
+                <option value="10">+10%</option>
+                <option value="20" selected>+20%</option>
+                <option value="30">+30%</option>
+              </select>
+            </div>
+            <div class="dc-rf"><label>OVERHEAD REDE/NVR</label>
+              <select class="dc-rs" id="dc-overhead" onchange="dcCalc()">
+                <option value="0">0%</option>
+                <option value="5" selected>+5%</option>
+                <option value="10">+10%</option>
+              </select>
+            </div>
+            <div class="dc-rf"><label>RESULTADO</label>
+              <div class="dc-small" id="dc-record-duty" style="display:flex;align-items:center;justify-content:center">100%</div>
+            </div>
+          </div>
+          <div class="dc-record-note" id="dc-record-note">
+            <strong>Contínua:</strong> considera gravação durante todas as horas configuradas. Para gravação por evento, escolha “Evento / Movimento” e indique a percentagem média real de atividade.
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT results -->
+    <div class="dc-results" id="dc-results">
+      <div class="dc-empty" id="dc-empty">
+        <div class="ico">💾</div>
+        <p>Selecione marca<br>e adicione câmaras<br>para ver o resultado<br><strong>em tempo real</strong></p>
+      </div>
+      <div id="dc-res-content" style="display:none;flex-direction:column;gap:10px">
+        <div class="dc-hero" id="dc-hero">
+          <div class="dc-hero-lbl">Armazenamento Total</div>
+          <div class="dc-hero-num" id="dc-hero-num">—</div>
+          <div class="dc-hero-unit" id="dc-hero-unit"></div>
+          <div class="dc-hero-sub" id="dc-hero-sub"></div>
+        </div>
+        <canvas id="dc-gauge" width="268" height="134" style="width:100%;height:auto;display:block"></canvas>
+        <div id="dc-gauge-label" style="font-size:8.5px;color:var(--txt3);text-align:center;margin-top:-4px"></div>
+        <div class="dc-stats">
+          <div class="dc-stat"><div class="dc-sl">Câmaras</div><div class="dc-sv" id="dc-s-cams">—</div></div>
+          <div class="dc-stat"><div class="dc-sl">Bitrate Pico</div><div class="dc-sv" id="dc-s-bw">—</div></div>
+          <div class="dc-stat"><div class="dc-sl">Bitrate Gravado Médio</div><div class="dc-sv" id="dc-s-rec-bw">—</div></div>
+          <div class="dc-stat"><div class="dc-sl">Bruto</div><div class="dc-sv" id="dc-s-raw">—</div></div>
+          <div class="dc-stat"><div class="dc-sl">Com RAID</div><div class="dc-sv" id="dc-s-raid">—</div></div>
+          <div class="dc-stat"><div class="dc-sl">Com Margem</div><div class="dc-sv" id="dc-s-margin">—</div></div>
+          <div class="dc-stat"><div class="dc-sl">Retenção</div><div class="dc-sv" id="dc-s-days">—</div></div>
+        </div>
+        <div class="dc-impact" id="dc-impact" style="display:none">
+          <div class="dc-impact-title">⚡ Impacto do Movimento</div>
+          <div class="dc-ir"><span>Sem movimento</span><span id="dc-mi-base">—</span></div>
+          <div class="dc-ir"><span>Com simulação</span><span id="dc-mi-motion" style="color:#ef4444">—</span></div>
+          <div class="dc-ir"><span>Diferença</span><span id="dc-mi-diff" style="color:var(--acc4)">—</span></div>
+        </div>
+        <div>
+          <div class="dc-subhead">💿 HDD Recomendado</div>
+          <div class="dc-hdd-grid" id="dc-hdd-grid"></div>
+        </div>
+        <div id="dc-groups-wrap" style="display:none">
+          <div class="dc-subhead">📊 Por grupo</div>
+          <div id="dc-group-bars"></div>
+        </div>
+        <button class="dc-export-btn" onclick="dcExportTxt()">📋 Copiar relatório</button>
+      </div>
+    </div>
+  </div>
+</div><!-- /disk-calc-app -->
+
+<!-- ══ APP ══ -->
+<div id="app">
+  <!-- TOPBAR -->
+  <div id="top">
+    <div class="logo" onclick="backToLauncher()" title="Voltar ao menu principal">
+      <div class="logo-mark logo-cctv" id="logo-mark">📹</div>
+      <div class="logo-text" id="logo-text">
+        CCTV <span>SIGS</span>
+        <em id="logo-em">Design</em>
+      </div>
+    </div>
+    <div class="vsep"></div>
+    <button class="tb" onclick="importFP()">🗺 Planta</button>
+    <button class="tb" onclick="openUrlImport()" title="Importar planta por URL ou clipboard">🔗 URL/Clip</button>
+    <button class="tb" id="mapbtn" onclick="toggleMap()">🌍 Mapa</button>
+    <button class="tb" id="maplockbtn" onclick="toggleMapLock()" style="display:none;color:var(--acc4);border-color:rgba(245,158,11,.3)">🔓 Fixar</button>
+    <button class="tb" id="gmapsbtn" onclick="setGoogleMapKey()" title="Ativar camadas Google Maps com a tua chave da Google Maps API" style="display:none">🟢 Google</button>
+    <div class="vsep"></div>
+    <button class="tb" id="t-place" onclick="setTool('place')">+ Colocar</button>
+    <button class="tb" id="t-meas" onclick="setTool('meas')">📏 Medir</button>
+    <button class="tb" id="t-scale" onclick="setTool('scale')">⚖ Escala</button>
+    <div class="vsep"></div>
+    <button class="tb" onclick="fitView()">⛶ Fit</button>
+    <button class="tb" id="tb-snap" onclick="toggleSnap()" title="Snap to Grid (G)">⊞ Snap</button>
+    <div class="vsep"></div>
+    <button class="tb" id="tb-undo" onclick="doUndo()" title="Desfazer (Ctrl+Z)" disabled>↩ Desfazer</button>
+    <button class="tb" id="tb-redo" onclick="doRedo()" title="Refazer (Ctrl+Y)" disabled>↪ Refazer</button>
+    <div id="tbr">
+      <div id="scbadge">Escala: n/d</div>
+      <div class="vsep"></div>
+      <button class="tb" onclick="openFloorOverview()" title="Vista global de pisos">🏢 Pisos</button>
+      <button class="tb" onclick="openTemplates()">🏗 Templates</button>
+      <button class="tb" onclick="openPrintModal()">🖨 Imprimir</button>
+      <button class="tb" onclick="openBOM()">📋 BOM</button>
+      <button class="tb" onclick="exportPNG()">🖼 PNG</button>
+      <button class="tb" onclick="saveProj()">💾 Guardar</button>
+      <button class="tb" onclick="document.getElementById('fi-proj').click()">📂 Abrir</button>
+      <button class="tb" id="cloudbtn" onclick="openCloud()" title="Entrar e sincronizar projetos na cloud">👤 Conta</button>
+      <button class="tb" id="licensebtn" onclick="openLicenseCenter()" title="Licenças e utilizadores" style="display:;color:var(--acc4);border-color:rgba(245,158,11,.35)">🔑 Licenças</button>
+      <button class="tb bo" onclick="enterPresentMode()" id="tb-present" title="Modo apresentação para cliente (F5)">▶ Apresentar</button>
+      <button class="tb sigs-theme-toggle" id="tb-theme" onclick="toggleTheme()" title="Alternar tema claro/escuro">🌙</button>
+      <input id="fi-fp"   type="file" accept="image/*" style="display:none" onchange="doImportFP(event)">
+      <input id="fi-proj" type="file" accept=".vdp,.json" style="display:none" onchange="doLoadProj(event)">
+      <input id="fi-logo" type="file" accept="image/*" style="display:none" onchange="doLoadLogo(event)">
+    </div>
+  </div>
+
+  <!-- CLOUD MODAL -->
+  <div id="m-cloud" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.6);align-items:center;justify-content:center">
+    <div style="width:min(560px,94vw);max-height:88vh;overflow:auto;background:var(--panel,#131a24);border:1px solid var(--bdr2);border-radius:14px;padding:20px;font-family:var(--f)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:9px">
+          <span style="font-size:18px">☁</span>
+          <div>
+            <div style="font-weight:700;font-size:15px;color:var(--txt)">Cloud SIGS Design</div>
+            <div style="font-size:10px;color:var(--txt3);font-family:var(--m)">Projetos sincronizados · limites do plano</div>
+          </div>
+        </div>
+        <button onclick="closeCloud()" style="background:none;border:1px solid var(--bdr2);color:var(--txt2);border-radius:7px;width:28px;height:28px;cursor:pointer">✕</button>
+      </div>
+      <div id="cloud-body"></div>
+    </div>
+  </div>
+
+  <!-- LICENSING CENTER MODAL -->
+  <div id="m-license" style="display:none;position:fixed;inset:0;z-index:9100;background:rgba(0,0,0,.68);align-items:center;justify-content:center;padding:18px">
+    <div style="width:min(1040px,97vw);max-height:92vh;overflow:hidden;background:var(--panel,#131a24);border:1px solid var(--bdr2);border-radius:16px;font-family:var(--f);box-shadow:0 28px 80px rgba(0,0,0,.45)">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--bdr2);background:rgba(255,255,255,.015)">
+        <div style="display:flex;align-items:center;gap:11px">
+          <div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#f59e0b,#ef4444);display:flex;align-items:center;justify-content:center;font-size:18px">🔑</div>
+          <div><div style="font-weight:800;font-size:16px;color:var(--txt)">Centro de Licenciamento SIGS</div><div id="lic-subtitle" style="font-size:10px;color:var(--txt3);font-family:var(--m)">Gestão de empresas, licenças e utilizadores</div></div>
+        </div>
+        <button onclick="closeLicenseCenter()" style="background:none;border:1px solid var(--bdr2);color:var(--txt2);border-radius:8px;width:30px;height:30px;cursor:pointer">✕</button>
+      </div>
+      <div id="license-body" style="max-height:calc(92vh - 72px);overflow:auto;padding:18px"></div>
+    </div>
+  </div>
+
+  <!-- FLOOR BAR -->
+  <div id="floorbar" style="height:36px;background:var(--bg1);border-bottom:1px solid var(--bdr2);display:flex;align-items:center;padding:0 10px;gap:6px;flex-shrink:0;overflow-x:auto">
+    <span style="font-family:var(--m);font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--txt3);white-space:nowrap;margin-right:4px">Pisos</span>
+    <div id="floor-tabs" style="display:flex;gap:4px;align-items:center"></div>
+    <button onclick="addFloor()" style="padding:3px 10px;border:1px dashed var(--bdr2);border-radius:5px;background:none;color:var(--txt3);font-size:11px;cursor:pointer;white-space:nowrap;transition:all .15s;font-family:var(--f)" onmouseover="this.style.borderColor='var(--acc)';this.style.color='var(--acc)'" onmouseout="this.style.borderColor='var(--bdr2)';this.style.color='var(--txt3)'">+ Piso</button>
+  </div>
+
+  <!-- WORKSPACE -->
+  <div id="workspace">
+    <!-- LEFT: Device Library -->
+    <div id="lp">
+      <div class="ph"><div class="dot dot-b" id="ph-dot"></div><span id="ph-title">Biblioteca</span></div>
+      <!-- Search bar -->
+      <div id="lib-search-wrap" style="padding:6px 8px 2px;display:none">
+        <div style="position:relative">
+          <input id="lib-search" type="text" placeholder="Pesquisar câmara…" oninput="filterLib(this.value)"
+            style="width:100%;padding:6px 28px 6px 10px;border-radius:var(--r6);background:var(--bg2);border:1px solid var(--bdr2);color:var(--txt);font-family:var(--f);font-size:11px;outline:none">
+          <span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--txt3);pointer-events:none">🔍</span>
+        </div>
+      </div>
+      <div id="dlist"></div>
+      <button class="place-btn pb-cctv" id="pbtn" onclick="setTool('place')" disabled>▶ Colocar na Planta</button>
+      <!-- Quick multi-select panel -->
+      <div id="quick-sel-panel" style="padding:7px 10px;border-top:1px solid var(--bdr);background:var(--bg2);display:none;flex-direction:column;gap:5px">
+        <div style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--txt3);font-family:var(--m);margin-bottom:1px">⚡ Seleção Rápida</div>
+        <div id="qs-type-btns" style="display:flex;flex-wrap:wrap;gap:3px"></div>
+        <div style="display:flex;gap:3px;margin-top:2px">
+          <button onclick="qsSelectAll()" style="flex:1;padding:4px 5px;border-radius:5px;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);color:var(--acc);font-size:10px;font-weight:700;cursor:pointer;font-family:var(--f)">Sel. Todas</button>
+          <button onclick="qsSelectFloor()" style="flex:1;padding:4px 5px;border-radius:5px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);color:var(--acc3);font-size:10px;font-weight:700;cursor:pointer;font-family:var(--f)">Piso Atual</button>
+          <button onclick="qsClear()" style="padding:4px 7px;border-radius:5px;background:transparent;border:1px solid var(--bdr2);color:var(--txt3);font-size:10px;cursor:pointer;font-family:var(--f)">✕</button>
+        </div>
+        <div id="qs-info" style="font-size:9px;color:var(--txt3);font-family:var(--m);min-height:12px"></div>
+      </div>
+      <div style="padding:0 10px 9px;display:flex;gap:5px">
+        <button class="btn bg bsm bfw" onclick="openAddDevice()">+ Novo</button>
+        <button class="btn ba bsm" onclick="toggleQuickSel()" id="qs-toggle-btn" title="Seleção rápida em massa">⚡</button>
+      </div>
+    </div>
+
+    <!-- CANVAS -->
+    <div id="cw"
+      onmousemove="onMove(event)"
+      onmousedown="onDown(event)"
+      onmouseup="onUp(event)"
+      onclick="onClick(event)"
+      oncontextmenu="onCtxMenu(event)"
+      onwheel="onWheel(event)">
+      <canvas id="bgcv"></canvas>
+      <canvas id="maincv"></canvas>
+
+      <!-- Leaflet Map overlay -->
+      <div id="mapwrap">
+        <div id="mapbar">
+          <input id="mapsrch" type="text" placeholder="🔍  Pesquisar morada, localidade...">
+          <button class="mbtn mba" onclick="doSearch()">Pesquisar</button>
+          <button class="mbtn mbg" onclick="captureMapTiles()">📸 Capturar como Planta</button>
+          <button class="mbtn mbr" onclick="closeMap()">✕ Fechar</button>
+        </div>
+        <div id="leafmap"></div>
+      </div>
+
+      <div id="hud">
+        <div class="hp" id="zpill">100%</div>
+        <div class="hp" id="cpill">—</div>
+        <div class="hp" id="rpill" style="display:none">🖱 Roda = rodar | Shift = ±1°</div>
+      </div>
+      <div id="hintbar"></div>
+    </div>
+
+    <!-- RIGHT: Properties -->
+    <div id="rp">
+      <div class="tabs">
+        <div class="tab on" onclick="tab('props')">Props</div>
+        <div class="tab" onclick="tab('system')">Sistema</div>
+        <div class="tab" onclick="tab('stats')">Stats</div>
+        <div class="tab" onclick="tab('layers')">Camadas</div>
+      </div>
+
+      <!-- PROPS TAB -->
+      <div class="tc on" id="tc-props">
+        <div id="nosel" style="padding:10px 12px">
+          <div style="text-align:center;color:var(--txt3);font-size:10px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--bdr)">
+            <div id="nosel-icon" style="font-size:22px;margin-bottom:4px">📷</div>
+            Selecione um dispositivo para editar<br>
+            <span style="font-size:9px">[ ] = ±5° · Roda = rodar · Arr. = mover</span>
+          </div>
+          <!-- Project summary -->
+          <div class="stl" style="margin-bottom:6px">📊 Resumo do Projeto</div>
+          <div id="proj-summary-panel">
+            <div style="padding:7px 9px;border-radius:6px;background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.12);margin-bottom:6px">
+              <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+                <span style="font-size:10px;color:var(--txt3)">Câmaras</span>
+                <span style="font-family:var(--m);font-size:11px;font-weight:700;color:var(--acc)" id="ps-cams">0</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+                <span style="font-size:10px;color:var(--txt3)">Armazenamento total</span>
+                <span style="font-family:var(--m);font-size:11px;font-weight:700;color:var(--acc3)" id="ps-storage">—</span>
+              </div>
+              <div style="display:flex;justify-content:space-between">
+                <span style="font-size:10px;color:var(--txt3)">Dias de gravação</span>
+                <span style="font-family:var(--m);font-size:11px;color:var(--txt2)" id="ps-days">—</span>
+              </div>
+            </div>
+            <div style="padding:7px 9px;border-radius:6px;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.12);margin-bottom:6px">
+              <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+                <span style="font-size:10px;color:var(--txt3)">Cabo total estimado</span>
+                <span style="font-family:var(--m);font-size:11px;font-weight:700;color:var(--acc3)" id="ps-cable">—</span>
+              </div>
+              <div style="display:flex;justify-content:space-between">
+                <span style="font-size:10px;color:var(--txt3)">NVR/Hub</span>
+                <span style="font-family:var(--m);font-size:11px;color:var(--txt2)" id="ps-nvr">Não definido</span>
+              </div>
+            </div>
+            <div id="ps-nodata" style="font-size:10px;color:var(--txt3);text-align:center;padding:4px;display:none">Sem câmaras no projeto</div>
+          </div>
+        </div>
+        <div id="cpanel" style="display:none">
+          <div class="ps">
+            <div class="stl" id="prop-type-label">Câmara</div>
+            <div id="pname" style="font-family:var(--h);font-size:14px;font-weight:700;color:var(--acc)"></div>
+            <div id="pmodel" style="font-size:10px;color:var(--txt2);font-family:var(--m);margin-top:1px"></div>
+            <div id="pinfo" style="font-size:10px;color:var(--acc3);margin-top:3px;font-family:var(--m)"></div>
+          </div>
+          <!-- CCTV Installation & Blind Spot panel -->
+          <div id="cctv-install" class="ps" style="display:none">
+            <div class="stl" style="margin-bottom:8px">📐 Instalação &amp; Ângulo Morto</div>
+            <!-- Height input -->
+            <div class="fr" style="margin-bottom:5px">
+              <span class="fl">Altura inst.</span>
+              <input class="fi" id="p-instH" type="number" min="0.5" max="30" step="0.5" value="3" oninput="updInstall()" style="text-align:center">
+              <span style="font-size:10px;color:var(--txt3);margin-left:4px;flex-shrink:0;font-family:var(--m)">m</span>
+            </div>
+            <!-- Tilt slider -->
+            <div class="fr" style="margin-bottom:2px">
+              <span class="fl">Inclinação</span>
+              <input class="fi" id="p-tilt" type="range" min="0" max="90" step="1" value="30" oninput="updInstall()">
+              <span id="p-tiltv" style="font-family:var(--m);font-size:12px;font-weight:700;color:var(--acc4);width:36px;text-align:right;flex-shrink:0">30°</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px;padding:0 2px">
+              <span style="font-size:9px;color:var(--txt3);font-family:var(--m)">0° horiz.</span>
+              <span style="font-size:9px;color:var(--txt3);font-family:var(--m)">45°</span>
+              <span style="font-size:9px;color:var(--txt3);font-family:var(--m)">90° vert.</span>
+            </div>
+            <!-- Results box -->
+            <div style="border-radius:8px;background:rgba(8,12,24,.6);border:1px solid rgba(239,68,68,.25);overflow:hidden">
+              <!-- Header -->
+              <div style="background:rgba(239,68,68,.1);padding:5px 10px;border-bottom:1px solid rgba(239,68,68,.2)">
+                <span style="font-size:8px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:rgba(239,68,68,.85)">⚠ Ângulo Morto</span>
+              </div>
+              <!-- Metrics row -->
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;border-bottom:1px solid rgba(255,255,255,.04)">
+                <div style="padding:8px 10px;border-right:1px solid rgba(255,255,255,.04)">
+                  <div style="font-size:8.5px;color:var(--txt3);margin-bottom:3px;letter-spacing:.5px">ZONA CEGA</div>
+                  <div style="font-family:var(--m);font-size:14px;font-weight:700;color:#ef4444" id="bs-ground">—</div>
+                  <div style="font-size:8px;color:var(--txt3);margin-top:1px">desde a parede</div>
+                </div>
+                <div style="padding:8px 10px">
+                  <div style="font-size:8.5px;color:var(--txt3);margin-bottom:3px;letter-spacing:.5px">ALCANCE ÚTIL</div>
+                  <div style="font-family:var(--m);font-size:14px;font-weight:700;color:var(--acc3)" id="bs-reach">—</div>
+                  <div style="font-size:8px;color:var(--txt3);margin-top:1px">no chão (aprox.)</div>
+                </div>
+              </div>
+              <!-- Diagram -->
+              <div style="padding:8px 8px 4px">
+                <canvas id="bs-diagram" width="440" height="160" style="width:100%;height:auto;border-radius:4px;display:block"></canvas>
+              </div>
+              <!-- Formula -->
+              <div style="padding:4px 10px 8px;text-align:center">
+                <span style="font-size:9px;color:var(--txt3);font-family:var(--m)" id="bs-hint">cega = altura ÷ tan(incl.)</span>
+              </div>
+            </div>
+          </div>
+          <!-- CCTV lens panel -->
+          <div id="cctv-lens" class="ps">
+            <div class="stl">Lente Focal</div>
+            <div class="fr">
+              <span class="fl">Focal (mm)</span>
+              <input class="fi" id="plens" type="range" min="2.8" max="13" step="0.1" value="2.8" oninput="updP('lens',+this.value)">
+              <span id="plensv" style="font-family:var(--m);font-size:11px;color:var(--acc4);width:38px;text-align:right;flex-shrink:0">2.8mm</span>
+            </div>
+            <div id="plensinfo" style="font-size:10px;color:var(--txt2);line-height:1.6;margin-top:3px;padding:5px 7px;background:rgba(0,0,0,.25);border-radius:4px;border-left:2px solid var(--acc4);white-space:pre-line"></div>
+          </div>
+          <!-- DORI panel -->
+          <div id="cctv-dori" class="ps" style="display:none">
+            <div class="stl" style="margin-bottom:6px">DORI — EN 62676-4</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px">
+              <div id="dori-d" style="padding:5px 6px;border-radius:4px;background:rgba(0,200,240,.08);border:1px solid rgba(0,200,240,.2)">
+                <div style="font-size:8px;font-weight:800;letter-spacing:1px;color:var(--acc);text-transform:uppercase">Detection</div>
+                <div id="dori-dv" style="font-family:var(--m);font-size:13px;color:var(--acc);margin-top:2px">—</div>
+                <div style="font-size:8px;color:var(--txt3)">≥ 25 px/m</div>
+              </div>
+              <div id="dori-o" style="padding:5px 6px;border-radius:4px;background:rgba(0,232,136,.07);border:1px solid rgba(0,232,136,.2)">
+                <div style="font-size:8px;font-weight:800;letter-spacing:1px;color:var(--acc3);text-transform:uppercase">Observation</div>
+                <div id="dori-ov" style="font-family:var(--m);font-size:13px;color:var(--acc3);margin-top:2px">—</div>
+                <div style="font-size:8px;color:var(--txt3)">≥ 62,5 px/m</div>
+              </div>
+              <div id="dori-r" style="padding:5px 6px;border-radius:4px;background:rgba(240,160,0,.07);border:1px solid rgba(240,160,0,.2)">
+                <div style="font-size:8px;font-weight:800;letter-spacing:1px;color:var(--acc4);text-transform:uppercase">Recognition</div>
+                <div id="dori-rv" style="font-family:var(--m);font-size:13px;color:var(--acc4);margin-top:2px">—</div>
+                <div style="font-size:8px;color:var(--txt3)">≥ 125 px/m</div>
+              </div>
+              <div id="dori-i" style="padding:5px 6px;border-radius:4px;background:rgba(240,48,80,.07);border:1px solid rgba(240,48,80,.2)">
+                <div style="font-size:8px;font-weight:800;letter-spacing:1px;color:var(--acc2);text-transform:uppercase">Identification</div>
+                <div id="dori-iv" style="font-family:var(--m);font-size:13px;color:var(--acc2);margin-top:2px">—</div>
+                <div style="font-size:8px;color:var(--txt3)">≥ 250 px/m</div>
+              </div>
+            </div>
+            <div id="dori-bar" style="margin-top:8px;height:10px;border-radius:5px;background:rgba(255,255,255,.05);overflow:hidden;position:relative;border:1px solid var(--bdr2)">
+              <div id="dori-bar-i"  style="position:absolute;left:0;top:0;height:100%;background:#f03050;transition:width .2s"></div>
+              <div id="dori-bar-r"  style="position:absolute;left:0;top:0;height:100%;background:#f0a000;transition:width .2s"></div>
+              <div id="dori-bar-o"  style="position:absolute;left:0;top:0;height:100%;background:#00e888;transition:width .2s"></div>
+              <div id="dori-bar-d"  style="position:absolute;left:0;top:0;height:100%;background:#00c8f0;transition:width .2s"></div>
+            </div>
+            <div style="font-size:9px;color:var(--txt3);margin-top:4px;text-align:center" id="dori-hint">Ajuste a lente para atualizar</div>
+            <div style="font-size:8px;color:var(--txt4);line-height:1.45;margin-top:5px;text-align:center">Cálculo por densidade de píxeis · resolução horizontal + FOV efetivo</div>
+          </div>
+          <!-- CCTV Storage panel -->
+          <div id="cctv-storage" class="ps" style="display:none">
+            <div class="stl" style="margin-bottom:6px">💾 Armazenamento por Câmara</div>
+            <div class="fr">
+              <span class="fl">Resolução</span>
+              <select class="fi" id="p-mp" onchange="updP('mp',+this.value)">
+                <option value="2">2 MP (1080p)</option>
+                <option value="4" selected>4 MP (2.5K)</option>
+                <option value="5">5 MP (3K)</option>
+                <option value="8">8 MP (4K)</option>
+                <option value="12">12 MP (4K+)</option>
+              </select>
+            </div>
+            <div class="fr">
+              <span class="fl">Compressão</span>
+              <select class="fi" id="p-codec" onchange="updP('codec',this.value)">
+                <option value="ultra265m">Ultra 265 Max (Uniview)</option>
+                <option value="ultra265a">Ultra 265 Advanced (Uniview)</option>
+                <option value="ultra265b" selected>Ultra 265 Basic (Uniview)</option>
+                <option value="h265">H.265+</option>
+                <option value="h264">H.264</option>
+              </select>
+            </div>
+            <div class="fr">
+              <span class="fl">Dias grav.</span>
+              <input class="fi" id="p-days" type="number" min="1" max="365" value="30" oninput="updP('days',+this.value)">
+            </div>
+            <div id="storage-result" style="margin-top:6px;padding:7px 8px;border-radius:6px;background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.15)">
+              <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+                <span style="font-size:10px;color:var(--txt3)">Bitrate estimado</span>
+                <span style="font-family:var(--m);font-size:11px;color:var(--acc4)" id="stor-bitrate">—</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+                <span style="font-size:10px;color:var(--txt3)">Por câmara</span>
+                <span style="font-family:var(--m);font-size:11px;color:var(--acc3)" id="stor-percam">—</span>
+              </div>
+              <div style="display:flex;justify-content:space-between">
+                <span style="font-size:10px;color:var(--txt3)">Todo o projeto</span>
+                <span style="font-family:var(--m);font-size:12px;font-weight:700;color:var(--acc)" id="stor-total">—</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Alarm zone panel -->
+          <div id="alarm-zone" class="ps" style="display:none">
+            <div class="stl">Zona de Deteção</div>
+            <div class="fr"><span class="fl">Alcance (m)</span><input class="fi" id="p-arange" type="number" min="0" max="200" oninput="updP('arange',+this.value)"></div>
+            <div class="fr"><span class="fl">Ângulo (°)</span><input class="fi" id="p-afov" type="number" min="0" max="360" oninput="updP('afov',+this.value)"></div>
+            <div class="fr"><span class="fl">Zona #</span><input class="fi" id="p-zone" type="number" min="1" max="128" value="1" oninput="updP('zone',+this.value)"></div>
+          </div>
+          <!-- CCTV Cable panel -->
+          <div id="cctv-cable" class="ps" style="display:none">
+            <div class="stl" style="margin-bottom:6px">🔌 Cabo Estimado</div>
+            <div class="fr">
+              <span class="fl">Altura inst.</span>
+              <input class="fi" id="p-height" type="number" min="1" max="20" value="3" step="0.5" oninput="updP('instHeight',+this.value)">
+              <span style="font-size:10px;color:var(--txt3);margin-left:3px;flex-shrink:0">m</span>
+            </div>
+            <div id="cable-result" style="margin-top:6px;padding:7px 8px;border-radius:6px;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.15)">
+              <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+                <span style="font-size:10px;color:var(--txt3)">Dist. ao NVR/Hub</span>
+                <span style="font-family:var(--m);font-size:11px;color:var(--txt2)" id="cable-dist">Defina NVR</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+                <span style="font-size:10px;color:var(--txt3)">Cabo estimado</span>
+                <span style="font-family:var(--m);font-size:11px;color:var(--acc3)" id="cable-len">—</span>
+              </div>
+              <div style="display:flex;justify-content:space-between">
+                <span style="font-size:10px;color:var(--txt3)">Total projeto</span>
+                <span style="font-family:var(--m);font-size:12px;font-weight:700;color:var(--acc)" id="cable-total">—</span>
+              </div>
+            </div>
+            <button class="btn bg bsm bfw" style="margin-top:6px;width:100%" onclick="setNVRPosition()">📍 Definir posição NVR/Hub</button>
+            <button id="btn-cable-route" class="btn ba bsm bfw" style="margin-top:4px;width:100%" onclick="startCableRoute()">✏ Traçar rota do cabo</button>
+            <div id="cable-route-status" style="display:none;margin-top:5px;font-size:10px;color:var(--acc2);font-family:var(--m);text-align:center;padding:4px 6px;background:rgba(239,68,68,.08);border-radius:4px;border:1px solid rgba(239,68,68,.2)"></div>
+            <button id="btn-cable-clear" class="btn br bsm bfw" style="margin-top:4px;width:100%;display:none" onclick="clearCableRoute()">🗑 Limpar rota</button>
+          </div>
+
+          <div class="ps">
+            <div class="stl">Posição</div>
+            <div class="fr"><span class="fl">Etiqueta</span><input class="fi" id="plbl" type="text" oninput="updP('label',this.value)"></div>
+            <div class="fr" id="rot-row">
+              <span class="fl">Rotação</span>
+              <input class="fi" id="prot" type="number" min="0" max="359" oninput="updP('rotation',((+this.value)%360+360)%360)">
+              <span style="font-size:10px;color:var(--txt3);margin-left:2px;flex-shrink:0">°</span>
+            </div>
+            <div class="rbs" id="rot-btns">
+              <div class="rb" onclick="updP('rotation',0)">↑</div>
+              <div class="rb" onclick="updP('rotation',90)">→</div>
+              <div class="rb" onclick="updP('rotation',180)">↓</div>
+              <div class="rb" onclick="updP('rotation',270)">←</div>
+            </div>
+          </div>
+          <div class="ps">
+            <div class="stl">Aparência</div>
+            <div class="fr"><span class="fl">Cor cone</span><input class="fi" id="pcol" type="color" oninput="updP('color',this.value)"></div>
+            <div class="fr">
+              <span class="fl">Opacidade</span>
+              <input class="fi" id="popa" type="range" min="5" max="85" value="22" oninput="updP('opacity',+this.value/100)">
+              <span id="popav" style="font-family:var(--m);font-size:11px;color:var(--txt2);width:30px;text-align:right;flex-shrink:0">22%</span>
+            </div>
+            <div class="fr">
+              <span class="fl">Cone</span>
+              <label style="cursor:pointer;display:flex;align-items:center;gap:6px;font-size:11px;color:var(--txt2)">
+                <input type="checkbox" id="pvis" checked onchange="updP('visible',this.checked)"> Visível
+              </label>
+            </div>
+          </div>
+          <div class="ps"><button class="btn br bsm bfw" onclick="delSel()">🗑 Remover</button></div>
+        </div>
+      </div>
+
+      <!-- LAYERS TAB -->
+      <div class="tc" id="tc-layers" style="padding:9px">
+        <div class="stl" style="margin-bottom:7px">Visibilidade</div>
+        <div class="li" onclick="togL('fp')"><div class="ltog on" id="l-fp">✓</div><span class="ll">🗺 Planta</span></div>
+        <div class="li" onclick="togL('dev')"><div class="ltog on" id="l-dev">✓</div><span class="ll" id="ll-dev">📷 Dispositivos</span></div>
+        <div class="li" onclick="togL('cov')"><div class="ltog on" id="l-cov">✓</div><span class="ll" id="ll-cov">🔵 Coberturas</span></div>
+        <div class="li" onclick="togL('meas')"><div class="ltog on" id="l-meas">✓</div><span class="ll">📏 Medições</span></div>
+        <div class="li" onclick="togL('grid')"><div class="ltog on" id="l-grid">✓</div><span class="ll">⊞ Grelha</span></div>
+        <div style="margin-top:10px" class="stl">Planta de Fundo</div>
+        <div class="fr" style="margin-top:7px"><span class="fl">Opacidade</span><input class="fi" type="range" min="10" max="100" value="100" oninput="setFPopa(+this.value/100)"></div>
+        <label style="font-size:11px;color:var(--txt2);cursor:pointer;display:flex;align-items:center;gap:6px;margin-top:6px">
+          <input type="checkbox" id="fplock" onchange="sigsSetPlantLocked(this.checked)"> Bloquear planta
+        </label>
+      </div>
+
+      <!-- STATS TAB -->
+      <div class="tc" id="tc-stats" style="padding:9px">
+        <div class="stl" style="margin-bottom:7px">Resumo do Projeto</div>
+        <div class="si"><span class="sk">Dispositivos</span><span class="sv" id="s-devs">0</span></div>
+        <div class="si"><span class="sk">Escala</span><span class="sv" id="s-scale">—</span></div>
+        <div class="si"><span class="sk">Planta</span><span class="sv" id="s-fp">—</span></div>
+        <div class="si"><span class="sk">Medições</span><span class="sv" id="s-meas">0</span></div>
+        <div style="margin-top:10px" class="stl">Por Tipo</div>
+        <div id="s-types" style="margin-top:5px"></div>
+        <div style="margin-top:10px;display:flex;flex-direction:column;gap:5px">
+          <button class="btn br bsm bfw" onclick="clearDevs()">Remover Todos</button>
+          <button class="btn bo bsm bfw" onclick="clearMeas()">Limpar Medições</button>
+        </div>
+      </div>
+
+      <!-- SYSTEM TAB -->
+      <div class="tc" id="tc-system">
+        <div id="specialty-system-summary" style="display:none;padding:14px;overflow-y:auto;flex:1"></div>
+        <div id="cctv-system-content" style="padding:9px;display:flex;flex-direction:column;gap:2px;overflow-y:auto;flex:1">
+          <div class="stl" style="margin-bottom:6px">🖥 Sugestão NVR</div>
+          <div id="nvr-suggestion" style="margin-bottom:12px"></div>
+          <div class="stl" style="margin-bottom:6px">📡 Largura de Banda</div>
+          <div id="bw-summary" style="margin-bottom:12px"></div>
+          <div class="stl" style="margin-bottom:6px">⚡ Cálculo PoE</div>
+          <div id="poe-summary" style="margin-bottom:12px"></div>
+          <div class="stl" style="margin-bottom:6px">🔌 Cabos</div>
+          <div id="cable-summary" style="margin-bottom:8px"></div>
+          <button class="btn ba bsm bfw" style="margin-top:4px;flex-shrink:0" onclick="buildSystemTab()">↺ Atualizar</button>
+        </div>
+      </div>
+
+      <!-- ORÇAMENTO TAB -->
+      <div class="tc" id="tc-budget">
+        <div style="padding:9px;display:flex;flex-direction:column;gap:4px;overflow-y:auto;flex:1">
+          <div class="stl" style="margin-bottom:4px">💶 Orçamento do Projeto</div>
+
+          <!-- Camera lines (grouped by model) -->
+          <div id="budget-cams-section" style="margin-bottom:6px"></div>
+
+          <!-- HDD -->
+          <div id="budget-hdd-section" style="margin-bottom:6px"></div>
+
+          <!-- Cable -->
+          <div style="padding:7px 9px;border-radius:7px;background:var(--bg2);border:1px solid var(--bdr2);margin-bottom:6px">
+            <div style="font-size:10px;font-weight:700;color:var(--txt2);margin-bottom:6px;letter-spacing:.5px">🔌 CABO</div>
+            <div class="fr">
+              <span class="fl">Preço/metro</span>
+              <input class="fi" id="bgt-cable-price" type="number" min="0" step="0.01" value="0.80" oninput="buildBudget()">
+              <span style="font-size:10px;color:var(--txt3);margin-left:3px;flex-shrink:0">€/m</span>
+            </div>
+            <div id="budget-cable-line" style="margin-top:4px;font-size:11px;color:var(--txt3)">—</div>
+          </div>
+
+          <!-- NVR / Switch -->
+          <div id="budget-system-section" style="margin-bottom:6px"></div>
+
+          <!-- Other items -->
+          <div id="budget-other-section" style="margin-bottom:6px"></div>
+
+          <!-- Subtotal + IVA + Total -->
+          <div id="budget-total-section" style="margin-top:4px"></div>
+
+          <button class="btn ba bsm bfw" style="margin-top:6px;flex-shrink:0" onclick="buildBudget()">↺ Atualizar</button>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- /workspace -->
+</div><!-- /app -->
+
+<!-- Multi-select floating action bar -->
+<div id="multi-sel-bar" style="display:none;position:fixed;bottom:54px;left:50%;transform:translateX(-50%);background:var(--bg3);border:1px solid var(--bdr3);border-radius:12px;padding:8px 14px;align-items:center;gap:8px;z-index:500;box-shadow:0 8px 32px rgba(0,0,0,.7);backdrop-filter:blur(16px);flex-wrap:wrap;max-width:95vw">
+  <span id="multi-sel-count" style="font-family:var(--m);font-size:11px;font-weight:700;color:var(--acc);white-space:nowrap">0 sel.</span>
+  <div style="width:1px;height:18px;background:var(--bdr2)"></div>
+  <!-- Storage params for all selected -->
+  <select id="multi-mp" onchange="applyMultiStorage()" style="padding:3px 6px;border-radius:5px;background:var(--bg4);border:1px solid var(--bdr2);color:var(--txt2);font-size:10px;cursor:pointer;font-family:var(--m)" title="Resolução MP para todos">
+    <option value="2">2MP</option><option value="4" selected>4MP</option><option value="5">5MP</option>
+    <option value="8">8MP</option><option value="12">12MP</option>
+  </select>
+  <select id="multi-codec" onchange="applyMultiStorage()" style="padding:3px 6px;border-radius:5px;background:var(--bg4);border:1px solid var(--bdr2);color:var(--txt2);font-size:10px;cursor:pointer;font-family:var(--m)" title="Codec para todos">
+    <option value="ultra265m">Ultra265 Max</option>
+    <option value="ultra265a">Ultra265 Adv</option>
+    <option value="ultra265b" selected>Ultra265 Basic</option>
+    <option value="h265">H.265+</option>
+    <option value="h264">H.264</option>
+  </select>
+  <input id="multi-days" type="number" min="1" max="365" value="30" onchange="applyMultiStorage()" style="width:52px;padding:3px 5px;border-radius:5px;background:var(--bg4);border:1px solid var(--bdr2);color:var(--txt2);font-size:10px;font-family:var(--m)" title="Dias de gravação">
+  <span style="font-size:9px;color:var(--txt3);font-family:var(--m)">dias</span>
+  <button onclick="applyMultiStorage()" style="padding:3px 9px;border-radius:5px;background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.3);color:var(--acc);font-size:10px;font-weight:700;cursor:pointer;font-family:var(--f)">💾 Aplicar</button>
+  <div style="width:1px;height:18px;background:var(--bdr2)"></div>
+  <button onclick="multiSelColor()" style="padding:4px 9px;border-radius:5px;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);color:var(--acc);font-size:11px;font-weight:600;cursor:pointer;font-family:var(--f)">🎨 Cor</button>
+  <input type="color" id="multi-col-picker" style="display:none;position:absolute" onchange="applyMultiColor(this.value)">
+  <button onclick="multiSelOpacity()" style="padding:4px 9px;border-radius:5px;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);color:var(--acc);font-size:11px;font-weight:600;cursor:pointer;font-family:var(--f)">◑ Opac.</button>
+  <button onclick="dupSel()" style="padding:4px 9px;border-radius:5px;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);color:var(--acc3);font-size:11px;font-weight:600;cursor:pointer;font-family:var(--f)">⧉ Dup.</button>
+  <button onclick="delSel()" style="padding:4px 9px;border-radius:5px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:var(--acc2);font-size:11px;font-weight:600;cursor:pointer;font-family:var(--f)">🗑 Apagar</button>
+  <button onclick="deselect()" style="background:none;border:none;color:var(--txt3);cursor:pointer;font-size:14px;padding:2px 4px">✕</button>
+</div>
+
+<!-- CTX MENU -->
+<div id="ctx">
+  <div class="cx" onclick="ctxR(0)">↑ Norte (0°)</div>
+  <div class="cx" onclick="ctxR(90)">→ Este (90°)</div>
+  <div class="cx" onclick="ctxR(180)">↓ Sul (180°)</div>
+  <div class="cx" onclick="ctxR(270)">← Oeste (270°)</div>
+  <div class="cxs"></div>
+  <div class="cx" onclick="dupSel()">⧉ Duplicar</div>
+  <div class="cxs"></div>
+  <div class="cx rd" onclick="delSel()">🗑 Remover</div>
+</div>
+
+<!-- Context menu for library list items (right-click on left panel) -->
+<div id="ctx-lib" style="position:fixed;background:var(--bg2);border:1px solid var(--bdr2);border-radius:7px;padding:4px;z-index:900;box-shadow:0 8px 30px rgba(0,0,0,.7);min-width:160px;display:none">
+  <div style="padding:5px 10px 4px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--txt3);border-bottom:1px solid var(--bdr2);margin-bottom:3px" id="ctx-lib-name">—</div>
+  <div class="cx" onclick="ctxLibEdit()">✏ Editar definições</div>
+  <div class="cx" onclick="ctxLibDup()">⧉ Duplicar na lista</div>
+  <div class="cxs"></div>
+  <div class="cx rd" onclick="ctxLibDel()">🗑 Remover da lista</div>
+</div>
+
+<!-- MODAL: Add Device -->
+<div class="ovl hide" id="m-dev">
+  <div class="modal">
+    <div class="mh" id="m-dev-h">Novo Dispositivo</div>
+    <div class="fr"><span class="fl">Nome *</span><input class="fi" id="mc-name" placeholder="Nome do dispositivo"></div>
+    <div class="fr"><span class="fl">Modelo</span><input class="fi" id="mc-model" placeholder="Referência/modelo"></div>
+    <div class="fr"><span class="fl">Tipo</span><select class="fi" id="mc-type"></select></div>
+    <div id="mc-cctv" style="display:none">
+      <div class="fr"><span class="fl">FOV base</span><input class="fi" id="mc-fov" type="number" min="10" max="360" value="90"><span style="font-size:10px;color:var(--txt3);margin-left:3px">° (a 2.8mm)</span></div>
+      <div class="fr"><span class="fl">Alcance base</span><input class="fi" id="mc-range" type="number" min="1" max="500" value="20"><span style="font-size:10px;color:var(--txt3);margin-left:3px">m (a 2.8mm)</span></div>
+      <div class="fr"><span class="fl">Altura inst.</span><input class="fi" id="mc-height" type="number" min="0.5" max="30" step="0.5" value="3"><span style="font-size:10px;color:var(--txt3);margin-left:3px">m</span></div>
+    </div>
+    <div id="mc-alarm" style="display:none">
+      <div class="fr"><span class="fl">Alcance</span><input class="fi" id="mc-arange" type="number" min="0" max="200" value="10"><span style="font-size:10px;color:var(--txt3);margin-left:3px">m</span></div>
+      <div class="fr"><span class="fl">Ângulo</span><input class="fi" id="mc-afov" type="number" min="0" max="360" value="90"><span style="font-size:10px;color:var(--txt3);margin-left:3px">°</span></div>
+    </div>
+    <div class="fr"><span class="fl">Cor</span><input class="fi" id="mc-color" type="color" value="#00aaff"></div>
+    <!-- Photo field — shown for both CCTV and Alarm -->
+    <div id="mc-photo-row" style="display:none;margin-top:10px">
+      <div class="stl" style="margin-bottom:7px">📷 Foto da Câmara</div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div id="mc-photo-prev" onclick="document.getElementById('mc-photo-input').click()" style="width:72px;height:72px;border:2px dashed rgba(59,130,246,.35);border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--bg2);overflow:hidden;flex-shrink:0;font-size:26px;cursor:pointer;transition:border-color .15s;position:relative" onmouseover="this.style.borderColor='rgba(59,130,246,.7)'" onmouseout="this.style.borderColor='rgba(59,130,246,.35)'">📷</div>
+        <div style="flex:1">
+          <div style="font-size:10.5px;color:var(--txt2);margin-bottom:8px;line-height:1.6">Carregar foto para mostrar<br>no mapa e na biblioteca.</div>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <button class="btn ba bsm" onclick="document.getElementById('mc-photo-input').click()">📁 Escolher ficheiro</button>
+            <button class="btn bsm" id="mc-photo-clear-btn" onclick="mcClearPhoto()" style="color:var(--txt2);border-color:var(--bdr2);display:none">✕ Remover foto</button>
+          </div>
+        </div>
+      </div>
+      <input type="file" id="mc-photo-input" accept="image/*" style="display:none" onchange="mcLoadPhoto(event)">
+    </div>
+    <div class="ma">
+      <button class="btn bsm" onclick="closeM('m-dev')" style="color:var(--txt2);border-color:var(--bdr2)">Cancelar</button>
+      <button class="btn ba bsm" onclick="saveDevice()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Scale -->
+<div class="ovl hide" id="m-scale">
+  <div class="modal">
+    <div class="mh">Definir Escala</div>
+    <p style="font-size:12px;color:var(--txt2);margin-bottom:13px;line-height:1.7">
+      Linha desenhada: <span id="ms-px" style="color:var(--acc);font-family:var(--m)"></span><br>
+      A que distância real (em metros) corresponde?
+    </p>
+    <div class="fr"><span class="fl">Metros reais</span><input class="fi" id="ms-m" type="number" min="0.1" step="0.1" value="10"></div>
+    <div id="ms-prev" style="text-align:center;font-family:var(--m);font-size:11px;color:var(--acc3);background:rgba(0,232,136,.05);border:1px solid rgba(0,232,136,.13);border-radius:5px;padding:7px;margin:9px 0"></div>
+    <div class="ma">
+      <button class="btn bsm" onclick="closeM('m-scale')" style="color:var(--txt2);border-color:var(--bdr2)">Cancelar</button>
+      <button class="btn bg bsm" onclick="applyScale()">✓ Aplicar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Print -->
+<div class="ovl hide" id="m-print">
+  <div class="modal" style="max-width:580px;max-height:90vh;overflow-y:auto">
+    <div class="mh">🖨 Relatório &amp; Impressão</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div>
+        <div class="stl" style="margin-bottom:8px">📎 Logotipo</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <div id="logo-prev" style="width:72px;height:44px;border:1px dashed var(--bdr2);border-radius:5px;display:flex;align-items:center;justify-content:center;background:var(--bg1);font-size:9px;color:var(--txt3);overflow:hidden;flex-shrink:0;text-align:center">Sem<br>logo</div>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <button class="btn ba bsm" onclick="document.getElementById('fi-logo').click()">📁 Carregar</button>
+            <button class="btn bsm" onclick="clearLogo()" style="color:var(--txt2);border-color:var(--bdr2)">✕ Remover</button>
+          </div>
+        </div>
+        <div class="stl" style="margin-bottom:7px">🏢 Empresa Instaladora</div>
+        <div class="fr"><span class="fl">Empresa</span><input class="fi" id="pr-company" value="SIGS Portugal"></div>
+        <div class="fr"><span class="fl">Comercial</span><input class="fi" id="pr-name" placeholder="Nome do comercial"></div>
+        <div class="fr"><span class="fl">Email</span><input class="fi" id="pr-email" placeholder="email@empresa.pt"></div>
+        <div class="fr"><span class="fl">Telefone</span><input class="fi" id="pr-phone" placeholder="+351 912 345 678"></div>
+      </div>
+      <div>
+        <div class="stl" style="margin-bottom:7px">👤 Dados do Cliente</div>
+        <div class="fr"><span class="fl">Nome</span><input class="fi" id="pr-client-name" placeholder="Nome do cliente"></div>
+        <div class="fr"><span class="fl">Empresa</span><input class="fi" id="pr-client-company" placeholder="Empresa do cliente"></div>
+        <div class="fr"><span class="fl">Morada</span><input class="fi" id="pr-client-addr" placeholder="Morada da instalação"></div>
+        <div class="fr"><span class="fl">NIF</span><input class="fi" id="pr-client-nif" placeholder="NIF (opcional)"></div>
+        <div class="fr"><span class="fl">Contacto</span><input class="fi" id="pr-client-phone" placeholder="Telefone do cliente"></div>
+        <div class="stl" style="margin:10px 0 7px">📄 Documento</div>
+        <div class="fr"><span class="fl">Título</span><input class="fi" id="pr-title" value="Projeto de Segurança"></div>
+        <div class="fr"><span class="fl">Nº Projeto</span><input class="fi" id="pr-projnum" placeholder="ex: PROJ-2025-001"></div>
+        <div class="fr"><span class="fl">Data</span><input class="fi" id="pr-date" type="date"></div>
+      </div>
+    </div>
+    <div class="fr" style="margin-top:6px"><span class="fl">Notas</span><input class="fi" id="pr-notes" placeholder="Observações, condições, referências..."></div>
+
+    <div style="margin-top:14px;padding:12px;background:var(--bg3);border-radius:8px;border:1px solid var(--bdr2)">
+      <div class="stl" style="margin-bottom:10px">📋 Secções a incluir no relatório</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        <label style="display:flex;align-items:center;gap:7px;font-size:11px;color:var(--txt2);cursor:pointer">
+          <input type="checkbox" id="rpt-plant" checked style="accent-color:var(--acc)"> 🗺 Planta do projeto
+        </label>
+        <label style="display:flex;align-items:center;gap:7px;font-size:11px;color:var(--txt2);cursor:pointer">
+          <input type="checkbox" id="rpt-camlist" checked style="accent-color:var(--acc)"> 📷 Lista de câmaras
+        </label>
+        <label style="display:flex;align-items:center;gap:7px;font-size:11px;color:var(--txt2);cursor:pointer">
+          <input type="checkbox" id="rpt-storage" checked style="accent-color:var(--acc)"> 💾 Cálculo de armazenamento
+        </label>
+        <label style="display:flex;align-items:center;gap:7px;font-size:11px;color:var(--txt2);cursor:pointer">
+          <input type="checkbox" id="rpt-cable" checked style="accent-color:var(--acc)"> 🔌 Cabos estimados
+        </label>
+        <label style="display:flex;align-items:center;gap:7px;font-size:11px;color:var(--txt2);cursor:pointer">
+          <input type="checkbox" id="rpt-bom" checked style="accent-color:var(--acc)"> 📋 Lista de material (BOM)
+        </label>
+        <label style="display:flex;align-items:center;gap:7px;font-size:11px;color:var(--txt2);cursor:pointer">
+          <input type="checkbox" id="rpt-nvr" checked style="accent-color:var(--acc)"> 🖥 NVR recomendado
+        </label>
+        <label style="display:flex;align-items:center;gap:7px;font-size:11px;color:var(--txt2);cursor:pointer">
+          <input type="checkbox" id="rpt-poe" checked style="accent-color:var(--acc)"> ⚡ Switch PoE
+        </label>
+        <label style="display:flex;align-items:center;gap:7px;font-size:11px;color:var(--txt2);cursor:pointer">
+          <input type="checkbox" id="rpt-client" checked style="accent-color:var(--acc)"> 👤 Dados do cliente
+        </label>
+        <label style="display:flex;align-items:center;gap:7px;font-size:11px;color:var(--txt2);cursor:pointer;grid-column:1/-1;background:rgba(16,185,129,.05);border:1px solid rgba(16,185,129,.15);border-radius:6px;padding:5px 8px">
+          <input type="checkbox" id="rpt-budget" checked style="accent-color:var(--acc3)"> 💶 Orçamento detalhado <span style="font-size:9px;color:var(--txt3);margin-left:4px">(preços definidos no BOM)</span>
+        </label>
+      </div>
+      <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--bdr);display:flex;gap:10px">
+        <button onclick="rptCheckAll(true)"  style="font-size:10px;background:none;border:none;color:var(--acc);cursor:pointer;padding:0;font-family:var(--f)">✓ Selecionar tudo</button>
+        <button onclick="rptCheckAll(false)" style="font-size:10px;background:none;border:none;color:var(--txt3);cursor:pointer;padding:0;font-family:var(--f)">✗ Limpar tudo</button>
+      </div>
+    </div>
+
+    <div style="margin-top:10px;padding:8px 12px;background:rgba(59,130,246,.06);border-radius:6px;border:1px solid rgba(59,130,246,.15)">
+      <div style="font-size:10px;color:var(--txt3);margin-bottom:3px;font-family:var(--m)">💾 ARMAZENAMENTO TOTAL DO PROJETO</div>
+      <div id="pr-storage-preview" style="font-size:13px;font-weight:700;font-family:var(--m);color:var(--acc)">—</div>
+      <div id="pr-storage-detail" style="font-size:10px;color:var(--txt3);margin-top:2px"></div>
+    </div>
+
+    <div class="ma" style="margin-top:16px">
+      <button class="btn bsm" onclick="closeM('m-print')" style="color:var(--txt2);border-color:var(--bdr2)">Cancelar</button>
+      <button class="btn ba bsm" onclick="doExportPDF()">📄 Exportar PDF</button>
+      <button class="btn bg bsm" onclick="doPrint()">🖨 Imprimir</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Templates -->
+<div class="ovl hide" id="m-templates">
+  <div class="modal" style="max-width:560px">
+    <div class="mh">🏗 Templates de Projeto</div>
+    <div style="font-size:11px;color:var(--txt3);margin-bottom:14px">Layout pré-definido. Dispositivos colocados em posições típicas. Pode editar após aplicar.</div>
+    <div id="tpl-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px"></div>
+    <div class="ma">
+      <button class="btn bsm" onclick="closeM('m-templates')" style="color:var(--txt2);border-color:var(--bdr2)">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: BOM -->
+<div class="ovl hide" id="m-bom">
+  <div class="modal" style="max-width:640px;width:95vw">
+    <div class="mh">📋 Lista de Material — BOM</div>
+    <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center;flex-wrap:wrap">
+      <span style="font-size:11px;color:var(--txt3)" id="bom-summary">—</span>
+      <div style="margin-left:auto;display:flex;gap:6px;align-items:center">
+        <label style="font-size:10px;color:var(--txt3);display:flex;align-items:center;gap:3px">Margem
+          <input id="bom-margin" type="number" min="0" max="500" value="0" step="5" oninput="bomRecalc()" style="width:48px;padding:3px 5px;font-size:11px;font-family:var(--m);background:var(--bg2);border:1px solid var(--bdr2);border-radius:4px;color:var(--txt)">%</label>
+        <label style="font-size:10px;color:var(--txt3);display:flex;align-items:center;gap:3px;cursor:pointer">
+          <input id="bom-iva" type="checkbox" checked onchange="bomRecalc()"> IVA 23%</label>
+        <button class="btn ba bsm" onclick="exportBOM('csv')">⬇ CSV</button>
+        <button class="btn bg bsm" onclick="exportBOM('txt')">⬇ TXT</button>
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+      <table id="bom-table" style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead>
+          <tr style="border-bottom:1px solid var(--bdr2)">
+            <th style="text-align:left;padding:6px 8px;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--txt3);font-family:var(--m)">Ref.</th>
+            <th style="text-align:left;padding:6px 8px;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--txt3);font-family:var(--m)">Descrição</th>
+            <th style="text-align:left;padding:6px 8px;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--txt3);font-family:var(--m)">Tipo</th>
+            <th style="text-align:center;padding:6px 8px;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--txt3);font-family:var(--m)">Qtd.</th>
+            <th style="text-align:right;padding:6px 8px;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--txt3);font-family:var(--m)">Preço un.</th>
+            <th style="text-align:right;padding:6px 8px;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--txt3);font-family:var(--m)">Total</th>
+          </tr>
+        </thead>
+        <tbody id="bom-tbody"></tbody>
+        <tfoot id="bom-tfoot"></tfoot>
+      </table>
+    </div>
+    <div style="font-size:9px;color:var(--txt3);margin-top:8px">Os preços são guardados localmente por referência (€, custo unitário). Defina a margem para obter o PVP.</div>
+    <div class="ma">
+      <button class="btn bsm" onclick="closeM('m-bom')" style="color:var(--txt2);border-color:var(--bdr2)">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Import Plant by URL / Clipboard -->
+<div class="ovl hide" id="m-urlimport">
+  <div class="modal" style="max-width:480px">
+    <div class="mh">🔗 Importar Planta</div>
+    <!-- Tabs -->
+    <div style="display:flex;gap:0;border-bottom:1px solid var(--bdr2);margin-bottom:14px">
+      <div id="ui-tab-url" onclick="uiTab('url')" style="padding:7px 16px;font-size:11px;font-weight:700;letter-spacing:.5px;cursor:pointer;border-bottom:2px solid var(--acc);color:var(--acc);font-family:var(--m)">URL</div>
+      <div id="ui-tab-clip" onclick="uiTab('clip')" style="padding:7px 16px;font-size:11px;font-weight:700;letter-spacing:.5px;cursor:pointer;border-bottom:2px solid transparent;color:var(--txt3);font-family:var(--m)">Clipboard / Colar</div>
+    </div>
+    <!-- URL panel -->
+    <div id="ui-panel-url">
+      <div style="font-size:11px;color:var(--txt2);margin-bottom:10px;line-height:1.7">Cole o URL direto de uma imagem (JPG, PNG, GIF, WebP). Exemplos: Google Maps screenshot, planta online, etc.</div>
+      <div class="fr" style="margin-bottom:8px">
+        <span class="fl">URL</span>
+        <input class="fi" id="ui-url-input" type="url" placeholder="https://…/planta.jpg" style="font-size:11px">
+      </div>
+      <div id="ui-url-preview" style="display:none;margin-bottom:10px;text-align:center">
+        <img id="ui-url-img" style="max-width:100%;max-height:160px;border-radius:7px;border:1px solid var(--bdr2)">
+      </div>
+      <div id="ui-url-err" style="display:none;font-size:11px;color:var(--acc2);margin-bottom:8px;padding:5px 8px;background:rgba(239,68,68,.07);border-radius:5px;border:1px solid rgba(239,68,68,.2)"></div>
+      <div class="ma" style="margin-top:10px">
+        <button class="btn bsm" onclick="closeM('m-urlimport')" style="color:var(--txt2);border-color:var(--bdr2)">Cancelar</button>
+        <button class="btn ba bsm" onclick="uiPreviewURL()">🔍 Pré-visualizar</button>
+        <button class="btn bg bsm" id="ui-load-btn" onclick="uiLoadURL()" style="display:none">✓ Usar esta imagem</button>
+      </div>
+    </div>
+    <!-- Clipboard panel -->
+    <div id="ui-panel-clip" style="display:none">
+      <div style="font-size:11px;color:var(--txt2);margin-bottom:12px;line-height:1.7">Copie uma imagem (PrintScreen, Snipping Tool, etc.) e cole aqui. Também pode arrastar um ficheiro para esta área.</div>
+      <div id="ui-clip-drop" onclick="document.getElementById('ui-clip-file').click()"
+        ondragover="event.preventDefault();this.style.borderColor='var(--acc)'"
+        ondragleave="this.style.borderColor='var(--bdr2)'"
+        ondrop="uiDrop(event)"
+        style="border:2px dashed var(--bdr2);border-radius:10px;padding:28px 20px;text-align:center;cursor:pointer;transition:border-color .15s">
+        <div style="font-size:28px;margin-bottom:8px">📋</div>
+        <div style="font-size:12px;color:var(--txt2);margin-bottom:4px">Ctrl+V para colar · Clique para abrir ficheiro</div>
+        <div style="font-size:10px;color:var(--txt3)">ou arraste uma imagem aqui</div>
+      </div>
+      <input type="file" id="ui-clip-file" accept="image/*" style="display:none" onchange="uiFileLoad(event)">
+      <div id="ui-clip-preview" style="display:none;margin-top:12px;text-align:center">
+        <img id="ui-clip-img" style="max-width:100%;max-height:160px;border-radius:7px;border:1px solid var(--bdr2)">
+        <div style="margin-top:8px;font-size:11px;color:var(--acc3)">✓ Imagem pronta</div>
+      </div>
+      <div class="ma" style="margin-top:12px">
+        <button class="btn bsm" onclick="closeM('m-urlimport')" style="color:var(--txt2);border-color:var(--bdr2)">Cancelar</button>
+        <button class="btn bg bsm" id="ui-clip-load-btn" onclick="uiLoadClip()" style="display:none">✓ Usar esta imagem</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="nfy"></div>
+
+<!-- MODAL: Floor Overview -->
+<div class="ovl hide" id="m-floors">
+  <div class="modal" style="max-width:860px;width:96vw;max-height:92vh">
+    <div class="mh">🏢 Vista Global — Todos os Pisos</div>
+    <div id="floor-overview-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-bottom:16px;overflow-y:auto;max-height:65vh"></div>
+    <div class="ma">
+      <button class="btn bsm" onclick="closeM('m-floors')" style="color:var(--txt2);border-color:var(--bdr2)">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- PRESENTATION MODE OVERLAY -->
+<!-- ══ MODO APRESENTAÇÃO (limpo) ══ -->
+<div id="pbar"></div>
+<div id="plegend"></div>
+
+<div id="present-overlay" style="display:none;position:fixed;inset:0;z-index:1500;background:var(--bg0);flex-direction:column">
+  <!-- Present topbar -->
+  <div id="present-top" style="height:52px;background:rgba(5,8,16,.98);border-bottom:1px solid var(--bdr2);display:flex;align-items:center;padding:0 20px;gap:12px;flex-shrink:0;backdrop-filter:blur(20px)">
+    <div style="display:flex;align-items:center;gap:10px;flex:1">
+      <div id="present-logo-wrap" style="width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,#3b82f6,#6366f1);display:flex;align-items:center;justify-content:center;font-size:17px;box-shadow:0 0 16px rgba(59,130,246,.4)">📹</div>
+      <div>
+        <div id="present-title" style="font-family:var(--h);font-size:15px;font-weight:800;color:var(--txt);letter-spacing:-.2px"></div>
+        <div id="present-sub" style="font-size:10px;color:var(--txt3);font-family:var(--m);letter-spacing:.5px"></div>
+      </div>
+    </div>
+    <!-- Floor tabs in present mode -->
+    <div id="present-floor-tabs" style="display:flex;gap:5px;align-items:center"></div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+      <div id="present-devcount" style="font-family:var(--m);font-size:11px;color:var(--txt2);padding:4px 10px;background:rgba(255,255,255,.05);border:1px solid var(--bdr2);border-radius:5px"></div>
+      <button onclick="exitPresentMode()" style="padding:6px 14px;border-radius:7px;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:var(--acc2);font-size:11px;font-weight:700;cursor:pointer;font-family:var(--f);letter-spacing:.3px;text-transform:uppercase">✕ Sair</button>
+    </div>
+  </div>
+  <!-- Present canvas area -->
+  <div id="present-canvas-wrap" style="flex:1;position:relative;overflow:hidden;background:var(--bg0)">
+    <canvas id="present-cv" style="position:absolute;top:0;left:0;display:block"></canvas>
+    <canvas id="present-bgcv" style="position:absolute;top:0;left:0;display:block;pointer-events:none"></canvas>
+    <!-- Legend -->
+    <div id="present-legend" style="position:absolute;bottom:16px;right:16px;background:rgba(5,8,16,.92);border:1px solid var(--bdr2);border-radius:12px;padding:12px 16px;backdrop-filter:blur(16px);min-width:160px;box-shadow:0 8px 24px rgba(0,0,0,.6)">
+      <div style="font-family:var(--m);font-size:8.5px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--txt3);margin-bottom:8px">Legenda</div>
+      <div id="present-legend-items"></div>
+    </div>
+    <!-- HUD -->
+    <div style="position:absolute;bottom:16px;left:16px;display:flex;gap:5px;pointer-events:none">
+      <div id="present-scale-pill" style="font-family:var(--m);font-size:10px;color:var(--acc3);background:rgba(5,8,16,.9);padding:4px 10px;border-radius:4px;border:1px solid rgba(16,185,129,.2);backdrop-filter:blur(8px)"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PRINT DOCUMENT — only visible when printing -->
+<div id="printdoc">
+  <div class="ph-wrap">
+    <div class="ph-left">
+      <img id="plogo" src="" class="ph-logoimg" style="display:none">
+      <div class="ph-brand">
+        <div class="ph-brand-name">CCTV <b>SIGS</b></div>
+        <div class="ph-brand-sub" id="pd-module">Design — Videovigilância</div>
+        <div class="ph-doc-title" id="pd-title"></div>
+      </div>
+    </div>
+    <div class="ph-right">
+      <strong id="pd-cname"></strong>
+      <span id="pd-cemail"></span><br>
+      <span id="pd-cphone"></span><br>
+      <span id="pd-ccompany"></span><br>
+      <span id="pd-cdate" style="font-size:10px;color:#888"></span>
+    </div>
+  </div>
+  <!-- Client info row -->
+  <div id="pd-client-row" style="display:none;background:#f0f5ff;border:1px solid #c8d8f0;border-radius:5px;padding:8px 14px;margin-bottom:12px;font-size:10.5px;color:#223">
+    <strong style="display:block;font-size:11px;color:#0a2a4a;margin-bottom:3px">DADOS DO CLIENTE</strong>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 20px">
+      <span><b>Nome:</b> <span id="pd-client-name"></span></span>
+      <span><b>Empresa:</b> <span id="pd-client-company"></span></span>
+      <span><b>Morada:</b> <span id="pd-client-addr"></span></span>
+      <span><b>NIF:</b> <span id="pd-client-nif"></span></span>
+      <span><b>Contacto:</b> <span id="pd-client-phone"></span></span>
+      <span><b>Nº Projeto:</b> <span id="pd-projnum"></span></span>
+    </div>
+  </div>
+  <!-- Single canvas image — the project plan -->
+  <div class="pc-wrap" id="pd-canvas"></div>
+  <!-- Device list -->
+  <div class="pc-devlist" id="pd-devlist"></div>
+  <!-- Notes -->
+  <div class="pc-notes" id="pd-notes" style="display:none"></div>
+  <!-- Camera detail table -->
+  <div id="pd-cam-section" style="display:none">
+    <div class="pc-section-title">📷 Lista de Câmaras</div>
+    <table class="pc-cam-table" id="pd-cam-table">
+      <thead><tr><th>#</th><th>ID</th><th>Modelo</th><th>Tipo</th><th>Lente</th><th>FOV</th><th>Alcance</th><th>DORI-D</th><th>DORI-I</th><th>MP</th><th>Armazenamento/dia</th></tr></thead>
+      <tbody id="pd-cam-tbody"></tbody>
+    </table>
+  </div>
+  <!-- Cable table -->
+  <div id="pd-cable-section" style="display:none">
+    <div class="pc-section-title">🔌 Cabos Estimados</div>
+    <table class="pc-cable-table" id="pd-cable-table">
+      <thead><tr><th>ID</th><th>Dist. planta</th><th>Alt. inst.</th><th>Cabo estimado</th></tr></thead>
+      <tbody id="pd-cable-tbody"></tbody>
+    </table>
+    <div class="pc-storage-box" id="pd-cable-total"></div>
+  </div>
+  <!-- BOM -->
+  <div id="pd-bom-section" style="display:none">
+    <div class="pc-section-title">📋 Lista de Material (BOM)</div>
+    <table class="pc-bom-table" id="pd-bom-table">
+      <thead><tr><th>Referência</th><th>Descrição</th><th>Tipo</th><th>Qtd.</th></tr></thead>
+      <tbody id="pd-bom-tbody"></tbody>
+    </table>
+  </div>
+  <!-- NVR suggestion -->
+  <div id="pd-nvr-section" style="display:none">
+    <div class="pc-section-title">🖥 NVR Recomendado</div>
+    <div class="pc-nvr-box" id="pd-nvr-content"></div>
+  </div>
+  <!-- Storage summary -->
+  <div id="pd-storage-section" style="display:none">
+    <div class="pc-section-title">💾 Armazenamento</div>
+    <div class="pc-storage-box" id="pd-storage-content"></div>
+  </div>
+  <div class="pc-footer">
+    <span id="pd-modsummary"></span>
+    <span id="pd-ts"></span>
+  </div>
+</div>
+
+<script src="assets/data/equipment-catalog.js?v=20261005-2214"></script>
+<script src="assets/data/poe-network-catalog.js?v=20261005-2214"></script>
+<script src="assets/data/product-images.js?v=20261005-2214"></script>
+<script src="assets/js/optics-v13.js?v=20261005-2214"></script>
+<script src="assets/js/block-03.js?v=20261005-2214"></script>
+
+<!-- ══ PRESENTATION MODE OVERLAY ══ -->
+<div id="pres-overlay">
+  <div id="pres-top">
+    <div id="pres-title">Projeto</div>
+    <div id="pres-modtag" class="cctv">CCTV</div>
+    <button id="pres-close" onclick="exitPresentation()">✕ Sair (Esc)</button>
+  </div>
+  <div id="pres-canvas-wrap">
+    <canvas id="pres-canvas"></canvas>
+  </div>
+  <!-- Stats bottom-left -->
+  <div id="pres-stats"></div>
+  <!-- Floor strip bottom-center -->
+  <div id="pres-floor-strip" id="pres-floors"></div>
+  <!-- Legend bottom-right -->
+  <div id="pres-legend">
+    <div id="pres-legend-title">Legenda</div>
+    <div id="pres-legend-rows"></div>
+  </div>
+</div>
+
+
+
+<script src="assets/js/block-04.js?v=20261005-2214"></script>
+
+
+<script src="assets/js/block-05.js?v=20261005-2214"></script>
+<script src="assets/js/catalog-supabase.js?v=20261005-2214"></script>
+<script src="assets/js/ux-v5.js?v=20261005-2214"></script>
+<script src="assets/js/projects-v6.js?v=20261005-2214"></script>
+<script src="assets/js/engineering-v7.js?v=20261005-2214"></script>
+<script src="assets/js/commercial-model-v8.js?v=20261005-2214"></script>
+<script src="assets/js/commercial-v8.js?v=20261005-2214"></script>
+<script src="assets/js/premium-v9.js?v=20261005-2214"></script>
+<script src="assets/js/accessory-model-v10.js?v=20261005-2214"></script>
+<script src="assets/js/proposal-v10.js?v=20261005-2214"></script>
+
+<script src="assets/js/workflow-model-v12.js?v=20261005-2214"></script>
+<script src="assets/js/quote-view-v12.js?v=20261005-2214"></script>
+<script src="assets/js/workflow-v12.js?v=20261005-2214"></script>
+<script src="assets/js/sidebar-v13.js?v=20261005-2214"></script>
+<script src="assets/js/technical-report-v22.js?v=20261005-2214"></script>
+</body>
+</html>
