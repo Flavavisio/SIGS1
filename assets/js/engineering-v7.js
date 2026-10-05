@@ -116,10 +116,10 @@ function installFloorPlanStorage(){
     var floors=JSON.parse(JSON.stringify(window.FLOORS||[]));
     floors.forEach(function(f){if(f.fp&&f.fp.storagePath)delete f.fp.imgData;});
     var data={v:10,module:MOD,lib:S.lib,placed:S.placed,meas:S.meas,scale:S.scale,devN:S.devN,floors:floors,floorCur:FLOOR_CUR};
-    if(S.fp&&S.fp.img){
+    if(S.fp){
       var fp={x:S.fp.x,y:S.fp.y,w:S.fp.w,h:S.fp.h,opa:S.fp.opa,locked:S.fp.locked,storagePath:S.fp.storagePath||null,fileName:S.fp.fileName||null,mimeType:S.fp.mimeType||null,sizeBytes:S.fp.sizeBytes||null};
       if(!fp.storagePath){
-        try{fp.imgData=S.fp.imgData||null;if(!fp.imgData){var oc=document.createElement('canvas');oc.width=S.fp.img.naturalWidth||S.fp.img.width;oc.height=S.fp.img.naturalHeight||S.fp.img.height;oc.getContext('2d').drawImage(S.fp.img,0,0);fp.imgData=oc.toDataURL('image/jpeg',0.82);}}catch(e){fp.imgData=null;}
+        try{fp.imgData=S.fp.imgData||null;if(!fp.imgData&&S.fp.img){var oc=document.createElement('canvas');oc.width=S.fp.img.naturalWidth||S.fp.img.width;oc.height=S.fp.img.naturalHeight||S.fp.img.height;oc.getContext('2d').drawImage(S.fp.img,0,0);fp.imgData=oc.toDataURL('image/jpeg',0.82);}}catch(e){fp.imgData=null;}
       }
       data.fp=fp;
     }

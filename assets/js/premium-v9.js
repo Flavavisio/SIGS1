@@ -10,6 +10,7 @@ function closePanels(){document.body.classList.remove('studio-panel-nav','studio
 function panel(name){var cl='studio-panel-'+name,open=document.body.classList.contains(cl);closePanels();if(!open){document.body.classList.add(cl);document.querySelectorAll('[data-studio-panel="'+name+'"]').forEach(function(b){b.setAttribute('aria-expanded','true');});}resize();}
 function button(name,label,fn,classes){var b=document.createElement('button');b.type='button';b.className='studio-button '+(classes||'');b.title=label;b.setAttribute('aria-label',label);b.innerHTML=icon(name);b.onclick=fn;return b;}
 function changeFocus(){closePanels();document.body.classList.toggle('studio-focus');var b=el('studio-focus');if(b)b.setAttribute('aria-pressed',document.body.classList.contains('studio-focus'));resize();}
+window.sigsStudioPanel=function(name){if(!document.body.classList.contains('studio-panel-'+name))panel(name);};
 var palette=null,returnFocus=null,selected=0,results=[];
 function commands(){
  var active=el('app')&&el('app').classList.contains('show')&&!document.body.classList.contains('sigs-locked');

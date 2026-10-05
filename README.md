@@ -32,3 +32,11 @@ O serviço de emails de licença usa o novo modelo. Para atualizar os emails de 
 ## Recomendações V24
 
 O separador Sistema sugere gravador, discos e switch conforme a marca das câmaras de todos os pisos. A marca preferida e as escolhas de gravador e switch são guardadas no projeto; o orçamento usa as mesmas referências e quantidades. A prioridade de marca só é aplicada a soluções dimensionadas para canais, resolução, banda, armazenamento/baias, portas, potência com reserva e uplink. Projetos mistos, alternativas de outra marca e especificações ausentes têm avisos de confirmação. A seleção não certifica ONVIF nem garante funções proprietárias. A capacidade de discos em TB decimal é convertida para GiB ao comparar com o cálculo de retenção.
+
+## Pendências V25
+
+O botão Pendências abre as tarefas por piso e as revisões técnicas/comerciais, com ações diretas para planta, escala, orçamento, biblioteca e sistema. A cobertura é confirmada pelo utilizador e a confirmação perde validade se a base, escala, posições ou parâmetros óticos mudarem. Esta revisão não certifica cobertura no local.
+
+## Alternativas V26
+
+Económica, Recomendada e Superior começam na mesma base, sem diferenças técnicas ou descontos inventados. Cada cenário guarda o projeto e as suas condições; o utilizador pode editar equipamentos na planta e atualizar a alternativa. Aplicar um cenário recupera o projeto, mantém a identidade atual do cliente e verifica especialidade e limite do plano. É possível restaurar o estado anterior. A comparação para o cliente inclui descrições, materiais, IVA e condições, sem custos internos. Preços e descrições incompletos impedem a exportação.
