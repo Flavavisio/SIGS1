@@ -22,3 +22,9 @@ Os testes estão em `tests/` e executam-se com Node.js, sem instalação de depe
 Os testes automatizados não substituem uma validação visual no navegador, testes de instalação no local ou entrega de emails reais. A entrega de emails depende da configuração SMTP descrita em `README-EMAILS-V15.md`. O relatório inclui estimativas de projeto, não uma certificação da instalação.
 
 Consultar `README-V12.md` para o funcionamento do Workspace e do backend.
+
+## Identidade V23
+
+SIGS Studio — **Segurança bem projetada.** Logótipo em `assets/brand/sigs-studio-logo.png`. Identidade aplicada ao index, app, acesso, Workspace, apresentações, propostas, relatórios e aos 15 modelos de email. Os documentos mantêm a marca da empresa e acrescentam a assinatura **by SIGS Studio**.
+
+O serviço de emails de licença usa o novo modelo. Para atualizar os emails de autenticação já configurados no Supabase, executar `node scripts/configure-email-auth.mjs` com o token de gestão, ou copiar os modelos de `supabase/email-templates/` em Auth → Email Templates. Não existe token de gestão disponível neste ambiente; gerar os modelos não altera os templates remotos de Auth.

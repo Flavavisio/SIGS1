@@ -242,7 +242,7 @@ function reorganizeRightPanel(){
 
 function removeCrime(){
   document.querySelectorAll('.lau-card.crime').forEach(function(n){n.remove();});
-  var v=document.querySelector('.lau-version');if(v)v.textContent='v5.0 · SIGS Design · Workflow Técnico';
+  var v=document.querySelector('.lau-version');if(v)v.textContent='v5.0 · SIGS Studio · Workflow Técnico';
 }
 
 function restrictCatalogEditing(){
@@ -411,7 +411,7 @@ function updateAuditChip(existing){
 
 function renameCloud(){
   var m=el('m-cloud');if(!m)return;
-  var title=Array.from(m.querySelectorAll('div')).find(function(x){return x.textContent.trim()==='Cloud SIGS Design';});
+  var title=Array.from(m.querySelectorAll('div')).find(function(x){return x.textContent.trim()==='Cloud SIGS Studio';});
   if(title)title.textContent='Projetos SIGS';
   var sub=Array.from(m.querySelectorAll('div')).find(function(x){return /Projetos sincronizados/.test(x.textContent||'');});
   if(sub)sub.textContent='Guardar, abrir e gerir projetos da empresa';
