@@ -16,7 +16,7 @@ do $$ begin
   raise exception 'Cross company write permitted';
  exception when insufficient_privilege then null; end;
 end $$;
-update w12_test set rid=(public.sigs_save_quote_revision(pid,'{"project":"Test","cost":999,"lines":[{"ref":"TEST","qty":1,"sale":20,"net":20,"cost":10}],"floors":[{"name":"Piso","cost":100,"fp":{"x":0,"y":0,"w":100,"h":100,"secret":"denied"},"devices":[{"x":1,"y":2,"label":"D1","cost":10}]}],"total":24.6}')).id;
+update w12_test set rid=(public.sigs_save_quote_revision(pid,'{"project":"Test","terms":"Pagamento: 50% na adjudicação; Execução: prazo a acordar","cost":999,"lines":[{"ref":"TEST","qty":1,"sale":20,"net":20,"cost":10}],"floors":[{"name":"Piso","cost":100,"fp":{"x":0,"y":0,"w":100,"h":100,"secret":"denied"},"devices":[{"x":1,"y":2,"label":"D1","cost":10}]}],"total":24.6}')).id;
 update w12_test set sid=public.sigs_publish_quote(rid,token,30);
 do $$ begin
  begin
@@ -28,6 +28,7 @@ set local role anon;
 do $$ declare got jsonb; begin
  if has_table_privilege('anon','public.sigs_quote_revisions','select') or has_table_privilege('anon','public.sigs_quote_shares','select') then raise exception 'Anon raw grants'; end if;
  got=public.sigs_public_quote((select token from w12_test));
+ if got->'snapshot'->>'terms' not like '%50% na adjudicação%' then raise exception 'Commercial conditions lost in public snapshot'; end if;
  if got is null then raise exception 'Valid token failed'; end if;
  if got::text like '%cost%' or got::text like '%secret%' then raise exception 'Internal fields exposed'; end if;
  if public.sigs_public_quote(repeat('0',64)) is not null then raise exception 'Invalid token exposed data'; end if;

@@ -17,7 +17,7 @@ Ativar Pages em **Settings → Pages → Deploy from a branch → main → / (ro
 
 ## Verificação
 
-Os testes estão em `tests/` e executam-se com Node.js, sem instalação de dependências. Executar cada ficheiro `*.test.cjs` e `*.test.mjs`. A V22 passou nas 13 suites automatizadas, incluindo documentos, captura e bloqueio, ótica, preços, especialidades, projetos, Workspace e processamento de emails com serviços simulados.
+Os testes estão em `tests/` e executam-se com Node.js, sem instalação de dependências. Executar cada ficheiro `*.test.cjs` e `*.test.mjs`. A V22 passou nas 13 suites automatizadas, incluindo documentos, captura e bloqueio, ótica, preços, especialidades, projetos, Workspace e processamento de emails com serviços simulados. Passaram também as três verificações SQL no Supabase: isolamento entre empresas e partilha de propostas, fila de emails e nomes de projetos. Os dados de teste foram revertidos.
 
 Os testes automatizados não substituem uma validação visual no navegador, testes de instalação no local ou entrega de emails reais. A entrega de emails depende da configuração SMTP descrita em `README-EMAILS-V15.md`. O relatório inclui estimativas de projeto, não uma certificação da instalação.
 
