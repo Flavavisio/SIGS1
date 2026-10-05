@@ -28,3 +28,5 @@ body.sigs-premium.light{--bg0:#f1f4f8;--bg1:#fff;--bg2:#f7f9fc;--bg3:#edf2f8;--b
 
 /* Canvas guidance belongs in the library; keep overlays off the drawing. */
 #app #hintbar,#app #rpill{display:none!important}
+
+.lau-project-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px}.lau-project-actions button{flex:1;min-width:120px}.lau-card .lau-arrow{pointer-events:none;top:28px;bottom:auto}.lau-card::before,.lau-card::after{pointer-events:none}

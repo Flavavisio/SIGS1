@@ -105,10 +105,11 @@ function openNewProjectWizard(companyId,module){
   o.innerHTML='<div class="sigs-v6-dialog"><div class="sigs-v6-dialog-head"><div><div class="sigs-v6-dialog-title">Novo Projeto</div><div class="sigs-v6-dialog-sub">Crie o projeto primeiro. A partir daí o autosave fica ativo.</div></div><button class="sigs-v6-x">✕</button></div>'+
     (CLOUD.user.role==='SUPER_ADMIN'?'<label style="display:block;margin-bottom:16px">Empresa do projeto<select id="v6-p-owner" required><option value="">Seleciona uma empresa…</option></select></label>':'')+
     '<div class="sigs-v6-grid2"><label>Nome do projeto<input id="v6-p-name" required autocomplete="off" placeholder="Ex.: Moradia Cascais"></label><label>Módulo<select id="v6-p-module"><option value="CCTV">CCTV</option><option value="INTRUSION">Intrusão</option><option value="FIRE">Incêndio</option></select></label><label>Cliente<input id="v6-p-client" placeholder="Nome do cliente"></label><label>Empresa do cliente<input id="v6-p-company" placeholder="Empresa / condomínio"></label><label>Email<input id="v6-p-email" type="email" placeholder="cliente@empresa.pt"></label><label>Telefone<input id="v6-p-phone" placeholder="Contacto"></label></div>'+
-    '<div class="sigs-v6-dialog-foot"><button class="sag-btn" id="v6-p-cancel">Cancelar</button><button class="sag-btn primary" id="v6-p-create">Criar projeto</button></div><div id="v6-p-status" class="sigs-v6-status"></div></div>';
+    '<div class="sigs-v6-dialog-foot"><button class="sag-btn" id="v6-p-cancel">Cancelar</button><button class="sag-btn" id="v6-p-open">Abrir projetos</button><button class="sag-btn primary" id="v6-p-create">Criar projeto</button></div><div id="v6-p-status" class="sigs-v6-status"></div></div>';
   document.body.appendChild(o);
   ge('v6-p-name').focus();
-  var current=String(module||window.MOD||'cctv').toUpperCase();if(current==='ALARM')current='INTRUSION';var sel=ge('v6-p-module');if(sel)sel.value=current;
+  var current=String(module||window.MOD||'cctv').toUpperCase();if(current==='ALARM')current='INTRUSION';if(current==='DISK')current='CCTV';var sel=ge('v6-p-module');if(sel)sel.value=current;
+  ge('v6-p-open').onclick=function(){o.remove();openProjectManager(module);};
   o.querySelector('.sigs-v6-x').onclick=function(){o.remove()};ge('v6-p-cancel').onclick=function(){o.remove()};
   if(CLOUD.user.role==='SUPER_ADMIN')loadLicenseContext().then(function(context){
     var owner=ge('v6-p-owner');if(!owner||!o.isConnected)return;
@@ -128,7 +129,7 @@ function openNewProjectWizard(companyId,module){
       var cfg=sb();return api(cfg.url+'/rest/v1/projects',{method:'POST',headers:h({'Prefer':'return=representation'}),body:JSON.stringify(row)});
     }).then(function(rows){
       var p=rows&&rows[0];if(!p)throw new Error('Projeto não criado.');CLOUD.projectId=p.id;CLOUD.projectName=p.name;V6.currentStatus='DRAFT';V6.dirty=false;V6.lastSavedAt=new Date();V6.lastFingerprint=fingerprint();
-      var ui=p.module==='INTRUSION'?'alarm':p.module==='FIRE'?'fire':'cctv';if(document.body.classList.contains('sigs-locked')&&typeof sigsPortalOpenDesigner==='function')sigsPortalOpenDesigner({projectReady:true});V6.suppress=true;startModule(ui);setTimeout(function(){V6.suppress=false;V6.lastFingerprint=fingerprint();saveChip('clean');if(typeof sigsV5UpdateFlow==='function')sigsV5UpdateFlow();},100);
+      var ui=p.module==='INTRUSION'?'alarm':p.module==='FIRE'?'fire':'cctv';if(document.body.classList.contains('sigs-locked')&&typeof sigsPortalOpenDesigner==='function')sigsPortalOpenDesigner({projectReady:true});V6.suppress=true;startModule(ui);if(module==='disk')startModule('disk');setTimeout(function(){V6.suppress=false;V6.lastFingerprint=fingerprint();saveChip('clean');if(typeof sigsV5UpdateFlow==='function')sigsV5UpdateFlow();},100);
       o.remove();if(typeof notify==='function')notify('✓ Projeto criado em Rascunho: '+p.name);if(typeof loadContext==='function')loadContext().catch(function(){});
     }).catch(function(e){st.textContent='Erro: '+e.message;}).finally(function(){create.disabled=false;});
   };
@@ -167,7 +168,8 @@ function statusPill(s){var c=s==='ACTIVE'?'ok':s==='ARCHIVED'?'muted':'warn';ret
 
 function openVersions(){
   var pid=projectId();if(!pid){if(typeof notify==='function')notify('Abra um projeto primeiro.');return;}
-  closeOverlay('sigs-v6-versions');var o=document.createElement('div');o.id='sigs-v6-versions';o.className='sigs-v6-overlay';o.innerHTML='<div class="sigs-v6-dialog wide"><div class="sigs-v6-dialog-head"><div><div class="sigs-v6-dialog-title">Histórico de versões</div><div class="sigs-v6-dialog-sub">Snapshots automáticos e gravações manuais do projeto atual.</div></div><button class="sigs-v6-x">✕</button></div><div id="v6-version-list" class="sigs-v6-list"><div class="sigs-v6-loading">A carregar versões…</div></div></div>';document.body.appendChild(o);o.querySelector('.sigs-v6-x').onclick=function(){o.remove()};
+  closeOverlay('sigs-v6-versions');var o=document.createElement('div');o.id='sigs-v6-versions';o.className='sigs-v6-overlay';o.innerHTML='<div class="sigs-v6-dialog wide"><div class="sigs-v6-dialog-head"><div><div class="sigs-v6-dialog-title">Histórico de versões</div><div class="sigs-v6-dialog-sub">Snapshots automáticos e gravações manuais do projeto atual.</div></div><button class="sigs-v6-x">✕</button></div><div id="v6-version-list" class="sigs-v6-list"><div class="sigs-v6-loading">A carregar versões…</div></div></div>';document.body.appendChild(o);ge('v6-p-open').onclick=function(){o.remove();openProjectManager(module);};
+  o.querySelector('.sigs-v6-x').onclick=function(){o.remove()};
   var cfg=sb();api(cfg.url+'/rest/v1/project_versions?select=id,version_no,reason,saved_by,created_at&project_id=eq.'+encodeURIComponent(pid)+'&order=version_no.desc&limit=60',{headers:h()}).then(function(rows){
     var host=ge('v6-version-list');if(!rows||!rows.length){host.innerHTML='<div class="sigs-v6-empty">Ainda não existem versões anteriores. Faça uma gravação manual ou continue a trabalhar para o autosave criar snapshots.</div>';return;}
     host.innerHTML=rows.map(function(v){return '<div class="sigs-v6-version"><div><b>Versão '+v.version_no+'</b><div>'+esc(v.reason)+' · '+fmtDate(v.created_at)+'</div></div><button class="sag-btn" data-restore="'+v.id+'">Restaurar</button></div>';}).join('');
@@ -182,15 +184,16 @@ window.cloudDeleteProject=deleteProject;
 function projectManagerShell(){
   return '<div class="sigs-v6-project-head"><div><div class="sigs-v6-dialog-title">Projetos da empresa</div><div class="sigs-v6-dialog-sub">Rascunhos, projetos ativos, arquivo, duplicação e histórico.</div></div><div class="sigs-v6-project-actions"><button class="sag-btn" id="v6-close-projects">Fechar</button><button class="sag-btn primary" id="v6-new-project-btn">＋ Novo projeto</button></div></div><div class="sigs-v6-filters"><input id="v6-project-search" placeholder="Pesquisar projeto ou cliente…"><select id="v6-project-status"><option value="">Todos os estados</option><option value="DRAFT">Rascunho</option><option value="ACTIVE">Ativo</option><option value="ARCHIVED">Arquivado</option></select></div><div id="v6-project-list" class="sigs-v6-list"><div class="sigs-v6-loading">A carregar projetos…</div></div>';
 }
-function openProjectManager(){
+function openProjectManager(module){
+  V6.managerModule=module==='alarm'?'INTRUSION':module==='fire'?'FIRE':module==='cctv'||module==='disk'?'CCTV':'';
   var modal=ge('m-cloud'),body=ge('cloud-body');if(!modal||!body)return;modal.style.display='flex';body.innerHTML=projectManagerShell();
-  ge('v6-close-projects').onclick=closeCloud;ge('v6-new-project-btn').onclick=function(){closeCloud();openNewProjectWizard();};
+  ge('v6-close-projects').onclick=closeCloud;ge('v6-new-project-btn').onclick=function(){closeCloud();openNewProjectWizard(null,V6.managerModule);};
   ge('v6-project-search').oninput=renderManagerRows;ge('v6-project-status').onchange=renderManagerRows;renderProjectManager();
 }
 window.openCloud=openProjectManager;
 function renderProjectManager(){
   var cfg=sb(),host=ge('v6-project-list');if(!host)return;host.innerHTML='<div class="sigs-v6-loading">A carregar projetos…</div>';
-  api(cfg.url+'/rest/v1/projects?select=id,name,customer_name,customer_company,module,status,camera_count,detector_count,fire_detector_count,floor_count,created_by,assigned_to,updated_at,last_saved_at,version_no&order=updated_at.desc',{headers:h()}).then(function(rows){V6.manager=rows||[];renderManagerRows();}).catch(function(e){host.innerHTML='<div class="sigs-v6-empty">Erro: '+esc(e.message)+'</div>';});
+  _sigsEnsureContext().then(function(ctx){var co=ctx.company&&ctx.company.id;return api(cfg.url+'/rest/v1/projects?select=id,name,customer_name,customer_company,module,status,camera_count,detector_count,fire_detector_count,floor_count,created_by,assigned_to,updated_at,last_saved_at,version_no&order=updated_at.desc'+(co?'&company_id=eq.'+encodeURIComponent(co):'')+(V6.managerModule?'&module=eq.'+V6.managerModule:''),{headers:h()});}).then(function(rows){V6.manager=rows||[];renderManagerRows();}).catch(function(e){host.innerHTML='<div class="sigs-v6-empty">Erro: '+esc(e.message)+'</div>';});
 }
 function renderManagerRows(){
   var host=ge('v6-project-list');if(!host)return;var q=((ge('v6-project-search')||{}).value||'').toLowerCase(),st=((ge('v6-project-status')||{}).value||'');var rows=(V6.manager||[]).filter(function(p){if(st&&p.status!==st)return false;var t=[p.name,p.customer_name,p.customer_company,p.module].join(' ').toLowerCase();return !q||t.indexOf(q)>=0;});

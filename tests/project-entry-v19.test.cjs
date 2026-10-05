@@ -47,6 +47,15 @@ async function flush(){await new Promise(setImmediate);}
  const gate=Number(css.match(/#sigs-access-gate\{[^}]*z-index:(\d+)/)[1]);
  assert.ok(Number(css.match(/\.sigs-v6-overlay\{[^}]*z-index:(\d+)/)[1])>gate);
  assert.ok(Number(workflowCss.match(/\.w12-backdrop\{[^}]*z-index:(\d+)/)[1])>gate);
+ // Open existing projects from each specialty without creating a blank project.
+ nodes['m-cloud']=node('m-cloud');nodes['cloud-body']=node('cloud-body');const projectRequests=[];
+ env._sigsSbJson=async(url)=>{projectRequests.push(url);return [];};
+ for(const [mod,expected] of [['cctv','CCTV'],['alarm','INTRUSION'],['fire','FIRE'],['disk','CCTV']]){
+  env.sigsV6NewProject(null,mod);assert.equal(nodes['v6-p-module'].value,expected);
+  nodes['v6-p-open'].onclick();await flush();assert(!nodes['sigs-v6-new-project']);
+  assert(projectRequests.at(-1).includes('module=eq.'+expected));assert(projectRequests.at(-1).includes('company_id=eq.company-b'));
+  nodes['v6-close-projects'].onclick();
+ }
  // Actual portal Workspace button opens the actual modal.
  nodes['sigs-gate-main']=node('sigs-gate-main');env.SIGSWorkflowModel={n:Number,check:()=>[]};
  env.SIGS_COMMERCIAL={};env.sigsV8Quote=()=>({lines:[],total:0});env.saveCurrentFloor=()=>{};

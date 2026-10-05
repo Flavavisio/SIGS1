@@ -40,3 +40,10 @@ O botão Pendências abre as tarefas por piso e as revisões técnicas/comerciai
 ## Alternativas V26
 
 Económica, Recomendada e Superior começam na mesma base, sem diferenças técnicas ou descontos inventados. Cada cenário guarda o projeto e as suas condições; o utilizador pode editar equipamentos na planta e atualizar a alternativa. Aplicar um cenário recupera o projeto, mantém a identidade atual do cliente e verifica especialidade e limite do plano. É possível restaurar o estado anterior. A comparação para o cliente inclui descrições, materiais, IVA e condições, sem custos internos. Preços e descrições incompletos impedem a exportação.
+
+### V27 — proposta e acesso aos projetos
+- FOV e orientação de cada câmara na planta e legenda da proposta PDF e partilhada; os setores usam a escala guardada e os parâmetros da focal.
+- Logo da empresa e SIGS Studio no cabeçalho do relatório técnico.
+- Criação e partilha de revisões corrigidas para Super Admin com as mesmas restrições de licença, projeto e privacidade; aplicar `supabase/V27_proposal_fov_and_revisions.sql` numa instalação anterior.
+- Abrir projetos junto de Novo projeto nas quatro ferramentas e no assistente; filtragem por empresa e especialidade.
+- Testes de handlers de revisão, FOV e integração PostgreSQL com transações revertidas.
