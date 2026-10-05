@@ -1707,7 +1707,7 @@ function openPrintModal(){
   // Compute total storage preview
   saveCurrentFloor();
   var allP=[]; FLOORS.forEach(function(fl){allP=allP.concat(fl.placed);});
-  var CAMTYPES=['dome','bullet','ptz','fisheye','turret'];
+  var CAMTYPES=['dome','bullet','ptz','fisheye','turret','thermal_bi'];
   var cams=allP.filter(function(p){var d=gD(p.libId);return d&&CAMTYPES.indexOf(d.type)>=0;});
   var totalGB=0, lines=[];
   cams.forEach(function(p){
@@ -1730,7 +1730,7 @@ function doPrint(){
   saveCurrentFloor();
   var allPlaced=[];
   FLOORS.forEach(function(fl){allPlaced=allPlaced.concat(fl.placed);});
-  var CAMTYPES=['dome','bullet','ptz','fisheye','turret'];
+  var CAMTYPES=['dome','bullet','ptz','fisheye','turret','thermal_bi'];
   var cams=allPlaced.filter(function(p){var d=gD(p.libId);return d&&CAMTYPES.indexOf(d.type)>=0;});
 
   // ── Device list (simple) ──
@@ -2054,7 +2054,7 @@ function updateStats(){
 }
 
 function updateProjSummary(){
-  var CAMTYPES=['dome','bullet','ptz','fisheye','turret'];
+  var CAMTYPES=['dome','bullet','ptz','fisheye','turret','thermal_bi'];
   var cams=S.placed.filter(function(p){var d=gD(p.libId);return d&&CAMTYPES.indexOf(d.type)>=0;});
   var el=document.getElementById('proj-summary-panel'); if(!el) return;
   var nodata=document.getElementById('ps-nodata');
@@ -2412,7 +2412,7 @@ function buildBudget(){
   var allPlaced=[];
   FLOORS.forEach(function(fl){ allPlaced=allPlaced.concat(fl.placed); });
 
-  var CAMTYPES=['dome','bullet','ptz','fisheye','turret'];
+  var CAMTYPES=['dome','bullet','ptz','fisheye','turret','thermal_bi'];
   var cams=allPlaced.filter(function(p){var d=gD(p.libId);return d&&CAMTYPES.indexOf(d.type)>=0;});
 
   // Read cable price from input
@@ -2550,7 +2550,7 @@ function _refreshBudgetTotals(){
   saveCurrentFloor();
   var allPlaced=[];
   FLOORS.forEach(function(fl){ allPlaced=allPlaced.concat(fl.placed); });
-  var CAMTYPES=['dome','bullet','ptz','fisheye','turret'];
+  var CAMTYPES=['dome','bullet','ptz','fisheye','turret','thermal_bi'];
   var cams=allPlaced.filter(function(p){var d=gD(p.libId);return d&&CAMTYPES.indexOf(d.type)>=0;});
 
   // Cable
@@ -2623,7 +2623,7 @@ function openBOM(){
   var allPlaced = [];
   FLOORS.forEach(function(fl){ allPlaced = allPlaced.concat(fl.placed); });
 
-  var CAMTYPES=['dome','bullet','ptz','fisheye','turret'];
+  var CAMTYPES=['dome','bullet','ptz','fisheye','turret','thermal_bi'];
   var cams = allPlaced.filter(function(p){var d=gD(p.libId);return d&&CAMTYPES.indexOf(d.type)>=0;});
 
   // Group placed devices by libId
@@ -2989,7 +2989,7 @@ function buildSystemTab(){
     }
     return;
   }
-  var CAMTYPES=['dome','bullet','ptz','fisheye','turret'];
+  var CAMTYPES=['dome','bullet','ptz','fisheye','turret','thermal_bi'];
   var cams=allPlaced.filter(function(p){ var d=gD(p.libId);return d&&CAMTYPES.indexOf(d.type)>=0; });
   var numCams=cams.length;
 
@@ -3732,7 +3732,7 @@ function _generatePDF(){
   // ── Collect data ──
   saveCurrentFloor();
   var allPlaced=[]; FLOORS.forEach(function(fl){allPlaced=allPlaced.concat(fl.placed);});
-  var CAMTYPES=['dome','bullet','ptz','fisheye','turret'];
+  var CAMTYPES=['dome','bullet','ptz','fisheye','turret','thermal_bi'];
   var cams=allPlaced.filter(function(p){var d=gD(p.libId);return d&&CAMTYPES.indexOf(d.type)>=0;});
   var projTitle = document.getElementById('pr-title').value.trim()||'Projeto';
   var projNum   = document.getElementById('pr-projnum').value.trim();
@@ -4209,7 +4209,7 @@ function openFloorOverview(){
     var thumbData = thumb.toDataURL('image/jpeg', 0.8);
 
     // Count devices
-    var CAMTYPES=['dome','bullet','ptz','fisheye','turret'];
+    var CAMTYPES=['dome','bullet','ptz','fisheye','turret','thermal_bi'];
     var cams = fl.placed.filter(function(p){var d=gD(p.libId);return d&&CAMTYPES.indexOf(d.type)>=0;}).length;
     var devs = fl.placed.length;
     var cableTotal = 0;
@@ -4418,7 +4418,7 @@ function _buildPresentFloorTabs(){
 
 function _updatePresentHUD(){
   var devCount = S.placed.length;
-  var CAMTYPES=['dome','bullet','ptz','fisheye','turret'];
+  var CAMTYPES=['dome','bullet','ptz','fisheye','turret','thermal_bi'];
   var cams = S.placed.filter(function(p){var d=gD(p.libId);return d&&CAMTYPES.indexOf(d.type)>=0;}).length;
   var el = document.getElementById('present-devcount');
   if(el) el.textContent = devCount+' dispositivo'+(devCount!==1?'s':'')+(cams?' · '+cams+' câmara'+(cams!==1?'s':''):'');
@@ -4497,7 +4497,7 @@ function _presentRender(){
 function _buildPresentLegend(){
   var el = document.getElementById('present-legend-items');
   if(!el) return;
-  var CAMTYPES=['dome','bullet','ptz','fisheye','turret'];
+  var CAMTYPES=['dome','bullet','ptz','fisheye','turret','thermal_bi'];
   var types = {};
   S.placed.forEach(function(p){
     var d=gD(p.libId); if(!d) return;

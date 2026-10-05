@@ -28,3 +28,7 @@ Consultar `README-V12.md` para o funcionamento do Workspace e do backend.
 SIGS Studio — **Segurança bem projetada.** Logótipo em `assets/brand/sigs-studio-logo.png`. Identidade aplicada ao index, app, acesso, Workspace, apresentações, propostas, relatórios e aos 15 modelos de email. Os documentos mantêm a marca da empresa e acrescentam a assinatura **by SIGS Studio**.
 
 O serviço de emails de licença usa o novo modelo. Para atualizar os emails de autenticação já configurados no Supabase, executar `node scripts/configure-email-auth.mjs` com o token de gestão, ou copiar os modelos de `supabase/email-templates/` em Auth → Email Templates. Não existe token de gestão disponível neste ambiente; gerar os modelos não altera os templates remotos de Auth.
+
+## Recomendações V24
+
+O separador Sistema sugere gravador, discos e switch conforme a marca das câmaras de todos os pisos. A marca preferida e as escolhas de gravador e switch são guardadas no projeto; o orçamento usa as mesmas referências e quantidades. A prioridade de marca só é aplicada a soluções dimensionadas para canais, resolução, banda, armazenamento/baias, portas, potência com reserva e uplink. Projetos mistos, alternativas de outra marca e especificações ausentes têm avisos de confirmação. A seleção não certifica ONVIF nem garante funções proprietárias. A capacidade de discos em TB decimal é convertida para GiB ao comparar com o cálculo de retenção.

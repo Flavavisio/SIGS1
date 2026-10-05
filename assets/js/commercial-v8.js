@@ -27,7 +27,7 @@ function rows(){
  FLOORS.forEach(function(fl){(fl.placed||[]).forEach(function(p){
   var d=gD(p.libId);if(!d){warnings.push('Equipamento sem referência no catálogo: '+p.libId);return;}
   add({ref:d.model||d.name,name:d.name,type:d.type,qty:1,unit:'un.',system:false},p.libId);
-  if(['dome','bullet','ptz','fisheye','turret'].indexOf(d.type)>=0)cams.push({p:p,fl:fl});
+  if(['dome','bullet','ptz','fisheye','turret','thermal_bi'].indexOf(d.type)>=0)cams.push({p:p,fl:fl});
  });});
  if(cams.length){
   var bw=0,mp=0,gb=0,cable=0,estimated=0;
@@ -40,12 +40,14 @@ function rows(){
    }else if(x.fl===FLOORS[FLOOR_CUR]&&S.scale.ok&&NVR_POS){var cd=cableForCam(p);if(cd)len=cd.cable;}
    if(len===null){len=15;estimated++;}cable+=len;
   });
-  var nvr=suggestNVR(cams.length,mp,bw)[0],poe=calcPoE(cams.map(function(x){return x.p;})),sw=poe.suggested[0];
+  var rec=typeof sigsSystemRecommendation==='function'?sigsSystemRecommendation():null;
+  var nvr=rec?rec.nvr:suggestNVR(cams.length,mp,bw)[0],poe=calcPoE(cams.map(function(x){return x.p;})),sw=rec?rec.switch:poe.suggested[0];
+  if(rec)warnings=warnings.concat(rec.warnings);
   var values=Array.from(grouped.values());
   if(nvr&&!values.some(function(r){return r.type==='nvr'||r.ref===nvr.name;}))add({ref:nvr.name,name:'NVR recomendado',type:'nvr',qty:1,unit:'un.',system:true},'__nvr__');
   if(sw&&!values.some(function(r){return r.type==='switch'||r.ref===sw.name;}))add({ref:sw.name,name:'Switch PoE recomendado',type:'switch',qty:1,unit:'un.',system:true},'__switch__');
-  var tb=nearestHDD(gb),qty=Math.max(1,Math.ceil(gb/(tb*1024)));
-  add({ref:sigsHddCatalogRef(tb),name:'Disco '+tb+' TB (capacidade técnica)',type:'hdd',qty:qty,unit:'un.',system:true},'hdd');
+  var tb=rec&&rec.disk?rec.disk.capacityTB:nearestHDD(gb),qty=rec&&rec.disk?rec.disk.qty:Math.max(1,Math.ceil(gb/(tb*1024)));
+  if(!rec||rec.disk)add({ref:rec&&rec.disk?(rec.disk.device.reference||rec.disk.device.name):sigsHddCatalogRef(tb),name:'Disco '+tb+' TB (capacidade técnica)',type:'hdd',qty:qty,unit:'un.',system:true},'hdd');
   if(nvr&&qty>nvr.hdd)warnings.push('A quantidade de discos calculada excede as baias do NVR recomendado. Reveja o dimensionamento.');
   add({ref:'Cabo UTP Cat6',name:'Cabo de rede Cat6',type:'cabo',qty:Math.ceil(cable),unit:'m',system:true},'cable');
   if(estimated)warnings.push('Cabo estimado a 15 m para '+estimated+' câmara(s). Defina escala e traçado para confirmar.');
