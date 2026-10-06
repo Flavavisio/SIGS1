@@ -2,6 +2,15 @@
 
 Aplicação de projeto para CCTV, intrusão e incêndio. Esta pasta contém o código completo, os testes e as migrações Supabase.
 
+## Atualização V30
+
+- Histórico fecha pelo botão, Escape e clique fora, incluindo durante o carregamento.
+- Gravação automática de 10 em 10 minutos, enquanto o projeto está aberto e há alterações; a edição contínua não adia o intervalo.
+- Gravações manuais preservadas em separado das cópias automáticas. Filtros Todas, Manuais e Automáticas.
+- Retomar gravação protege primeiro o estado atual (incluindo alterações ainda não gravadas) numa cópia PRE_RESTORE.
+- Atualização e checkpoint numa transação; falhas não são apresentadas como gravações confirmadas. Alterações feitas durante uma gravação continuam pendentes.
+- SQL aplicado: supabase/V30_project_checkpoints.sql. Verificação autenticada e restauro executados em transação revertida.
+
 ## Atualização V29
 
 - Cabos: duplo clique num ponto prolonga o percurso até ao gravador; clicar diretamente no gravador termina nesse ponto. Sem gravador definido, o percurso permanece em edição.

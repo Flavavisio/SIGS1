@@ -2,7 +2,7 @@
 (function(){
 'use strict';
 
-var V6={dirty:false,saving:false,suppress:false,lastSavedAt:null,lastFingerprint:null,autoTimer:null,autosaveMs:7000,manager:null,currentStatus:null};
+var V6={dirty:false,saving:false,suppress:false,lastSavedAt:null,lastFingerprint:null,autoTimer:null,autosaveMs:600000,manager:null,currentStatus:null,lastSavedMode:null,restoring:false};
 window.SIGS_V6=V6;
 function ge(id){return document.getElementById(id)}
 function esc(v){return (typeof _esc==='function')?_esc(v==null?'':v):String(v==null?'':v).replace(/[&<>\"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]})}
@@ -33,7 +33,7 @@ function ensureSaveChip(){
   if(ge('sigs-v6-save-chip'))return;
   var nav=document.querySelector('.sigs-v5-nav');if(!nav)return;
   var b=document.createElement('button');b.id='sigs-v6-save-chip';b.type='button';b.className='sigs-v6-save-chip clean';b.textContent='✓ Guardado';
-  b.title='Estado da gravação do projeto';b.onclick=function(){if(V6.dirty)saveProject('manual');else openVersions();};
+  b.title='Estado da gravação do projeto';b.onclick=function(){saveProject('manual').catch(function(){});};
   var audit=ge('sigs-v5-audit-chip');if(audit)nav.insertBefore(b,audit);else nav.appendChild(b);
 }
 function saveChip(state,msg){
@@ -46,11 +46,17 @@ function saveChip(state,msg){
   else b.textContent='✓ Guardado';
 }
 function markDirty(){
-  if(V6.suppress||V6.saving||!projectId())return;
+  if(V6.suppress||!projectId())return;
   if(V6.currentStatus==='ARCHIVED'){saveChip('archived','🔒 Arquivado');return;}
   var fp=fingerprint();if(V6.lastFingerprint!==null&&fp===V6.lastFingerprint)return;
   V6.dirty=true;saveChip('dirty');
-  clearTimeout(V6.autoTimer);V6.autoTimer=setTimeout(function(){saveProject('auto');},V6.autosaveMs);
+  if(!V6.autoTimer)armAutosave();
+}
+function armAutosave(){
+  clearTimeout(V6.autoTimer);var pid=projectId();
+  V6.autoTimer=setTimeout(function(){V6.autoTimer=null;if(pid!==projectId())return;
+    saveProject('auto').catch(function(){}).finally(function(){if(pid===projectId())armAutosave();});
+  },V6.autosaveMs);
 }
 window.sigsV6MarkDirty=markDirty;
 
@@ -69,23 +75,24 @@ function saveProject(mode){
     openNewProjectWizard();return Promise.resolve(null);
   }
   if(V6.currentStatus==='ARCHIVED'){if(mode!=='auto'&&typeof notify==='function')notify('Projeto arquivado. Altere o estado para Rascunho ou Ativo antes de guardar.');saveChip('archived','🔒 Arquivado');return Promise.resolve(null);}
-  if(V6.saving)return Promise.resolve(null);
+  if(V6.saving||V6.restoring)return Promise.resolve(null);
   if(mode==='auto'&&!V6.dirty)return Promise.resolve(null);
-  V6.saving=true;saveChip('saving');clearTimeout(V6.autoTimer);
-  var cfg=sb(),patch=buildPatch(),pid=projectId();
-  return api(cfg.url+'/rest/v1/projects?id=eq.'+encodeURIComponent(pid),{method:'PATCH',headers:h({'Prefer':'return=representation'}),body:JSON.stringify(patch)})
-    .then(function(rows){
-      if(!rows||!rows[0])throw new Error('Gravação não autorizada ou projeto indisponível.');
-      V6.dirty=false;V6.lastSavedAt=new Date();V6.lastFingerprint=fingerprint();saveChip('clean','✓ Guardado '+V6.lastSavedAt.toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'}));
-      if(mode==='manual')return rpc('sigs_create_project_version',{p_project:pid,p_reason:'MANUAL'}).catch(function(){return null;}).then(function(){return rows&&rows[0]});
-      return rows&&rows[0];
+  V6.saving=true;saveChip('saving');
+  var patch,pid=projectId(),savedFingerprint;try{patch=buildPatch();savedFingerprint=fingerprint();}catch(e){V6.saving=false;V6.dirty=true;saveChip('error');return Promise.reject(e);}
+  return rpc('sigs_save_project_checkpoint',{p_project:pid,p_patch:patch,p_reason:mode==='auto'?'AUTO':'MANUAL'})
+    .then(function(result){
+      var row=Array.isArray(result)?result[0]:result;if(!row)throw new Error('Gravação não autorizada ou projeto indisponível.');
+      if(pid!==projectId())return row;
+      V6.lastSavedAt=new Date();V6.lastSavedMode=mode;V6.lastFingerprint=savedFingerprint;V6.dirty=fingerprint()!==savedFingerprint;
+      saveChip(V6.dirty?'dirty':'clean',V6.dirty?null:(mode==='auto'?'✓ Cópia automática ':'✓ Gravação manual ')+V6.lastSavedAt.toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'}));
+      return row;
     })
     .then(function(p){
       if(mode==='manual'&&p&&typeof notify==='function')notify('✓ Projeto guardado: '+(CLOUD.projectName||p.name||'Projeto'));
       if(typeof loadContext==='function')loadContext().catch(function(){});
       return p;
     })
-    .catch(function(e){saveChip('error');if(mode!=='auto'&&typeof notify==='function')notify('Erro ao guardar: '+e.message);throw e;})
+    .catch(function(e){if(pid===projectId()){V6.dirty=true;saveChip('error');}if(mode!=='auto'&&typeof notify==='function')notify('Erro ao guardar: '+e.message);throw e;})
     .finally(function(){V6.saving=false;});
 }
 window.sigsV6SaveProject=saveProject;
@@ -96,7 +103,7 @@ function emptyProjectData(mod){
   var lib=key==='cctv'?window.CCTV_LIB:key==='fire'?window.FIRE_LIB:window.AJAX_LIB;
   return {v:9,module:key,lib:JSON.parse(JSON.stringify(lib||[])),placed:[],meas:[],scale:{ok:false,ppm:10,mpp:.1},devN:0,floors:[],floorCur:0};
 }
-function closeOverlay(id){var x=ge(id);if(x)x.remove()}
+function closeOverlay(id){var x=ge(id);if(x){if(x.__close)x.__close();else x.remove();}}
 function openNewProjectWizard(companyId,module){
   companyId=typeof companyId==='string'?companyId:null;
   if(!logged()){if(typeof notify==='function')notify('Inicia sessão primeiro.');return;}
@@ -128,7 +135,7 @@ function openNewProjectWizard(companyId,module){
       var row={company_id:co.id,created_by:CLOUD.user.id,updated_by:CLOUD.user.id,name:name,module:mod,status:'DRAFT',customer_name:(ge('v6-p-client').value||'').trim()||null,customer_company:(ge('v6-p-company').value||'').trim()||null,customer_email:(ge('v6-p-email').value||'').trim()||null,customer_phone:(ge('v6-p-phone').value||'').trim()||null,project_data:emptyProjectData(mod),camera_count:0,detector_count:0,fire_detector_count:0,floor_count:1,last_saved_at:new Date().toISOString()};
       var cfg=sb();return api(cfg.url+'/rest/v1/projects',{method:'POST',headers:h({'Prefer':'return=representation'}),body:JSON.stringify(row)});
     }).then(function(rows){
-      var p=rows&&rows[0];if(!p)throw new Error('Projeto não criado.');CLOUD.projectId=p.id;CLOUD.projectName=p.name;V6.currentStatus='DRAFT';V6.dirty=false;V6.lastSavedAt=new Date();V6.lastFingerprint=fingerprint();
+      var p=rows&&rows[0];if(!p)throw new Error('Projeto não criado.');CLOUD.projectId=p.id;CLOUD.projectName=p.name;V6.currentStatus='DRAFT';armAutosave();V6.dirty=false;V6.lastSavedAt=new Date();V6.lastFingerprint=fingerprint();
       var ui=p.module==='INTRUSION'?'alarm':p.module==='FIRE'?'fire':'cctv';if(document.body.classList.contains('sigs-locked')&&typeof sigsPortalOpenDesigner==='function')sigsPortalOpenDesigner({projectReady:true});V6.suppress=true;startModule(ui);if(module==='disk')startModule('disk');setTimeout(function(){V6.suppress=false;V6.lastFingerprint=fingerprint();saveChip('clean');if(typeof sigsV5UpdateFlow==='function')sigsV5UpdateFlow();},100);
       o.remove();if(typeof notify==='function')notify('✓ Projeto criado em Rascunho: '+p.name);if(typeof loadContext==='function')loadContext().catch(function(){});
     }).catch(function(e){st.textContent='Erro: '+e.message;}).finally(function(){create.disabled=false;});
@@ -138,7 +145,7 @@ window.sigsV6NewProject=openNewProjectWizard;window.cloudNewProject=openNewProje
 
 function loadProject(id,name){
   var cfg=sb();return api(cfg.url+'/rest/v1/projects?select=id,name,module,status,project_data,last_saved_at,version_no&id=eq.'+encodeURIComponent(id),{headers:h()}).then(function(rows){
-    var p=rows&&rows[0];if(!p||!p.project_data)throw new Error('Projeto sem dados guardados.');CLOUD.projectId=p.id;CLOUD.projectName=p.name;if(document.body.classList.contains('sigs-locked')&&typeof sigsPortalOpenDesigner==='function')sigsPortalOpenDesigner({projectReady:true});V6.suppress=true;startModule(p.module==='INTRUSION'?'alarm':p.module==='FIRE'?'fire':'cctv');_restoreProjectData(p.project_data);V6.currentStatus=p.status||'ACTIVE';V6.dirty=false;V6.lastSavedAt=p.last_saved_at?new Date(p.last_saved_at):new Date();V6.lastFingerprint=fingerprint();setTimeout(function(){V6.suppress=false;V6.lastFingerprint=fingerprint();saveChip(V6.currentStatus==='ARCHIVED'?'archived':'clean',V6.currentStatus==='ARCHIVED'?'🔒 Arquivado':null);if(typeof sigsV5UpdateFlow==='function')sigsV5UpdateFlow();},180);return p;
+    var p=rows&&rows[0];if(!p||!p.project_data)throw new Error('Projeto sem dados guardados.');CLOUD.projectId=p.id;CLOUD.projectName=p.name;if(document.body.classList.contains('sigs-locked')&&typeof sigsPortalOpenDesigner==='function')sigsPortalOpenDesigner({projectReady:true});V6.suppress=true;startModule(p.module==='INTRUSION'?'alarm':p.module==='FIRE'?'fire':'cctv');_restoreProjectData(p.project_data);V6.currentStatus=p.status||'ACTIVE';armAutosave();V6.dirty=false;V6.lastSavedAt=p.last_saved_at?new Date(p.last_saved_at):new Date();V6.lastFingerprint=fingerprint();setTimeout(function(){V6.suppress=false;V6.lastFingerprint=fingerprint();saveChip(V6.currentStatus==='ARCHIVED'?'archived':'clean',V6.currentStatus==='ARCHIVED'?'🔒 Arquivado':null);if(typeof sigsV5UpdateFlow==='function')sigsV5UpdateFlow();},180);return p;
   });
 }
 window.cloudOpenProject=function(id,name){return loadProject(id,name).then(function(p){closeCloud();if(typeof notify==='function')notify('✓ Projeto aberto: '+(name||p.name));}).catch(function(e){if(typeof notify==='function')notify('Erro ao abrir: '+e.message);});};
@@ -167,14 +174,22 @@ function statusLabel(s){return s==='DRAFT'?'Rascunho':s==='ARCHIVED'?'Arquivado'
 function statusPill(s){var c=s==='ACTIVE'?'ok':s==='ARCHIVED'?'muted':'warn';return '<span class="sigs-v6-status-pill '+c+'">'+statusLabel(s)+'</span>'}
 
 function openVersions(){
-  var pid=projectId();if(!pid){if(typeof notify==='function')notify('Abra um projeto primeiro.');return;}
-  closeOverlay('sigs-v6-versions');var o=document.createElement('div');o.id='sigs-v6-versions';o.className='sigs-v6-overlay';o.innerHTML='<div class="sigs-v6-dialog wide"><div class="sigs-v6-dialog-head"><div><div class="sigs-v6-dialog-title">Histórico de versões</div><div class="sigs-v6-dialog-sub">Snapshots automáticos e gravações manuais do projeto atual.</div></div><button class="sigs-v6-x">✕</button></div><div id="v6-version-list" class="sigs-v6-list"><div class="sigs-v6-loading">A carregar versões…</div></div></div>';document.body.appendChild(o);ge('v6-p-open').onclick=function(){o.remove();openProjectManager(module);};
-  o.querySelector('.sigs-v6-x').onclick=function(){o.remove()};
-  var cfg=sb();api(cfg.url+'/rest/v1/project_versions?select=id,version_no,reason,saved_by,created_at&project_id=eq.'+encodeURIComponent(pid)+'&order=version_no.desc&limit=60',{headers:h()}).then(function(rows){
-    var host=ge('v6-version-list');if(!rows||!rows.length){host.innerHTML='<div class="sigs-v6-empty">Ainda não existem versões anteriores. Faça uma gravação manual ou continue a trabalhar para o autosave criar snapshots.</div>';return;}
-    host.innerHTML=rows.map(function(v){return '<div class="sigs-v6-version"><div><b>Versão '+v.version_no+'</b><div>'+esc(v.reason)+' · '+fmtDate(v.created_at)+'</div></div><button class="sag-btn" data-restore="'+v.id+'">Restaurar</button></div>';}).join('');
-    host.querySelectorAll('[data-restore]').forEach(function(b){b.onclick=function(){var vid=this.getAttribute('data-restore');if(!confirm('Restaurar esta versão? O estado atual será guardado antes do restauro.'))return;rpc('sigs_restore_project_version',{p_version:vid}).then(function(){return loadProject(pid,CLOUD.projectName)}).then(function(){o.remove();if(typeof notify==='function')notify('✓ Versão restaurada.');}).catch(function(e){if(typeof notify==='function')notify('Erro: '+e.message);});};});
-  }).catch(function(e){ge('v6-version-list').innerHTML='<div class="sigs-v6-empty">Erro: '+esc(e.message)+'</div>';});
+  var pid=projectId();if(!pid){notify('Abre um projeto primeiro.');return;}
+  closeOverlay('sigs-v6-versions');var o=document.createElement('div');o.id='sigs-v6-versions';o.className='sigs-v6-overlay';
+  o.innerHTML='<div class="sigs-v6-dialog wide" role="dialog" aria-modal="true" aria-label="Gravações do projeto"><div class="sigs-v6-dialog-head"><div><div class="sigs-v6-dialog-title">Gravações do projeto</div><div class="sigs-v6-dialog-sub">Cópias automáticas a cada 10 minutos enquanto trabalhas na app. As gravações manuais ficam separadas e são preservadas.</div></div><button class="sigs-v6-x" aria-label="Fechar">✕</button></div><div class="sigs-v6-dialog-foot"><button class="sag-btn primary" id="v6-save-now">Gravar manualmente</button><select id="v6-save-filter" aria-label="Tipo de gravação"><option value="ALL">Todas</option><option value="MANUAL">Manuais</option><option value="AUTO">Automáticas</option></select></div><div id="v6-version-list" class="sigs-v6-list"><div class="sigs-v6-loading">A carregar gravações…</div></div></div>';
+  document.body.appendChild(o);var closed=false,rows=[];
+  function close(){closed=true;o.remove();document.removeEventListener('keydown',keys);}
+  function keys(e){if(e.key==='Escape'){e.preventDefault();close();}if(e.key==='Tab'){var ns=[...o.querySelectorAll('button:not(:disabled),select')];if(e.shiftKey&&document.activeElement===ns[0]){e.preventDefault();ns.at(-1).focus();}else if(!e.shiftKey&&document.activeElement===ns.at(-1)){e.preventDefault();ns[0].focus();}}}
+  o.__close=close;o.querySelector('.sigs-v6-x').onclick=close;o.onclick=function(e){if(e.target===o)close();};document.addEventListener('keydown',keys);o.querySelector('.sigs-v6-x').focus();
+  var host=o.querySelector('#v6-version-list'),filter=o.querySelector('#v6-save-filter'),save=o.querySelector('#v6-save-now');
+  function label(reason){return reason==='MANUAL'?'Gravação manual':reason==='AUTO'?'Cópia automática':reason==='PRE_RESTORE'?'Cópia de segurança antes de retomar':reason;}
+  function paint(){if(closed||pid!==projectId())return;var visible=rows.filter(function(v){return filter.value==='ALL'||v.reason===filter.value;});host.innerHTML=visible.length?visible.map(function(v){return '<div class="sigs-v6-version"><div><b>'+esc(label(v.reason))+' · '+fmtDate(v.created_at)+'</b><div>Versão '+v.version_no+'</div></div><button class="sag-btn" data-restore="'+esc(v.id)+'" '+(V6.currentStatus==='ARCHIVED'?'disabled':'')+'>Retomar</button></div>';}).join(''):'<div class="sigs-v6-empty">Ainda não existem gravações deste tipo.</div>';
+    host.querySelectorAll('[data-restore]').forEach(function(button){button.onclick=async function(){if(pid!==projectId()||V6.saving||V6.restoring){notify('Aguarda a gravação em curso.');return;}if(!confirm('Retomar esta gravação? O trabalho atual fica numa cópia de segurança, disponível em Todas.'))return;
+      V6.restoring=true;button.disabled=true;try{await rpc('sigs_resume_project_version',{p_version:button.getAttribute('data-restore'),p_patch:buildPatch()});if(pid===projectId()){await loadProject(pid,CLOUD.projectName);close();notify('Gravação retomada.');}}catch(e){notify('Erro ao retomar: '+e.message);}finally{V6.restoring=false;button.disabled=false;}
+    };});
+  }
+  async function refresh(){try{var cfg=sb();rows=await api(cfg.url+'/rest/v1/project_versions?select=id,version_no,reason,saved_by,created_at&project_id=eq.'+encodeURIComponent(pid)+'&order=version_no.desc',{headers:h()});paint();}catch(e){if(!closed)host.innerHTML='<div class="sigs-v6-empty">Erro: '+esc(e.message)+'</div>';}}
+  filter.onchange=paint;save.onclick=async function(){if(pid!==projectId())return;save.disabled=true;try{var result=await saveProject('manual');if(result)await refresh();}catch(e){}finally{save.disabled=false;}};refresh();
 }
 window.sigsV6OpenVersions=openVersions;
 
@@ -221,6 +236,6 @@ function hookDirty(){
   if(typeof window._restoreProjectData==='function'){var restore=window._restoreProjectData;window._restoreProjectData=function(){V6.suppress=true;var r=restore.apply(this,arguments);setTimeout(function(){V6.suppress=false;V6.dirty=false;saveChip('clean');},250);return r;};}
   window.addEventListener('beforeunload',function(e){if(V6.dirty){e.preventDefault();e.returnValue='';}});
 }
-function init(){ensureSaveChip();injectProjectMenu();hookDirty();setInterval(function(){ensureSaveChip();injectProjectMenu();if(projectId()&&V6.dirty&&!V6.saving)saveProject('auto').catch(function(){});},30000);}
+function init(){ensureSaveChip();injectProjectMenu();hookDirty();setInterval(function(){ensureSaveChip();injectProjectMenu();if(projectId()&&!V6.autoTimer)armAutosave();},30000);}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(init,120)});else setTimeout(init,120);
 })();
