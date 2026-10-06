@@ -299,7 +299,7 @@
     html+='<div style="display:grid;grid-template-columns:380px 1fr;gap:14px">';
     html+=card('<div style="font-size:13px;font-weight:800;color:var(--txt);margin-bottom:12px">＋ Emitir nova licença</div>'+field('lic-company','Empresa','text','Segurança XPTO Lda')+'<div style="height:8px"></div>'+field('lic-admin-name','Nome do Admin','text','João Silva')+'<div style="height:8px"></div>'+field('lic-admin-email','Email do Admin','email','admin@empresa.pt')+'<div style="height:8px"></div>'+field('lic-admin-password','Password inicial do Admin','password','Mínimo 8 caracteres')+'<div style="height:8px"></div>'+field('lic-nif','NIF','text','')+'<div style="height:8px"></div>'+field('lic-client-code','Código do cliente','text','Ex.: CLI-001')+
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">'+
-        '<div><div style="font-size:10px;color:var(--txt3);font-family:var(--m);text-transform:uppercase;margin-bottom:5px">Plano</div><select id="lic-plan" style="width:100%;background:var(--bg1);border:1px solid var(--bdr2);border-radius:8px;padding:10px;color:var(--txt);font-family:var(--f)"><option value="EXPRESS">Express</option><option value="PRO">PRO</option></select></div>'+
+        '<div><div style="font-size:10px;color:var(--txt3);font-family:var(--m);text-transform:uppercase;margin-bottom:5px">Plano</div><select id="lic-plan" style="width:100%;background:var(--bg1);border:1px solid var(--bdr2);border-radius:8px;padding:10px;color:var(--txt);font-family:var(--f)"><option value="EXPRESS">Express</option><option value="PRO">PRO</option><option value="SUPREME">Supreme</option></select></div>'+
         '<div><div style="font-size:10px;color:var(--txt3);font-family:var(--m);text-transform:uppercase;margin-bottom:5px">Periodicidade</div><select id="lic-billing" onchange="licUpdateEndPreview()" style="width:100%;background:var(--bg1);border:1px solid var(--bdr2);border-radius:8px;padding:10px;color:var(--txt);font-family:var(--f)"><option value="MONTH">Mensal</option><option value="YEAR">Anual</option></select></div>'+
       '</div>'+
       '<div style="margin-top:10px;padding:10px;border:1px solid var(--bdr2);background:var(--bg1);border-radius:8px"><div style="font-size:9px;color:var(--txt3);font-family:var(--m);text-transform:uppercase">Fim da licença</div><div id="lic-end-preview" style="font-size:15px;font-weight:900;color:var(--txt);margin-top:3px">—</div><div style="font-size:9px;color:var(--txt3);margin-top:3px">Calculado automaticamente a partir da data de emissão.</div></div>'+
@@ -390,7 +390,7 @@
             '<div style="font-size:10px;color:var(--txt3);font-family:var(--m);text-transform:uppercase;margin-bottom:5px">Plano</div>'+
             '<select id="lic-change-plan" style="width:100%;background:var(--bg2);border:1px solid var(--bdr2);border-radius:8px;padding:10px;color:var(--txt)">'+
               '<option value="EXPRESS">Express</option>'+
-              '<option value="PRO">PRO</option>'+
+              '<option value="PRO">PRO</option><option value="SUPREME">Supreme</option>'+
             '</select>'+
           '</div>'+
           '<div>'+

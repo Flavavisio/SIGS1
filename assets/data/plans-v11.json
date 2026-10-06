@@ -22,8 +22,17 @@
       "monthly_price_eur": 9.99,
       "max_projects": 50,
       "max_items_per_project": 100
+    },
+    {
+      "code": "SUPREME",
+      "name": "Supreme",
+      "monthly_price_eur": 19.99,
+      "max_projects": null,
+      "max_items_per_project": 200,
+      "full_access": true
     }
   ],
   "backend_applied": true,
-  "backend_verified_at": "2026-10-04"
+  "backend_verified_at": "2026-10-06",
+  "vat_included": false
 }

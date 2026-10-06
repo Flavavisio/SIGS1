@@ -19,7 +19,7 @@ for (const p of model.plans) {
 for (const [projects, items, expected] of [
   [1, 15, 'FREE'], [1, 16, 'EXPRESS'], [2, 15, 'EXPRESS'],
   [10, 50, 'EXPRESS'], [11, 50, 'PRO'], [10, 51, 'PRO'],
-  [50, 100, 'PRO'], [51, 100, null], [50, 101, null]
+  [50, 100, 'PRO'], [51, 100, 'SUPREME'], [50, 101, 'SUPREME'], [100000, 200, 'SUPREME'], [1, 201, null]
 ]) assert.equal(model.recommend(projects, items)?.code ?? null, expected);
 for (const [module, unit, fixed] of [['cctv',120,280],['alarm',65,220],['fire',85,450]]) {
   for (const count of [1,4,8]) {
@@ -40,3 +40,5 @@ for (const match of script.matchAll(/el\('([^']+)'\)/g)) assert.ok(ids.includes(
 assert.ok(html.includes('prefers-reduced-motion'));
 assert.ok(html.includes('lang="pt-PT"'));
 console.log('PASS: exact plans, recommendations at boundaries, demo totals, syntax and local links.');
+
+assert.equal(config.vat_included,false);assert(html.includes('IVA não incluído'));assert(html.includes('19,99 €'));

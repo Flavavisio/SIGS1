@@ -2,6 +2,13 @@
 
 Aplicação de projeto para CCTV, intrusão e incêndio. Esta pasta contém o código completo, os testes e as migrações Supabase.
 
+## Atualização V31
+
+- Index com Gratuito, Express 4,99 €, Pro 9,99 € e Supreme 19,99 € por mês.
+- Preços dos planos pagos com indicação de IVA não incluído.
+- Supreme: acesso completo, projetos ilimitados por empresa e 200 equipamentos por projeto.
+- Plano configurado no Supabase e nas opções de atribuição/alteração de licença. Recomendação de plano inclui Supreme.
+
 ## Atualização V30
 
 - Histórico fecha pelo botão, Escape e clique fora, incluindo durante o carregamento.
