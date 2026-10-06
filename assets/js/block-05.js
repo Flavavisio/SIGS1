@@ -180,6 +180,15 @@
     document.body.classList.remove('sigs-locked');var g=ge('sigs-access-gate');if(g)g.style.display='none';if(ge('launcher'))ge('launcher').classList.remove('gone')}
   function logout(){try{cloudLogout()}catch(x){};document.body.classList.add('sigs-locked');var g=ge('sigs-access-gate');if(g)g.style.display='flex';renderLogin()}
   window.sigsPortalOpenDesigner=openDesigner;window.sigsPortalLogout=logout;
+  window.sigsPortalOpenProjects=function(){
+    if(!window.CLOUD||!CLOUD.user){renderLogin();return;}
+    if(typeof window.sigsWorkflowClose==='function')window.sigsWorkflowClose();
+    if(typeof window.closeCloud==='function')window.closeCloud();
+    document.body.classList.add('sigs-locked');
+    var gate=ge('sigs-access-gate');if(gate)gate.style.display='flex';
+    sigsPortalRender();
+  };
+
 
   function renderLogin(msg){
     var el=ge('sigs-gate-main'); if(!el)return;

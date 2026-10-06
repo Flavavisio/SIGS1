@@ -54,8 +54,22 @@ async function flush(){await new Promise(setImmediate);}
   env.sigsV6NewProject(null,mod);assert.equal(nodes['v6-p-module'].value,expected);
   nodes['v6-p-open'].onclick();await flush();assert(!nodes['sigs-v6-new-project']);
   assert(projectRequests.at(-1).includes('module=eq.'+expected));assert(projectRequests.at(-1).includes('company_id=eq.company-b'));
-  nodes['v6-close-projects'].onclick();
+ nodes['v6-close-projects'].onclick();
  }
+ // Admin and Sales now go straight to the company portal, preserving the active project and edits.
+ let portalRenders=0,workspaceClosed=0;env.sigsPortalRender=()=>portalRenders++;
+ env.sigsWorkflowClose=()=>workspaceClosed++;
+ const routeStart=portal.indexOf('  window.sigsPortalOpenProjects=function');
+ vm.runInContext(portal.slice(routeStart,portal.indexOf('  function renderLogin(',routeStart)),env);
+ env.SIGS_V6.dirty=true;const currentProject=env.CLOUD.projectId;
+ for(const role of ['ADMIN','SALES']){
+  env.CLOUD.user.role=role;locked=false;
+  env.sigsV6NewProject(null,'fire');nodes['v6-p-open'].onclick();await flush();
+  assert.equal(locked,true);assert.equal(nodes['sigs-access-gate'].style.display,'flex');
+  assert.equal(env.CLOUD.projectId,currentProject);assert.equal(env.SIGS_V6.dirty,true);
+  assert(!nodes['sigs-v6-new-project']);
+ }
+ assert.equal(portalRenders,2);assert.equal(workspaceClosed,2);env.CLOUD.user.role='ADMIN';
  // Actual portal Workspace button opens the actual modal.
  nodes['sigs-gate-main']=node('sigs-gate-main');env.SIGSWorkflowModel={n:Number,check:()=>[]};
  env.SIGS_COMMERCIAL={};env.sigsV8Quote=()=>({lines:[],total:0});env.saveCurrentFloor=()=>{};

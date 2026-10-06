@@ -83,3 +83,12 @@ Económica, Recomendada e Superior começam na mesma base, sem diferenças técn
 Paredes abertas e obstáculos poligonais opacos por piso recortam o FOV em planta. Não considera altura, transparência nem propagação de radar. A revisão de cobertura é invalidada ao mudar obstáculos.
 Percursos editáveis por equipamento, com escala do piso, altura de instalação, folga fixa e percentual. Cancelar preserva o percurso anterior. Os desenhos e folgas são guardados no projeto, acompanham desfazer e alternativas e atualizam a quantidade de cabo no orçamento. Cabos de intrusão/incêndio usam referências genéricas a confirmar.
 O painel Paredes e cablagem fica na barra lateral. Parede: dois extremos. Obstáculo: pelo menos três pontos e Concluir. Cabo: selecionar equipamento, marcar vértices e Concluir (Enter no computador). Escape cancela. PDF e propostas partilhadas mostram as paredes e percursos sem divulgar preços internos. Aplicar `supabase/V28_public_geometry.sql` para a lista pública de campos.
+
+
+## V34 — Projetos e emails por Edge Functions
+
+Abrir projetos, no launcher, no assistente e no Workspace, regressa ao painel de projetos da empresa para Admin/Comercial, sem apagar o projeto atual nem as alterações em memória. O Super Admin mantém a lista de gestão com filtro por módulo.
+
+`sigs-auth-email` é um Send Email Hook HTTPS com assinatura Standard Webhooks. Usa os layouts partilhados para ativação, convites, recuperação e avisos de segurança. Os destinatários e os links são validados; mudanças de email seguras usam o mapeamento correto de hashes atual/novo. Não imprime tokens nem credenciais. O setup está em `supabase/AUTH_EMAIL_EDGE_SETUP.md`. O hook só deve ser ligado depois de os secrets serem configurados; o SMTP de Authentication mantém-se até essa mudança.
+
+Validação: 26 suites Node passaram; build estático e sintaxe JavaScript verificados. Função publicada; configuração do hook/secrets e entrega real pendentes.

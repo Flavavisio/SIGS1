@@ -116,7 +116,7 @@ function openNewProjectWizard(companyId,module){
   document.body.appendChild(o);
   ge('v6-p-name').focus();
   var current=String(module||window.MOD||'cctv').toUpperCase();if(current==='ALARM')current='INTRUSION';if(current==='DISK')current='CCTV';var sel=ge('v6-p-module');if(sel)sel.value=current;
-  ge('v6-p-open').onclick=function(){o.remove();openProjectManager(module);};
+  ge('v6-p-open').onclick=function(){o.remove();window.openCloud(module);};
   o.querySelector('.sigs-v6-x').onclick=function(){o.remove()};ge('v6-p-cancel').onclick=function(){o.remove()};
   if(CLOUD.user.role==='SUPER_ADMIN')loadLicenseContext().then(function(context){
     var owner=ge('v6-p-owner');if(!owner||!o.isConnected)return;
@@ -205,7 +205,10 @@ function openProjectManager(module){
   ge('v6-close-projects').onclick=closeCloud;ge('v6-new-project-btn').onclick=function(){closeCloud();openNewProjectWizard(null,V6.managerModule);};
   ge('v6-project-search').oninput=renderManagerRows;ge('v6-project-status').onchange=renderManagerRows;renderProjectManager();
 }
-window.openCloud=openProjectManager;
+window.openCloud=function(module){
+  if(window.CLOUD&&CLOUD.user&&(CLOUD.user.role==='ADMIN'||CLOUD.user.role==='SALES')&&typeof window.sigsPortalOpenProjects==='function')return window.sigsPortalOpenProjects();
+  return openProjectManager(module);
+};
 function renderProjectManager(){
   var cfg=sb(),host=ge('v6-project-list');if(!host)return;host.innerHTML='<div class="sigs-v6-loading">A carregar projetos…</div>';
   _sigsEnsureContext().then(function(ctx){var co=ctx.company&&ctx.company.id;return api(cfg.url+'/rest/v1/projects?select=id,name,customer_name,customer_company,module,status,camera_count,detector_count,fire_detector_count,floor_count,created_by,assigned_to,updated_at,last_saved_at,version_no&order=updated_at.desc'+(co?'&company_id=eq.'+encodeURIComponent(co):'')+(V6.managerModule?'&module=eq.'+V6.managerModule:''),{headers:h()});}).then(function(rows){V6.manager=rows||[];renderManagerRows();}).catch(function(e){host.innerHTML='<div class="sigs-v6-empty">Erro: '+esc(e.message)+'</div>';});
