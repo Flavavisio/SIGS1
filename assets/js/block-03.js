@@ -1898,7 +1898,7 @@ function _restoreProjectData(d){
   if(d.scale)S.scale=d.scale; if(d.devN)S.devN=d.devN;
   if(d.floors&&d.floors.length){ FLOORS=d.floors; FLOOR_CUR=d.floorCur||0; renderFloorBar(); }
   else { FLOORS[0]={id:uid(),name:'Piso 0',placed:d.placed||[],meas:d.meas||[],fp:null,scale:d.scale||S.scale,devN:d.devN||0}; FLOOR_CUR=0; renderFloorBar(); }
-  if(S.scale&&S.scale.ok) document.getElementById('scbadge').textContent=S.scale.ppm.toFixed(1)+' px/m';
+  var scaleBadge=document.getElementById('scbadge');if(scaleBadge&&S.scale&&S.scale.ok)scaleBadge.textContent=Number(S.scale.ppm).toFixed(1)+' px/m';
   var meta=d.fp||(d.floors&&d.floors[FLOOR_CUR]&&d.floors[FLOOR_CUR].fp)||null;
   S.fp=meta?Object.assign({},meta,{img:null}):null;
   if(meta&&meta.imgData){ var target=S.fp,img=new Image(); img.onload=function(){ if(S.fp!==target)return; target.img=img; var fl=document.getElementById('fplock'); if(fl)fl.checked=!!target.locked; render(); updateStats(); }; img.src=meta.imgData; }

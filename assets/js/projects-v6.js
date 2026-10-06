@@ -201,7 +201,7 @@ function projectManagerShell(){
 }
 function openProjectManager(module){
   V6.managerModule=module==='alarm'?'INTRUSION':module==='fire'?'FIRE':module==='cctv'||module==='disk'?'CCTV':'';
-  var modal=ge('m-cloud'),body=ge('cloud-body');if(!modal||!body)return;modal.style.display='flex';body.innerHTML=projectManagerShell();
+  var modal=ge('m-cloud'),body=ge('cloud-body');if(!modal||!body)return;if(modal.parentNode!==document.body)document.body.appendChild(modal);modal.style.display='flex';body.innerHTML=projectManagerShell();
   ge('v6-close-projects').onclick=closeCloud;ge('v6-new-project-btn').onclick=function(){closeCloud();openNewProjectWizard(null,V6.managerModule);};
   ge('v6-project-search').oninput=renderManagerRows;ge('v6-project-status').onchange=renderManagerRows;renderProjectManager();
 }
