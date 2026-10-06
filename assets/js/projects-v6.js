@@ -136,7 +136,7 @@ function openNewProjectWizard(companyId,module){
       var cfg=sb();return api(cfg.url+'/rest/v1/projects',{method:'POST',headers:h({'Prefer':'return=representation'}),body:JSON.stringify(row)});
     }).then(function(rows){
       var p=rows&&rows[0];if(!p)throw new Error('Projeto não criado.');CLOUD.projectId=p.id;CLOUD.projectName=p.name;V6.currentStatus='DRAFT';armAutosave();V6.dirty=false;V6.lastSavedAt=new Date();V6.lastFingerprint=fingerprint();
-      var ui=p.module==='INTRUSION'?'alarm':p.module==='FIRE'?'fire':'cctv';if(document.body.classList.contains('sigs-locked')&&typeof sigsPortalOpenDesigner==='function')sigsPortalOpenDesigner({projectReady:true});V6.suppress=true;startModule(ui);if(module==='disk')startModule('disk');setTimeout(function(){V6.suppress=false;V6.lastFingerprint=fingerprint();saveChip('clean');if(typeof sigsV5UpdateFlow==='function')sigsV5UpdateFlow();},100);
+      var ui=p.module==='INTRUSION'?'alarm':p.module==='FIRE'?'fire':'cctv';if(document.body.classList.contains('sigs-locked')&&typeof sigsPortalOpenDesigner==='function')sigsPortalOpenDesigner({projectReady:true});V6.suppress=true;try{startModule(ui);if(module==='disk')startModule('disk');}finally{V6.suppress=false;}V6.lastFingerprint=fingerprint();saveChip('clean');setTimeout(function(){if(typeof sigsV5UpdateFlow==='function')sigsV5UpdateFlow();},100);
       o.remove();if(typeof notify==='function')notify('✓ Projeto criado em Rascunho: '+p.name);if(typeof loadContext==='function')loadContext().catch(function(){});
     }).catch(function(e){st.textContent='Erro: '+e.message;}).finally(function(){create.disabled=false;});
   };
@@ -145,7 +145,7 @@ window.sigsV6NewProject=openNewProjectWizard;window.cloudNewProject=openNewProje
 
 function loadProject(id,name){
   var cfg=sb();return api(cfg.url+'/rest/v1/projects?select=id,name,module,status,project_data,last_saved_at,version_no&id=eq.'+encodeURIComponent(id),{headers:h()}).then(function(rows){
-    var p=rows&&rows[0];if(!p||!p.project_data)throw new Error('Projeto sem dados guardados.');CLOUD.projectId=p.id;CLOUD.projectName=p.name;if(document.body.classList.contains('sigs-locked')&&typeof sigsPortalOpenDesigner==='function')sigsPortalOpenDesigner({projectReady:true});V6.suppress=true;startModule(p.module==='INTRUSION'?'alarm':p.module==='FIRE'?'fire':'cctv');_restoreProjectData(p.project_data);V6.currentStatus=p.status||'ACTIVE';armAutosave();V6.dirty=false;V6.lastSavedAt=p.last_saved_at?new Date(p.last_saved_at):new Date();V6.lastFingerprint=fingerprint();setTimeout(function(){V6.suppress=false;V6.lastFingerprint=fingerprint();saveChip(V6.currentStatus==='ARCHIVED'?'archived':'clean',V6.currentStatus==='ARCHIVED'?'🔒 Arquivado':null);if(typeof sigsV5UpdateFlow==='function')sigsV5UpdateFlow();},180);return p;
+    var p=rows&&rows[0];if(!p||!p.project_data)throw new Error('Projeto sem dados guardados.');CLOUD.projectId=p.id;CLOUD.projectName=p.name;if(document.body.classList.contains('sigs-locked')&&typeof sigsPortalOpenDesigner==='function')sigsPortalOpenDesigner({projectReady:true});V6.suppress=true;try{startModule(p.module==='INTRUSION'?'alarm':p.module==='FIRE'?'fire':'cctv');_restoreProjectData(p.project_data);}finally{V6.suppress=false;}V6.currentStatus=p.status||'ACTIVE';armAutosave();V6.dirty=false;V6.lastSavedAt=p.last_saved_at?new Date(p.last_saved_at):new Date();V6.lastFingerprint=fingerprint();V6.suppress=false;saveChip(V6.currentStatus==='ARCHIVED'?'archived':'clean',V6.currentStatus==='ARCHIVED'?'🔒 Arquivado':null);setTimeout(function(){if(typeof sigsV5UpdateFlow==='function')sigsV5UpdateFlow();},180);return p;
   });
 }
 window.cloudOpenProject=function(id,name){return loadProject(id,name).then(function(p){closeCloud();if(typeof notify==='function')notify('✓ Projeto aberto: '+(name||p.name));}).catch(function(e){if(typeof notify==='function')notify('Erro ao abrir: '+e.message);});};
@@ -236,7 +236,7 @@ function injectProjectMenu(){
 function hookDirty(){
   if(window.__sigsV6DirtyHooked)return;window.__sigsV6DirtyHooked=true;
   if(typeof window.updateStats==='function'){var old=window.updateStats;window.updateStats=function(){var r=old.apply(this,arguments);setTimeout(markDirty,0);return r;};}
-  if(typeof window._restoreProjectData==='function'){var restore=window._restoreProjectData;window._restoreProjectData=function(){V6.suppress=true;var r=restore.apply(this,arguments);setTimeout(function(){V6.suppress=false;V6.dirty=false;saveChip('clean');},250);return r;};}
+  if(typeof window._restoreProjectData==='function'){var restore=window._restoreProjectData;window._restoreProjectData=function(){var suppressed=V6.suppress,r;V6.suppress=true;try{r=restore.apply(this,arguments);}finally{V6.suppress=suppressed;}if(!suppressed){V6.lastFingerprint=fingerprint();V6.dirty=false;saveChip('clean');}return r;};}
   window.addEventListener('beforeunload',function(e){if(V6.dirty){e.preventDefault();e.returnValue='';}});
 }
 function init(){ensureSaveChip();injectProjectMenu();hookDirty();setInterval(function(){ensureSaveChip();injectProjectMenu();if(projectId()&&!V6.autoTimer)armAutosave();},30000);}

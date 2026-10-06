@@ -255,7 +255,7 @@ function drawCov(p,dev){
     range=p.arange!==undefined?p.arange:dev.range;
   }
   if(!range||range<=0)return;
-  var rPx=range*S.scale.ppm*S.zoom, hf=fov/2, rot=(p.rotation-90)*Math.PI/180;
+  var rPx=range*S.scale.ppm*S.zoom, hf=fov/2, rot=p.rotation*Math.PI/180;
   var opa=p.opacity!==undefined?p.opacity:0.22, col=p.color||dev.color;
   ctx.save(); ctx.translate(s.x,s.y); ctx.rotate(rot);
   var fill=hr(col,opa), stk=hr(col,Math.min(opa*2.8,0.75));
@@ -352,7 +352,7 @@ function _drawRadarCov(p,dev,s){
   if(!range)return;
   var rPx=range*S.scale.ppm*S.zoom;
   if(rPx<=0&&!S.scale.ok) rPx=range*2;
-  var rot=(p.rotation-90)*Math.PI/180;
+  var rot=p.rotation*Math.PI/180;
   var opa=p.opacity!==undefined?p.opacity:0.18;
 
   // Radar cone colour = p.color (user-editable), default green
@@ -428,7 +428,7 @@ function _drawThermalBiCov(p,dev,s){
   var thermalRange=dev.thermalRange||dev.range||100;
   var visibleFov=dev.visibleFov||dev.fov||30;
   var visibleRange=dev.visibleRange||dev.range||150;
-  var rot=(p.rotation-90)*Math.PI/180;
+  var rot=p.rotation*Math.PI/180;
   var opa=p.opacity!==undefined?p.opacity:0.22;
 
   // Thermal cone colour = p.color (user-editable), default red

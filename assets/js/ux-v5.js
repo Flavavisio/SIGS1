@@ -411,9 +411,9 @@ function updateAuditChip(existing){
 
 function renameCloud(){
   var m=el('m-cloud');if(!m)return;
-  var title=Array.from(m.querySelectorAll('div')).find(function(x){return x.textContent.trim()==='Cloud SIGS Studio';});
+  var title=Array.from(m.querySelectorAll('div')).find(function(x){return x.childElementCount===0&&x.textContent.trim()==='Cloud SIGS Studio';});
   if(title)title.textContent='Projetos SIGS';
-  var sub=Array.from(m.querySelectorAll('div')).find(function(x){return /Projetos sincronizados/.test(x.textContent||'');});
+  var sub=Array.from(m.querySelectorAll('div')).find(function(x){return x.childElementCount===0&&/Projetos sincronizados/.test(x.textContent||'');});
   if(sub)sub.textContent='Guardar, abrir e gerir projetos da empresa';
 }
 

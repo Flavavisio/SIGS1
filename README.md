@@ -100,3 +100,13 @@ Os painéis Pessoa, carro e vista 3D e Paredes e cablagem atualizam as ferrament
 Os oito templates Auth de ativação, convite, login, mudança de email, recuperação, código e avisos de password/email foram aplicados no painel Supabase. As duas notificações de segurança ficaram ativas. Site URL e seis destinos exatos de retorno foram configurados para o Site e GitHub Pages. O logótipo dos quinze modelos usa o PNG público do repositório SIGS1, também confirmado como image/png acessível sem login. Auth continua a enviar por SMTP enquanto o Send Email Hook não tiver os secrets configurados e for ativado. Entrega e renderização na caixa de entrada não são comprovadas pelos testes locais.
 
 Validação: 27 suites Node passaram. Templates reconstruídos e função de emails de licença atualizada.
+
+## V36 — Visibilidade, profundidade 3D e abertura de projetos
+
+Corrigida uma diferença de 90° entre os setores desenhados no canvas e os raios usados para cortar a cobertura nas paredes. CCTV, térmicas, radar, proposta e vista 3D usam agora a direção de referência consistente: 0° para cima, 90° para a direita. Paredes atrás da câmera ou fora do cone não reduzem o alcance.
+
+A vista 3D resolve a superfície mais próxima por pixel, com interpolação de profundidade em perspetiva, em vez de ordenar faces pela distância média. A avaliação do centro de pessoas/carros considera a altura indicada para as paredes. A cobertura em planta continua a representar paredes opacas em 2D.
+
+Corrigida a atualização do título da janela de projetos, que podia substituir um contentor e apagar os seus controlos. A janela abre também acima do portal. Alterações feitas imediatamente após abrir/retomar um projeto mantêm o estado Por guardar; callbacks de apresentação já não substituem a referência de gravação.
+
+Validação local: 29 suites Node passaram, incluindo regressões com o drawCov real, paredes fora do FOV, altura de parede, superfícies cruzadas e alterações rápidas após retomar. Build estático e sintaxe verificados. Estes testes não equivalem a validação física no iPhone nem a receção de emails numa caixa de entrada.
