@@ -7,5 +7,12 @@ const ctx={console,Math,Date,Map,Number,JSON,setTimeout:fn=>fn(),setInterval:()=
 ctx.window=ctx;vm.createContext(ctx);vm.runInContext(fs.readFileSync(path.join(__dirname,'../assets/js/commercial-v8.js'),'utf8'),ctx);
 let result=ctx.sigsV8Quote();assert.equal(result.lines.find(r=>r.ref==='CAM-1').qty,2);assert.equal(result.lines.find(r=>r.ref==='HDD-12').qty,3);assert.equal(result.lines.find(r=>r.type==='cabo').qty,30);assert(result.warnings.some(w=>w.includes('baias')));
 ctx.SIGS_COMMERCIAL.prices['CAM-1']={cost:100,sale:150};ctx.SIGS_COMMERCIAL.discount=10;ctx.SIGS_COMMERCIAL.client='Cliente A';let saved=ctx._buildProjectData();assert.equal(saved.commercial.client,'Cliente A');ctx._restoreProjectData(saved);assert.equal(ctx.SIGS_COMMERCIAL.prices['CAM-1'].sale,150);assert.equal(ctx.SIGS_COMMERCIAL.discount,10);
+ctx.SIGSSiteGeometry=require('../assets/js/site-geometry-model-v28.js');
+ctx.S.placed[0]=Object.assign(ctx.S.placed[0],{x:0,y:0,instHeight:3,cableAnchor:'start',cableRoute:[{x:0,y:0},{x:30,y:0},{x:30,y:40}]});
+ctx.FLOORS[0].scale={ok:true,ppm:10};ctx.FLOORS[0].cabling={slackMeters:2,slackPercent:10};
+ctx.FLOORS[1].placed[0]=Object.assign(ctx.FLOORS[1].placed[0],{x:0,y:0,instHeight:3,cableAnchor:'start',cableRoute:[{x:0,y:0},{x:30,y:0},{x:30,y:40}]});
+ctx.FLOORS[1].scale={ok:true,ppm:5};ctx.FLOORS[1].cabling={slackMeters:1,slackPercent:20};
+assert.equal(ctx.sigsV8Quote().lines.find(r=>r.ref==='Cabo UTP Cat6').qty,35);
+ctx.FLOORS[0].cabling={slackMeters:5,slackPercent:0};assert.equal(ctx.sigsV8Quote().lines.find(r=>r.ref==='Cabo UTP Cat6').qty,37);
 ctx.S.placed=[];ctx.FLOORS[1].placed=[];assert.equal(ctx.sigsV8Quote().lines.length,0);ctx._restoreProjectData({placed:[],lib:[]});assert.equal(ctx.SIGS_COMMERCIAL.client,'');assert.equal(Object.keys(ctx.SIGS_COMMERCIAL.prices).length,0);
 console.log('PASS: pricing, tax, labor, multi-floor quantities, disk counts, warnings, serialization, restore, deletion and project isolation');

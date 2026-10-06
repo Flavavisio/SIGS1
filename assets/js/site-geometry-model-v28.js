@@ -1,0 +1,17 @@
+(function(root){'use strict';
+const n=v=>Number.isFinite(Number(v))?Number(v):0,point=p=>({x:n(p.x),y:n(p.y)});
+function segments(obstacles){return (obstacles||[]).flatMap(o=>{const ps=(o.points||[]).map(point),out=[];for(let i=1;i<ps.length;i++)out.push([ps[i-1],ps[i]]);if(o.closed&&ps.length>2)out.push([ps.at(-1),ps[0]]);return out;});}
+function intersection(origin,direction,a,b){const sx=b.x-a.x,sy=b.y-a.y,den=direction.x*sy-direction.y*sx;if(Math.abs(den)<1e-10)return null;const ax=a.x-origin.x,ay=a.y-origin.y,t=(ax*sy-ay*sx)/den,u=(ax*direction.y-ay*direction.x)/den;return t>1e-7&&u>=-1e-9&&u<=1+1e-9?t:null;}
+function coverage(p,ppm,obstacles){const radius=Math.max(0,n(p.range))*n(ppm),fov=Math.min(360,Math.max(0,n(p.fov))),origin=point(p),middle=(n(p.rotation)-90)*Math.PI/180,half=fov*Math.PI/360;if(!radius||!half)return [];
+ const lines=segments(obstacles),angles=[];const steps=Math.max(2,Math.ceil(fov/2));for(let i=0;i<=steps;i++)angles.push(-half+2*half*i/steps);
+ for(const seg of lines)for(const endpoint of seg){let a=Math.atan2(endpoint.y-origin.y,endpoint.x-origin.x)-middle;a=Math.atan2(Math.sin(a),Math.cos(a));for(const e of [-1e-6,0,1e-6])if(a+e>=-half&&a+e<=half)angles.push(a+e);}
+ angles.sort((a,b)=>a-b);return [origin,...angles.map(a=>{const dir={x:Math.cos(middle+a),y:Math.sin(middle+a)};let distance=radius;for(const [u,v] of lines){const hit=intersection(origin,dir,u,v);if(hit!==null)distance=Math.min(distance,hit);}return {x:origin.x+dir.x*distance,y:origin.y+dir.y*distance};})];
+}
+function points(p){const out=(p.cableRoute||[]).map(point);if(out.length>1)out[p.cableAnchor==='start'?0:out.length-1]=point(p);return out;}
+function cable(p,scale,defaults={}){if(!scale?.ok||!(n(scale.ppm)>0)||points(p).length<2)return null;const ps=points(p);let distance=0;for(let i=1;i<ps.length;i++)distance+=Math.hypot(ps[i].x-ps[i-1].x,ps[i].y-ps[i-1].y)/n(scale.ppm);
+ const settings=Object.assign({slackMeters:2,slackPercent:10,verticalMeters:n(p.instHeight)||3},defaults,p.cableSettings||{}),vertical=Math.max(0,n(settings.verticalMeters)),slack=Math.max(0,n(settings.slackMeters)),percent=Math.max(0,Math.min(100,n(settings.slackPercent))),total=(distance+vertical)*(1+percent/100)+slack;return {distance,vertical,slack,percent,total};}
+function totals(floors){return (floors||[]).map(f=>{const routes=(f.placed||[]).filter(p=>p.cableRoute?.length>1).map(p=>({id:p.id,label:p.label,...cable(p,f.scale,f.cabling),measured:!!cable(p,f.scale,f.cabling)}));return {name:f.name,routes,total:routes.reduce((t,r)=>t+(r.total||0),0),unscaled:routes.filter(r=>!r.measured).length};});}
+function svgObstacles(obstacles){return (obstacles||[]).map(o=>'<'+(o.closed?'polygon':'polyline')+' points="'+(o.points||[]).map(p=>n(p.x)+','+n(p.y)).join(' ')+'" fill="'+(o.closed?'#475569':'none')+'" fill-opacity=".25" stroke="#475569" stroke-width="3" vector-effect="non-scaling-stroke"/>').join('');}
+function svgCables(devices){return (devices||[]).filter(p=>p.cableRoute?.length>1).map(p=>'<polyline points="'+points(p).map(p=>p.x+','+p.y).join(' ')+'" fill="none" stroke="#059669" stroke-width="2" stroke-dasharray="7 4" vector-effect="non-scaling-stroke"/>').join('');}
+root.SIGSSiteGeometry={segments,intersection,coverage,points,cable,totals,svgObstacles,svgCables};if(typeof module!=='undefined'&&module.exports)module.exports=root.SIGSSiteGeometry;
+})(typeof window!=='undefined'?window:globalThis);

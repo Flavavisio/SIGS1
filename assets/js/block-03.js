@@ -4551,7 +4551,7 @@ function startCableRoute(){
   if(!pc){ notify('⚠ Selecione uma câmara primeiro'); return; }
 
   // Start from camera position
-  pc.cableRoute = null; // clear old route while drawing
+  // Keep the previous route until the edited route is confirmed.
   CABLE_ROUTE.active = true;
   CABLE_ROUTE.camId  = pc.id;
   CABLE_ROUTE.pts    = [{x: NVR_POS.x, y: NVR_POS.y}]; // start at NVR
@@ -4569,7 +4569,7 @@ function _finishCableRoute(){
   if(pc && CABLE_ROUTE.pts.length >= 2){
     // Add camera as last point
     CABLE_ROUTE.pts.push({x: pc.x, y: pc.y});
-    pc.cableRoute = JSON.parse(JSON.stringify(CABLE_ROUTE.pts));
+    pushUndo();pc.cableRoute = JSON.parse(JSON.stringify(CABLE_ROUTE.pts));pc.cableAnchor='end';if(typeof sigsV6MarkDirty==='function')sigsV6MarkDirty();
     var len = _cableRouteLen(pc);
     notify('✓ Rota guardada — ' + len.toFixed(1) + ' m de percurso');
   }

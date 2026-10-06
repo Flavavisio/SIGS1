@@ -8,8 +8,8 @@ function capture(p,d){if(!cameras.includes(d.type))return {};const lens=number(p
  const out={type:d.type,lens,fov:Math.max(1,Math.min(360,fov)),range:Math.max(0,number(d.type==='thermal_bi'?(p.visibleRange||d.visibleRange||d.range):d.range)),rotation:number(p.rotation)};
  if(d.type==='thermal_bi'){out.thermalFov=number(p.thermalFov||d.thermalFov)||30;out.thermalRange=number(p.thermalRange||d.thermalRange)||0;}return out;
 }
-function sector(p,ppm){if(!cameras.includes(p.type)||!(ppm>0)||!(p.fov>0&&p.range>0))return '';const x=number(p.x),y=number(p.y),rotation=number(p.rotation)-90;
- function shape(fov,range,color){const r=Math.max(0,number(range))*ppm,a=Math.max(0,Math.min(360,number(fov)))*Math.PI/360;if(!r||!a)return '';if(fov>=355)return '<circle data-fov="'+number(fov)+'" cx="'+x+'" cy="'+y+'" r="'+r+'" fill="'+color+'" fill-opacity=".16" stroke="'+color+'" stroke-width="'+r/150+'"/>';
+function sector(p,ppm,obstacles){if(!cameras.includes(p.type)||!(ppm>0)||!(p.fov>0&&p.range>0))return '';const x=number(p.x),y=number(p.y),rotation=number(p.rotation)-90;
+ function shape(fov,range,color){if(obstacles?.length&&root.SIGSSiteGeometry){const ps=root.SIGSSiteGeometry.coverage({...p,fov,range},ppm,obstacles);return '<polygon data-fov="'+number(fov)+'" points="'+ps.map(p=>p.x+','+p.y).join(' ')+'" fill="'+color+'" fill-opacity=".16" stroke="'+color+'" stroke-width="1"/>';}const r=Math.max(0,number(range))*ppm,a=Math.max(0,Math.min(360,number(fov)))*Math.PI/360;if(!r||!a)return '';if(fov>=355)return '<circle data-fov="'+number(fov)+'" cx="'+x+'" cy="'+y+'" r="'+r+'" fill="'+color+'" fill-opacity=".16" stroke="'+color+'" stroke-width="'+r/150+'"/>';
  return '<path data-fov="'+number(fov)+'" d="M0 0 L'+r*Math.cos(a)+' '+(-r*Math.sin(a))+' A'+r+' '+r+' 0 '+(fov>180?1:0)+' 1 '+r*Math.cos(a)+' '+r*Math.sin(a)+' Z" transform="translate('+x+' '+y+') rotate('+rotation+')" fill="'+color+'" fill-opacity=".16" stroke="'+color+'" stroke-width="'+r/150+'"/>';}
  return shape(p.fov,p.range,'#3869e8')+(p.thermalFov>0&&p.thermalRange>0?shape(p.thermalFov,p.thermalRange,'#e06042'):'');
 }

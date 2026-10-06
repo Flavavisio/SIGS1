@@ -23,7 +23,7 @@ function fingerprint(){
   try{
     if(typeof saveCurrentFloor==='function')saveCurrentFloor();
     function fpMark(x){if(!x)return null;var d=x.imgData||'';return {x:x.x,y:x.y,w:x.w,h:x.h,opa:x.opa,locked:!!x.locked,img:d?String(d).length:0,storagePath:x.storagePath||null};}
-    var floors=(window.FLOORS||[]).map(function(f){return {id:f.id,name:f.name,placed:f.placed||[],meas:f.meas||[],scale:f.scale||null,devN:f.devN||0,fp:fpMark(f.fp)};});
+    var floors=(window.FLOORS||[]).map(function(f){return {id:f.id,name:f.name,obstacles:f.obstacles||[],cabling:f.cabling||{},placed:f.placed||[],meas:f.meas||[],scale:f.scale||null,devN:f.devN||0,fp:fpMark(f.fp)};});
     return JSON.stringify({module:window.MOD,placed:window.S&&S.placed||[],meas:window.S&&S.meas||[],scale:window.S&&S.scale||null,devN:window.S&&S.devN||0,fp:fpMark(window.S&&S.fp),floors:floors,floorCur:window.FLOOR_CUR||0,commercial:window.SIGS_COMMERCIAL||null});
   }catch(e){return String(Date.now());}
 }

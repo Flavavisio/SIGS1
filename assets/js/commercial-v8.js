@@ -34,9 +34,8 @@ function rows(){
   cams.forEach(function(x){var p=x.p,cod=p.codec||'ultra265b',res=p.mp||4;
    bw+=(BITRATE_TABLE[cod]||BITRATE_TABLE.h265)[res]||4;mp=Math.max(mp,res);gb+=calcStorage(res,cod,p.days||30).gb;
    var len=null;
-   if(x.fl.scale&&x.fl.scale.ok&&p.cableRoute&&p.cableRoute.length>=2){
-    len=0;for(var i=1;i<p.cableRoute.length;i++){var a=p.cableRoute[i-1],b=p.cableRoute[i];len+=Math.hypot(a.x-b.x,a.y-b.y)*x.fl.scale.mpp;}
-    len+=(p.instHeight||3)+2;
+   if(window.SIGSSiteGeometry&&p.cableRoute&&p.cableRoute.length>=2){
+    var route=SIGSSiteGeometry.cable(p,x.fl.scale,x.fl.cabling);if(route)len=route.total;
    }else if(x.fl===FLOORS[FLOOR_CUR]&&S.scale.ok&&NVR_POS){var cd=cableForCam(p);if(cd)len=cd.cable;}
    if(len===null){len=15;estimated++;}cable+=len;
   });
@@ -52,6 +51,7 @@ function rows(){
   add({ref:'Cabo UTP Cat6',name:'Cabo de rede Cat6',type:'cabo',qty:Math.ceil(cable),unit:'m',system:true},'cable');
   if(estimated)warnings.push('Cabo estimado a 15 m para '+estimated+' câmara(s). Defina escala e traçado para confirmar.');
  }
+ FLOORS.forEach(function(fl){(fl.placed||[]).filter(function(p){return p.cableRoute&&p.cableRoute.length>1&&!cams.some(function(x){return x.p===p;});}).forEach(function(p){if(!window.SIGSSiteGeometry)return;var measured=SIGSSiteGeometry.cable(p,fl.scale,fl.cabling);if(!measured){warnings.push('Percurso sem escala: '+(p.label||p.id)+' · '+fl.name);return;}var ref=p.cableRef||'Cabo de instalação (a confirmar)';add({ref:ref,name:ref,type:'cabo',qty:Math.ceil(measured.total),unit:'m',system:true},ref==='Cabo UTP Cat6'?'cable':ref);});});
  if(typeof sigsV10SyncAccessories==='function')sigsV10SyncAccessories();
  C.extras.filter(function(r){return M.num(r.qty)>0;}).forEach(function(r){add({ref:r.ref,name:r.name,type:'adicional',qty:M.num(r.qty),unit:r.unit||'un.',system:false});});
  var result=Array.from(grouped.values());window._bomRows=result;return {rows:result,warnings:warnings};

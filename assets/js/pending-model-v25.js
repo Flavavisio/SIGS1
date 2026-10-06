@@ -1,7 +1,7 @@
 (function(root){
 'use strict';
 function imageKey(value){value=String(value||'');let h=2166136261;for(let i=0;i<value.length;i++){h^=value.charCodeAt(i);h=Math.imul(h,16777619);}return value.length+':'+(h>>>0);}
-function signature(floors){return JSON.stringify((floors||[]).map(f=>({id:f.id,fp:f.fp?{x:f.fp.x,y:f.fp.y,w:f.fp.w,h:f.fp.h,image:imageKey(f.fp.storagePath||f.fp.imgData)}:null,scale:f.scale,placed:(f.placed||[]).map(p=>({id:p.id,libId:p.libId,x:p.x,y:p.y,rotation:p.rotation,lens:p.lens,afov:p.afov,arange:p.arange,instHeight:p.instHeight,instTilt:p.instTilt,mp:p.mp}))})));}
+function signature(floors){return JSON.stringify((floors||[]).map(f=>({id:f.id,obstacles:f.obstacles||[],fp:f.fp?{x:f.fp.x,y:f.fp.y,w:f.fp.w,h:f.fp.h,image:imageKey(f.fp.storagePath||f.fp.imgData)}:null,scale:f.scale,placed:(f.placed||[]).map(p=>({id:p.id,libId:p.libId,x:p.x,y:p.y,rotation:p.rotation,lens:p.lens,afov:p.afov,arange:p.arange,instHeight:p.instHeight,instTilt:p.instTilt,mp:p.mp}))})));}
 function collect(input,technical){const list=[],floors=input.floors||[],c=input.commercial||{},add=(id,level,title,text,action,extra={})=>list.push({id,level,title,text,action,...extra});
  floors.forEach((f,i)=>{if(!f.fp)add('plant-'+i,'warning','Planta · '+f.name,'Adiciona uma planta ou captura o mapa deste piso.','plant',{floor:i});if(!f.scale?.ok)add('scale-'+i,'warning','Escala · '+f.name,'Define a escala para calcular distâncias e cobertura.','scale',{floor:i});});
  for(const [field,title] of [['company','Empresa'],['client','Cliente'],['reference','Referência da proposta']])if(!String(c[field]||'').trim())add(field,'warning',title+' por preencher','Completa este dado antes de enviar a proposta.','budget',{field});

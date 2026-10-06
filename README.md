@@ -47,3 +47,8 @@ Económica, Recomendada e Superior começam na mesma base, sem diferenças técn
 - Criação e partilha de revisões corrigidas para Super Admin com as mesmas restrições de licença, projeto e privacidade; aplicar `supabase/V27_proposal_fov_and_revisions.sql` numa instalação anterior.
 - Abrir projetos junto de Novo projeto nas quatro ferramentas e no assistente; filtragem por empresa e especialidade.
 - Testes de handlers de revisão, FOV e integração PostgreSQL com transações revertidas.
+
+### V28 — paredes e cablagem
+Paredes abertas e obstáculos poligonais opacos por piso recortam o FOV em planta. Não considera altura, transparência nem propagação de radar. A revisão de cobertura é invalidada ao mudar obstáculos.
+Percursos editáveis por equipamento, com escala do piso, altura de instalação, folga fixa e percentual. Cancelar preserva o percurso anterior. Os desenhos e folgas são guardados no projeto, acompanham desfazer e alternativas e atualizam a quantidade de cabo no orçamento. Cabos de intrusão/incêndio usam referências genéricas a confirmar.
+O painel Paredes e cablagem fica na barra lateral. Parede: dois extremos. Obstáculo: pelo menos três pontos e Concluir. Cabo: selecionar equipamento, marcar vértices e Concluir (Enter no computador). Escape cancela. PDF e propostas partilhadas mostram as paredes e percursos sem divulgar preços internos. Aplicar `supabase/V28_public_geometry.sql` para a lista pública de campos.
