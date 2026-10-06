@@ -149,6 +149,8 @@
         });
     }
 
+    var approval=path.match(/^\/licensing\/approve\/([^/]+)$/);
+    if(approval)return jsonFetch(SB_URL+'/rest/v1/rpc/sigs_approve_registration_license',{method:'POST',headers:headers(),body:JSON.stringify({p_license:decodeURIComponent(approval[1])})});
     var m=path.match(/^\/licensing\/licenses\/([^/]+)$/);
     if(m && opts.method==='PATCH'){
       var pb=JSON.parse(opts.body||'{}');
@@ -299,17 +301,17 @@
     html+='<div style="display:grid;grid-template-columns:380px 1fr;gap:14px">';
     html+=card('<div style="font-size:13px;font-weight:800;color:var(--txt);margin-bottom:12px">＋ Emitir nova licença</div>'+field('lic-company','Empresa','text','Segurança XPTO Lda')+'<div style="height:8px"></div>'+field('lic-admin-name','Nome do Admin','text','João Silva')+'<div style="height:8px"></div>'+field('lic-admin-email','Email do Admin','email','admin@empresa.pt')+'<div style="height:8px"></div>'+field('lic-admin-password','Password inicial do Admin','password','Mínimo 8 caracteres')+'<div style="height:8px"></div>'+field('lic-nif','NIF','text','')+'<div style="height:8px"></div>'+field('lic-client-code','Código do cliente','text','Ex.: CLI-001')+
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">'+
-        '<div><div style="font-size:10px;color:var(--txt3);font-family:var(--m);text-transform:uppercase;margin-bottom:5px">Plano</div><select id="lic-plan" style="width:100%;background:var(--bg1);border:1px solid var(--bdr2);border-radius:8px;padding:10px;color:var(--txt);font-family:var(--f)"><option value="EXPRESS">Express</option><option value="PRO">PRO</option><option value="SUPREME">Supreme</option></select></div>'+
+        '<div><div style="font-size:10px;color:var(--txt3);font-family:var(--m);text-transform:uppercase;margin-bottom:5px">Plano</div><select id="lic-plan" style="width:100%;background:var(--bg1);border:1px solid var(--bdr2);border-radius:8px;padding:10px;color:var(--txt);font-family:var(--f)"><option value="FREE">Gratuito</option><option value="EXPRESS">Express</option><option value="PRO">PRO</option><option value="SUPREME">Supreme</option></select></div>'+
         '<div><div style="font-size:10px;color:var(--txt3);font-family:var(--m);text-transform:uppercase;margin-bottom:5px">Periodicidade</div><select id="lic-billing" onchange="licUpdateEndPreview()" style="width:100%;background:var(--bg1);border:1px solid var(--bdr2);border-radius:8px;padding:10px;color:var(--txt);font-family:var(--f)"><option value="MONTH">Mensal</option><option value="YEAR">Anual</option></select></div>'+
       '</div>'+
       '<div style="margin-top:10px;padding:10px;border:1px solid var(--bdr2);background:var(--bg1);border-radius:8px"><div style="font-size:9px;color:var(--txt3);font-family:var(--m);text-transform:uppercase">Fim da licença</div><div id="lic-end-preview" style="font-size:15px;font-weight:900;color:var(--txt);margin-top:3px">—</div><div style="font-size:9px;color:var(--txt3);margin-top:3px">Calculado automaticamente a partir da data de emissão.</div></div>'+
       '<div style="margin-top:11px;font-size:10px;color:var(--txt3);font-family:var(--m);text-transform:uppercase">Módulos</div><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin:7px 0 12px"><label><input id="lic-m-cctv" type="checkbox" checked> CCTV</label><label><input id="lic-m-alarm" type="checkbox" checked> Intrusão</label><label><input id="lic-m-fire" type="checkbox" checked> Incêndio</label><label><input id="lic-m-cloud" type="checkbox" checked> Cloud</label></div>'+
       '<button id="lic-emit-btn" type="button" onclick="licCreateLicense()" style="padding:10px 14px;border:0;border-radius:8px;background:var(--acc);color:#fff;font-family:var(--f);font-size:11px;font-weight:800;cursor:pointer">Emitir licença</button><div id="lic-emit-status" style="font-size:10px;color:var(--txt3);margin-top:8px;min-height:14px"></div>');
-    var rows=companies.map(function(x){var l=x.license||{},d=l.expiresAt?new Date(l.expiresAt).getTime():0,now=Date.now(),five=now+5*86400000,expired=d>0&&d<now,warning=!expired&&d>0&&d<=five&&l.status==='ACTIVE',displayStatus=expired?'EXPIRADA':l.status,kind=expired?'bad':warning?'warn':(l.status==='ACTIVE'?'ok':l.status==='SUSPENDED'?'warn':'bad'),rowBg=expired?'rgba(239,68,68,.10)':warning?'rgba(245,158,11,.08)':'transparent',rowBorder=expired?'rgba(239,68,68,.42)':warning?'rgba(245,158,11,.35)':'var(--bdr)';return '<div style="display:grid;grid-template-columns:1.5fr 1fr .7fr .7fr auto;gap:8px;align-items:center;padding:10px;border-bottom:1px solid '+rowBorder+';background:'+rowBg+'"><div><div style="font-weight:700;color:'+(expired?'#ef4444':'var(--txt)')+'">'+esc(x.name)+'</div><div style="font-size:10px;color:var(--txt3)">'+esc(x.adminEmail||'')+'</div></div><div style="font-size:11px;color:var(--txt2)">'+esc(l.plan||'SIGS')+'<br><span style="font-size:10px">'+(l.billingInterval==='YEAR'?'Anual':'Mensal')+'</span></div><div>'+pill(displayStatus||'—',kind)+'</div><div style="font-size:10px;color:'+(expired?'#ef4444':warning?'#f59e0b':'var(--txt3)')+'">'+fmtDate(l.expiresAt)+'</div><div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end">'+
+    var rows=companies.map(function(x){var l=x.license||{},d=l.expiresAt?new Date(l.expiresAt).getTime():0,now=Date.now(),five=now+5*86400000,expired=d>0&&d<now,warning=!expired&&d>0&&d<=five&&l.status==='ACTIVE',displayStatus=expired?'EXPIRADA':l.status==='PENDING'?'Pendente de aprovação':l.status,kind=expired?'bad':warning?'warn':(l.status==='ACTIVE'?'ok':l.status==='SUSPENDED'?'warn':'bad'),rowBg=expired?'rgba(239,68,68,.10)':warning?'rgba(245,158,11,.08)':'transparent',rowBorder=expired?'rgba(239,68,68,.42)':warning?'rgba(245,158,11,.35)':'var(--bdr)';return '<div style="display:grid;grid-template-columns:1.5fr 1fr .7fr .7fr auto;gap:8px;align-items:center;padding:10px;border-bottom:1px solid '+rowBorder+';background:'+rowBg+'"><div><div style="font-weight:700;color:'+(expired?'#ef4444':'var(--txt)')+'">'+esc(x.name)+'</div><div style="font-size:10px;color:var(--txt3)">'+esc(x.adminEmail||'')+'</div></div><div style="font-size:11px;color:var(--txt2)">'+esc(l.plan||'SIGS')+'<br><span style="font-size:10px">'+(l.billingInterval==='YEAR'?'Anual':'Mensal')+'</span></div><div>'+pill(displayStatus||'—',kind)+'</div><div style="font-size:10px;color:'+(expired?'#ef4444':warning?'#f59e0b':'var(--txt3)')+'">'+fmtDate(l.expiresAt)+'</div><div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end">'+
       btn('Abrir','licOpenCompany(\''+esc(x.id)+'\')',false)+
-      (l.id?btn('Renovar','licRenewLicense(\''+esc(l.id)+'\')',false):'')+
+      (l.id&&l.status!=='PENDING'?btn('Renovar','licRenewLicense(\''+esc(l.id)+'\')',false):'')+
       (l.id?btn('Alterar','licOpenChangeLicense(\''+esc(l.id)+'\',\''+esc(l.planCode||'EXPRESS')+'\',\''+esc(l.billingInterval||'MONTH')+'\')',false):'')+
-      (l.id?(l.status==='ACTIVE'?btn('Suspender','licSetStatus(\''+esc(l.id)+'\',\'SUSPENDED\')',false,true):btn('Ativar','licSetStatus(\''+esc(l.id)+'\',\'ACTIVE\')',false)):'')+
+      (l.id?(l.status==='ACTIVE'?btn('Suspender','licSetStatus(\''+esc(l.id)+'\',\'SUSPENDED\')',false,true):btn(l.status==='PENDING'?'Aprovar plano pago':'Ativar','licSetStatus(\''+esc(l.id)+'\',\'ACTIVE\')',false)):'')+
       btn('Palavra-passe do Admin','licOpenCompanyPassword(\''+esc(x.id)+'\')',false)+
       btn('Apagar','licDeleteCompany(\''+esc(x.id)+'\',\''+esc(x.name)+'\')',false,true)+
       '</div></div>';}).join('');
@@ -356,7 +358,7 @@
       if(button){button.disabled=false;button.style.opacity='1';button.textContent='Emitir licença';}
     });
   };
-  window.licSetStatus=function(id,status){ if(!confirm((status==='SUSPENDED'?'Suspender':'Ativar')+' esta licença?'))return; licenseApi('/licensing/licenses/'+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify({status:status})}).then(function(){notify('Licença atualizada.');renderLicenseCenter();}).catch(function(e){notify('Erro: '+e.message);}); };
+  window.licSetStatus=function(id,status){ var company=(LIC.ctx?.companies||[]).find(function(c){return c.license?.id===id;});var pending=company?.license?.status==='PENDING'&&status==='ACTIVE';if(!confirm((pending?'Aprovar este plano pago e iniciar o período da licença?':(status==='SUSPENDED'?'Suspender':'Ativar')+' esta licença?')))return; licenseApi((pending?'/licensing/approve/':'/licensing/licenses/')+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify({status:status})}).then(function(){notify('Licença atualizada.');renderLicenseCenter();}).catch(function(e){notify('Erro: '+e.message);}); };
   window.licRenewLicense=function(id){
     if(!confirm('Renovar esta licença pelo mesmo período atual?'))return;
     licenseApi('/licensing/renew',{method:'POST',body:JSON.stringify({licenseId:id})})
@@ -389,7 +391,7 @@
           '<div>'+
             '<div style="font-size:10px;color:var(--txt3);font-family:var(--m);text-transform:uppercase;margin-bottom:5px">Plano</div>'+
             '<select id="lic-change-plan" style="width:100%;background:var(--bg2);border:1px solid var(--bdr2);border-radius:8px;padding:10px;color:var(--txt)">'+
-              '<option value="EXPRESS">Express</option>'+
+              '<option value="FREE">Gratuito</option><option value="EXPRESS">Express</option>'+
               '<option value="PRO">PRO</option><option value="SUPREME">Supreme</option>'+
             '</select>'+
           '</div>'+
@@ -410,7 +412,7 @@
 
     document.body.appendChild(wrap);
 
-    document.getElementById('lic-change-plan').value=(plan==='PRO'?'PRO':'EXPRESS');
+    document.getElementById('lic-change-plan').value=(['FREE','EXPRESS','PRO','SUPREME'].includes(plan)?plan:'EXPRESS');
     document.getElementById('lic-change-billing').value=(billing==='YEAR'?'YEAR':'MONTH');
 
     function closeChangeLicense(){
@@ -523,6 +525,7 @@
     licenseApi('/licensing/context').then(function(ctx){
       LIC.ctx=ctx||{};
       var co=LIC.ctx.company||{},l=LIC.ctx.license||{},projects=LIC.ctx.projects||[];
+      if(l.status==='PENDING'){host.innerHTML='<div class="sag-title">Pedido de licença recebido</div><div class="sag-card"><h2>'+esc(l.plan||'Plano pago')+' · Aguarda aprovação</h2><p>O teu espaço '+esc(co.name||'')+' já está criado. O Super Admin precisa de aprovar este plano pago antes de começares a projetar. O período da licença começa nessa aprovação.</p><div class="sag-actions"><button class="sag-btn primary" onclick="sigsRenderAdminHome()">Verificar aprovação</button><button class="sag-btn danger" onclick="sigsPortalLogout()">Sair</button></div></div>';return;}
       var maxProjects=l.maxProjects==null?null:Number(l.maxProjects),used=projects.length,free=maxProjects==null?null:Math.max(0,maxProjects-used),pct=maxProjects?Math.min(100,Math.round((used/maxProjects)*100)):0;
       function itemCount(p){return (p.cameraCount||0)+(p.detectorCount||0)+(p.fireDetectorCount||0);}
       var rows=projects.length?projects.map(function(p){return '<div style="display:grid;grid-template-columns:1.5fr .6fr .75fr .55fr .75fr auto;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid var(--bdr)"><div><div style="font-weight:800;color:var(--txt)">'+esc(p.name)+'</div><div style="font-size:9px;color:var(--txt3)">por '+esc(p.createdByName||'Utilizador')+' · '+esc(p.status==='DRAFT'?'Rascunho':p.status==='ARCHIVED'?'Arquivado':'Ativo')+'</div></div><div>'+pill(esc(p.module||'—'),'ok')+'</div><div style="font-size:10px;color:var(--txt2)">'+itemCount(p)+' item'+(itemCount(p)===1?'':'s')+'</div><div style="font-size:10px;color:var(--txt2)">'+(p.floorCount||1)+' piso'+((p.floorCount||1)===1?'':'s')+'</div><div style="font-size:9px;color:var(--txt3)">'+fmtDate(p.updatedAt||p.createdAt)+'</div><div style="display:flex;gap:6px;flex-wrap:wrap">'+btn('Abrir','sigsAdminOpenProject(\''+esc(p.id)+'\',\''+esc(p.name).replace(/'/g,"\\'")+'\')',false)+btn('Duplicar','sigsV6DuplicateProject(\''+esc(p.id)+'\')',false)+'</div></div>';}).join(''):'<div style="padding:30px;text-align:center;color:var(--txt3);font-size:11px">Ainda não existem projetos guardados no Supabase.</div>';
@@ -702,6 +705,6 @@
   window.startModule=function(mod){ if(!window.sigsModuleAllowed(mod)){notify('🔒 Este módulo não está incluído na licença ativa.');return;} return originalStart.apply(this,arguments); };
 
   // Login/access portal is Supabase-only in V6.
-  window.cloudShowRegister=function(){ notify('As contas são criadas pelo Super Admin ou pelo Admin da empresa.'); };
+  window.cloudShowRegister=function(){ location.href='registo.html'; };
   setTimeout(refreshLicenseButton,1000);
 })();

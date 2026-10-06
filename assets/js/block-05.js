@@ -184,14 +184,15 @@
   function renderLogin(msg){
     var el=ge('sigs-gate-main'); if(!el)return;
     el.innerHTML='<div class="sag-title">Entrar no SIGS</div>'+
-      '<div class="sag-sub">O acesso é feito por utilizadores criados através de uma licença. Não existe registo público.</div>'+
+      '<div class="sag-sub">Entra na tua conta ou cria um espaço para ti ou para a tua empresa.</div>'+
+      (new URLSearchParams(location.search).get('registration')==='confirmed'?'<div class="sag-card">Confirmação recebida. Entra com o email e a palavra-passe do registo.</div>':'')+
       (msg?'<div class="sag-card" style="border-color:rgba(239,68,68,.3);color:#ef4444;font-size:12px">'+e(msg)+'</div>':'')+
       '<div class="sag-card" style="max-width:460px">'+
         '<label class="sag-label">Email</label><input class="sag-input" id="sg-email" type="email" autocomplete="username" placeholder="email@empresa.pt">'+
         '<label class="sag-label">Password</label><input class="sag-input" id="sg-pass" type="password" autocomplete="current-password" placeholder="••••••••••">'+
         '<div id="sg-mfa-wrap" style="display:none"><label class="sag-label">Código MFA</label><input class="sag-input" id="sg-mfa" inputmode="numeric" placeholder="000000"></div>'+
         '<div class="sag-actions"><button class="sag-btn primary" onclick="sigsPortalLogin()">Entrar</button><a class="sag-btn" href="acesso.html">Esqueci-me da palavra-passe</a></div>'+
-        '<div style="margin-top:12px;font-size:10px;color:var(--txt3);line-height:1.6">Se ainda não tem acesso, o Super Admin deve emitir uma licença para a sua empresa ou o seu Admin deve criar o seu utilizador Comercial.</div>'+
+        '<div style="margin-top:12px;font-size:10px;color:var(--txt3);line-height:1.6"><a href="registo.html" class="sag-btn">Criar conta · Escolher plano</a><p>O Gratuito é ativado automaticamente. Os planos pagos aguardam aprovação do Super Admin.</p></div>'+
       '</div>';
   }
   window.sigsPortalLogin=function(){

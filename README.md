@@ -2,6 +2,14 @@
 
 Aplicação de projeto para CCTV, intrusão e incêndio. Esta pasta contém o código completo, os testes e as migrações Supabase.
 
+## Atualização V32
+
+- Registo público em registo.html: plano, pessoa/empresa, contacto, email e palavra-passe. Links no index e no login.
+- Supabase Auth cria a identidade. Trigger privado, apenas na criação, atribui ADMIN no novo espaço e configura a licença; ignora roles, estados ou IDs de empresa enviados pelo cliente.
+- Free fica ACTIVE sem prazo e sem aprovação. Express/Pro/Supreme ficam PENDING e só o Super Admin os aprova; o período inicia na aprovação.
+- Ecrã de espera para planos pagos. Registo requer confirmação do email segundo a configuração atual de Auth. A entrega real do email não foi testada.
+- Testes do registo e da aprovação feitos com fixtures em transação revertida; nenhum email de teste foi enviado.
+
 ## Atualização V31
 
 - Index com Gratuito, Express 4,99 €, Pro 9,99 € e Supreme 19,99 € por mês.
