@@ -1,0 +1,25 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+global.SIGSProposalOptics=require('../assets/js/proposal-optics-v27.js');
+global.SIGSSiteGeometry=require('../assets/js/site-geometry-model-v28.js');
+const M=require('../assets/js/scene-model-v29.js'),scale={ok:true,ppm:10};
+const camera={x:0,y:0,rotation:90,instHeight:3,instTilt:15,fov:90,lens:2.8},target={kind:'person',x:100,y:0};
+const c=M.camera(camera,{type:'bullet',fov:90},scale);
+const a=M.assessment(target,camera,{type:'bullet',fov:90},{scale,obstacles:[]});
+assert.equal(a.frame,true);assert.equal(a.distance,10);assert(a.pixels>100);
+assert.equal(M.project([-10,0,0],c,1280,720),null);
+const zoom=M.assessment(target,{...camera,lens:8},{type:'bullet',fov:90},{scale,obstacles:[]});assert(zoom.pixels>a.pixels);
+const distant=M.assessment({...target,x:200},camera,{type:'bullet',fov:90},{scale,obstacles:[]});assert(distant.pixels<a.pixels);
+const blocked=M.assessment(target,camera,{type:'bullet',fov:90},{scale,obstacles:[{points:[{x:50,y:-20},{x:50,y:20}]}]});assert.equal(blocked.blocked,true);
+assert.equal(M.camera(camera,{},{}),null);
+const clipped=M.clipFace([[-1,0,-1],[10,0,-1],[10,0,1],[-1,0,1]],c,1280,720);assert(clipped.length>=3);assert(clipped.every(p=>Number.isFinite(p.x)&&Number.isFinite(p.y)&&p.depth>=.049));
+const car=M.mesh({kind:'car',x:100,y:0,rotation:90},10);assert.equal(car.length,36);assert(car.every(f=>f.vertices.every(v=>v.every(Number.isFinite))));
+// Reuse the actual canvas-handler fixture, adding the new UI hooks.
+const fixture=fs.readFileSync(require.resolve('./geometry-tools-v28.test.cjs'),'utf8').split('const click=')[0];
+const sandbox={require,console};vm.createContext(sandbox);vm.runInContext(fixture+';globalThis.fixtureEnv=env;',sandbox);
+const e=sandbox.fixtureEnv;e.SIGSSceneModel=M;e.ctx.translate=e.ctx.rotate=e.ctx.fillRect=e.ctx.strokeRect=e.ctx.arc=e.ctx.fillText=()=>{};
+vm.runInContext(fs.readFileSync(require.resolve('../assets/js/scene-v29.js'),'utf8'),e);
+e.SIGSSceneTools.place('person');e.onClick({x:100,y:0,button:0});assert.equal(e.FLOORS[0].sceneTargets.length,1);assert.equal(e.FLOORS[0].sceneTargets[0].height,1.75);
+const snapshot=e.snapShot();e.SIGSSceneTools.place('car');e.onClick({x:200,y:0,button:0});assert.equal(e.FLOORS[0].sceneTargets.length,2);e.applySnap(snapshot);assert.equal(e.FLOORS[0].sceneTargets.length,1);
+e.SIGSSceneTools.place('car');e.SIGSGeometryTools.start('wall');e.onClick({x:20,y:20,button:0});assert.equal(e.FLOORS[0].sceneTargets.length,1);e.SIGSGeometryTools.cancel();
+e.SIGS_V6.currentStatus='ARCHIVED';e.SIGSSceneTools.place('car');e.onClick({x:200,y:0,button:0});assert.equal(e.FLOORS[0].sceneTargets.length,1);
+console.log('PASS: 3D focal/distance/framing, occlusion, near clipping, scaled meshes, placement, undo, tool isolation and archive guard.');

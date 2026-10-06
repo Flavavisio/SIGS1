@@ -2,6 +2,13 @@
 
 Aplicação de projeto para CCTV, intrusão e incêndio. Esta pasta contém o código completo, os testes e as migrações Supabase.
 
+## Atualização V29
+
+- Cabos: duplo clique num ponto prolonga o percurso até ao gravador; clicar diretamente no gravador termina nesse ponto. Sem gravador definido, o percurso permanece em edição.
+- Paredes: cada clique acrescenta um segmento; duplo clique termina a parede. Concluir e Cancelar continuam disponíveis.
+- Referências de pessoa e carro, com posição, dimensões e orientação guardadas por piso e suporte a desfazer.
+- Vista 3D da câmara selecionada, calculada com escala, FOV/focal, posição, altura e inclinação. Modelos geométricos simplificados; não é uma simulação fotográfica ou de reconhecimento.
+
 ## Atualização V22
 
 - **Proposta comercial:** âmbito, equipamentos e serviços, valores, condições de execução e pagamento, validade e aceitação pelo cliente. Os custos internos não são publicados.
