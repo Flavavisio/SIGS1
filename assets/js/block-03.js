@@ -2044,13 +2044,11 @@ function doLoadProj(e){
 // STATS
 // ════════════════════════════════════════
 function updateStats(){
-  document.getElementById('s-devs').textContent=S.placed.length;
-  document.getElementById('s-scale').textContent=S.scale.ok?S.scale.ppm.toFixed(1)+' px/m':'—';
-  document.getElementById('s-fp').textContent=S.fp?'Importada':'—';
-  document.getElementById('s-meas').textContent=S.meas.length;
+  var values={'s-devs':S.placed.length,'s-scale':S.scale.ok?Number(S.scale.ppm).toFixed(1)+' px/m':'—','s-fp':S.fp?'Importada':'—','s-meas':S.meas.length};
+  Object.keys(values).forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=values[id];});
   var t={};S.placed.forEach(function(p){var d=gD(p.libId);if(d)t[d.type]=(t[d.type]||0)+1;});
   var html='';for(var k in t)html+='<div class="si"><span class="sk">'+k+'</span><span class="sv">'+t[k]+'</span></div>';
-  document.getElementById('s-types').innerHTML=html||'<div style="color:var(--txt3);font-size:11px">Nenhum dispositivo</div>';
+  var types=document.getElementById('s-types');if(types)types.innerHTML=html||'<div style="color:var(--txt3);font-size:11px">Nenhum dispositivo</div>';
   updateProjSummary();
 }
 
