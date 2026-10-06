@@ -92,3 +92,11 @@ Abrir projetos, no launcher, no assistente e no Workspace, regressa ao painel de
 `sigs-auth-email` é um Send Email Hook HTTPS com assinatura Standard Webhooks. Usa os layouts partilhados para ativação, convites, recuperação e avisos de segurança. Os destinatários e os links são validados; mudanças de email seguras usam o mapeamento correto de hashes atual/novo. Não imprime tokens nem credenciais. O setup está em `supabase/AUTH_EMAIL_EDGE_SETUP.md`. O hook só deve ser ligado depois de os secrets serem configurados; o SMTP de Authentication mantém-se até essa mudança.
 
 Validação: 26 suites Node passaram; build estático e sintaxe JavaScript verificados. Função publicada; configuração do hook/secrets e entrega real pendentes.
+
+## V35 — Painéis de referências e emails aplicados
+
+Os painéis Pessoa, carro e vista 3D e Paredes e cablagem atualizam as ferramentas sempre que são abertos. Se a barra lateral for instalada antes de existir um piso, mostra orientação para abrir/criar um projeto; ao abrir já num projeto, apresenta os controlos do piso atual. Teste de regressão cobre instalação antes do projeto, colocação real de pessoa/carro, conclusão de parede e troca de piso.
+
+Os oito templates Auth de ativação, convite, login, mudança de email, recuperação, código e avisos de password/email foram aplicados no painel Supabase. As duas notificações de segurança ficaram ativas. Site URL e seis destinos exatos de retorno foram configurados para o Site e GitHub Pages. O logótipo dos quinze modelos usa o PNG público do repositório SIGS1, também confirmado como image/png acessível sem login. Auth continua a enviar por SMTP enquanto o Send Email Hook não tiver os secrets configurados e for ativado. Entrega e renderização na caixa de entrada não são comprovadas pelos testes locais.
+
+Validação: 27 suites Node passaram. Templates reconstruídos e função de emails de licença atualizada.
