@@ -1,0 +1,21 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const M=require('../assets/js/site-geometry-model-v28.js');global.SIGSSiteGeometry=M;
+const O=require('../assets/js/proposal-optics-v27.js'),cam={x:0,y:0,rotation:90,fov:90,range:30,instHeight:4},wall={height:2,points:[{x:5,y:-5},{x:5,y:5}]};
+function inside(p,poly){let result=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const a=poly[i],b=poly[j];if((a.y>p.y)!==(b.y>p.y)&&p.x<(b.x-a.x)*(p.y-a.y)/(b.y-a.y)+a.x)result=!result;}return result;}
+const shadow=M.shadows(cam,1,[wall])[0];assert(shadow);
+assert(!inside({x:4,y:0},shadow),'Ground before wall stays visible');
+assert(inside({x:7,y:0},shadow),'Low wall hides nearby ground behind it');
+assert(!inside({x:15,y:0},shadow),'High camera sees over low wall further away');
+const tall=M.shadows(cam,1,[{...wall,height:5}])[0];assert(inside({x:25,y:0},tall),'Wall above camera blocks to coverage limit');
+assert.equal(M.shadows(cam,1,[{...wall,points:[{x:-5,y:-5},{x:-5,y:5}]}]).length,0);
+assert.equal(M.shadows(cam,1,[{...wall,points:[{x:35,y:-5},{x:35,y:5}]}]).length,0);
+assert.equal(M.shadows(cam,1,[{points:[{x:5,y:1},{x:5,y:1}]}]).length,0);
+const lower=M.shadows({...cam,instHeight:1},1,[wall])[0];assert(inside({x:25,y:0},lower));
+const gaps=[{height:5,points:[{x:5,y:-10},{x:5,y:-1}]},{height:5,points:[{x:5,y:1},{x:5,y:10}]}];assert(M.shadows(cam,1,gaps).every(poly=>!inside({x:20,y:0},poly)));
+const snapshot=require('../assets/js/workflow-model-v12.js').publicSnapshot({lines:[],total:0},{},[{name:'Piso',scale:{ok:true,ppm:1},obstacles:[wall],placed:[{...cam,libId:'camera'}]}],[{id:'camera',type:'bullet',fov:90,range:30}],'Teste');
+assert.equal(snapshot.floors[0].obstacles[0].height,2);assert.equal(snapshot.floors[0].devices[0].instHeight,4);
+const svg=O.sector({...cam,type:'bullet'},1,[wall,{...wall,points:[{x:6,y:-5},{x:6,y:5}]}]);assert.equal((svg.match(/<clipPath /g)||[]).length,2);assert(svg.includes('clip-rule="evenodd"'));
+const fixture=fs.readFileSync(require.resolve('./geometry-tools-v28.test.cjs'),'utf8').split('const click=')[0],sandbox={require,console};vm.createContext(sandbox);vm.runInContext(fixture+';globalThis.envUnderTest=env;',sandbox);const e=sandbox.envUnderTest;
+e.SIGSGeometryTools.start('wall');e.onClick({x:10,y:10,detail:1,button:0});e.onClick({x:50,y:50,detail:1,button:0});e.onClick({x:52,y:51,detail:2,button:0});assert.equal(e.FLOORS[0].obstacles[0].points.length,2,'Double-click jitter does not leave a spur');
+let clips=0;e.ctx.clip=rule=>{assert.equal(rule,'evenodd');clips++;};e.FLOORS[0].obstacles=[wall,{...wall,points:[{x:6,y:-5},{x:6,y:5}]}];e.drawCov(cam,{type:'bullet',fov:90,range:30});assert.equal(clips,2,'Overlapping shadows are subtracted separately');
+console.log('PASS: height-aware ground shadows, unaffected rear/distant walls, gaps, overlap union, proposal heights and double-click jitter.');
