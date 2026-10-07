@@ -4,14 +4,20 @@ import {renderEmail} from '../_shared/email-model.mjs';
 const cors={'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'authorization,apikey,content-type','Access-Control-Allow-Methods':'POST,OPTIONS'};
 const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{...cors,'Content-Type':'application/json'}});
 const env=(name:string)=>Deno.env.get(name)||'';
+function serverKey(){try{return String(JSON.parse(env('SUPABASE_SECRET_KEYS')||'{}').default||'');}catch{return '';}}
+function matchesSecret(provided:string,expected:string){
+ if(!provided||!expected||provided.length!==expected.length)return false;
+ let difference=0;for(let i=0;i<provided.length;i++)difference|=provided.charCodeAt(i)^expected.charCodeAt(i);return difference===0;
+}
 async function api(path:string,body?:unknown,token?:string){
  const r=await fetch(env('SUPABASE_URL')+path,{method:body===undefined?'GET':'POST',headers:{apikey:env('SUPABASE_SERVICE_ROLE_KEY'),Authorization:'Bearer '+(token||env('SUPABASE_SERVICE_ROLE_KEY')),'Content-Type':'application/json'},...(body===undefined?{}:{body:JSON.stringify(body)})});
  const data=await r.json().catch(()=>null);if(!r.ok)throw Error('DATABASE_REQUEST_FAILED');return data;
 }
 Deno.serve(async(req:Request)=>{
  if(req.method==='OPTIONS')return new Response('ok',{headers:cors});if(req.method!=='POST')return json({error:'METHOD_NOT_ALLOWED'},405);
- const token=(req.headers.get('Authorization')||'').replace(/^Bearer\s+/i,'');if(!token)return json({error:'AUTH_REQUIRED'},401);
- const service=!!env('SUPABASE_SERVICE_ROLE_KEY')&&token===env('SUPABASE_SERVICE_ROLE_KEY');
+ const token=(req.headers.get('Authorization')||'').replace(/^Bearer\s+/i,'');
+ const service=matchesSecret(token,env('SUPABASE_SERVICE_ROLE_KEY'))||matchesSecret(req.headers.get('apikey')||'',serverKey());
+ if(!service&&!token)return json({error:'AUTH_REQUIRED'},401);
  try{
   if(!service){let user;try{user=await api('/auth/v1/user',undefined,token);}catch{return json({error:'INVALID_SESSION'},401);}
    const profiles=await api('/rest/v1/profiles?select=role,active&id=eq.'+encodeURIComponent(user.id));if(!profiles?.[0]?.active||profiles[0].role!=='SUPER_ADMIN')return json({error:'SUPER_ADMIN_REQUIRED'},403);
@@ -20,6 +26,13 @@ Deno.serve(async(req:Request)=>{
   const configured=['SMTP_HOST','SMTP_USER','SMTP_PASSWORD','SMTP_FROM'].every(k=>!!env(k))&&env('SMTP_PORT')==='465';
   const enabled=configured&&env('SIGS_EMAIL_ENABLED')==='true';
   if(action==='status')return json({configured,enabled,transport:'SMTP',port:465});
+  // Bootstrap the existing cron credential entirely on the server; never return it.
+  if(action==='configure_dispatch'){
+   if(!service)return json({error:'SERVICE_CREDENTIAL_REQUIRED'},403);
+   if(!env('SUPABASE_SERVICE_ROLE_KEY'))return json({error:'SERVER_CREDENTIAL_UNAVAILABLE'},503);
+   await api('/rest/v1/rpc/sigs_email_configure_dispatch',{worker_jwt:env('SUPABASE_SERVICE_ROLE_KEY')});
+   return json({dispatch_configured:true});
+  }
   if(!['verify','dispatch'].includes(action))return json({error:'UNKNOWN_ACTION'},400);
   if(!configured)return json({error:'SMTP_NOT_CONFIGURED',configured:false},503);
   const transport=nodemailer.createTransport({host:env('SMTP_HOST'),port:465,secure:true,auth:{user:env('SMTP_USER'),pass:env('SMTP_PASSWORD')},connectionTimeout:10000,greetingTimeout:10000,socketTimeout:15000,disableFileAccess:true,disableUrlAccess:true});
