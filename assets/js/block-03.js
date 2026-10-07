@@ -84,6 +84,8 @@ var S = {
 // MODULE START
 // ════════════════════════════════════════
 function startModule(mod) {
+  if(S.mapOpen) closeMap();
+  S.floorPlanLoadId=(S.floorPlanLoadId||0)+1;
   MOD = mod;
   document.getElementById('launcher').classList.add('gone');
   document.getElementById('app').classList.add('show');
@@ -158,8 +160,7 @@ function startModule(mod) {
   renderDevList(); deselect(); updateStats(); render(); _preloadAllPhotos();
   setTimeout(resize,80);
   hint(mod==='cctv'?'CCTV: selecione câmara → clique na planta. Arraste diretamente com rato esq.':'Ajax: selecione detetor → clique na planta. Ajuste zona e alcance nas propriedades.');
-  // Abrir automaticamente o mapa OSM em todos os módulos (CCTV, intrusão, incêndio)
-  setTimeout(function(){ openMap(); }, 350);
+  // A base do projeto é escolhida pelo utilizador; abrir um projeto conserva a captura guardada.
 }
 
 function backToLauncher(){
@@ -314,6 +315,11 @@ function drawCov(p,dev){
       [dr.d*S.scale.ppm*S.zoom, 'rgba(0,200,240,0.18)', 'rgba(0,200,240,0.55)']
     ];
     var labels=[['I','#f03050'],['R','#f0a000'],['O','#00e888'],['D','#3b82f6']];
+    if(window.SIGSAdvancedModel&&window.SIGSImageProfile&&SIGSImageProfile()==='2025'&&dev.type!=='fisheye'&&fov<180){
+      var operational=SIGSAdvancedModel.distances(p,dev,'2025');
+      pairs=operational.map(function(l){return [l.distance*S.scale.ppm*S.zoom,l.color,l.color];});
+      labels=operational.map(function(l){return [l.short,l.color];});
+    }
     ctx.setLineDash([4,3]);
     pairs.forEach(function(pp,idx){
       var r2=pp[0]; if(r2<=0||r2>rPx*3)return;
@@ -1893,15 +1899,17 @@ function _buildProjectData(){
   return data;
 }
 function _restoreProjectData(d){
+  if(typeof closeMap==='function') closeMap();
+  S.floorPlanLoadId=(S.floorPlanLoadId||0)+1;
   if(d.module&&d.module!==MOD) startModule(d.module);
   if(d.lib)S.lib=d.lib; if(d.placed)S.placed=d.placed; if(d.meas)S.meas=d.meas;
   if(d.scale)S.scale=d.scale; if(d.devN)S.devN=d.devN;
   if(d.floors&&d.floors.length){ FLOORS=d.floors; FLOOR_CUR=d.floorCur||0; renderFloorBar(); }
   else { FLOORS[0]={id:uid(),name:'Piso 0',placed:d.placed||[],meas:d.meas||[],fp:null,scale:d.scale||S.scale,devN:d.devN||0}; FLOOR_CUR=0; renderFloorBar(); }
   var scaleBadge=document.getElementById('scbadge');if(scaleBadge&&S.scale&&S.scale.ok)scaleBadge.textContent=Number(S.scale.ppm).toFixed(1)+' px/m';
-  var meta=d.fp||(d.floors&&d.floors[FLOOR_CUR]&&d.floors[FLOOR_CUR].fp)||null;
+  var meta=(d.floors&&d.floors[FLOOR_CUR]&&d.floors[FLOOR_CUR].fp)||d.fp||null;
   S.fp=meta?Object.assign({},meta,{img:null}):null;
-  if(meta&&meta.imgData){ var target=S.fp,img=new Image(); img.onload=function(){ if(S.fp!==target)return; target.img=img; var fl=document.getElementById('fplock'); if(fl)fl.checked=!!target.locked; render(); updateStats(); }; img.src=meta.imgData; }
+  if(meta&&meta.imgData){ var target=S.fp,img=new Image(); img.onload=function(){ if(S.fp!==target)return; target.img=img; var fl=document.getElementById('fplock'); if(fl)fl.checked=!!target.locked; if(typeof sigsSetPlantLocked==='function')sigsSetPlantLocked(!!target.locked); if(typeof fitView==='function')fitView(); render(); updateStats(); }; img.src=meta.imgData; }
   renderDevList(); deselect(); render(); updateStats();
 }
 
@@ -2331,14 +2339,17 @@ function saveCurrentFloor(){
 function loadFloor(idx){
   var fl = FLOORS[idx];
   if(!fl) return;
+  if(typeof closeMap==='function')closeMap();
+  var loadId=S.floorPlanLoadId=(S.floorPlanLoadId||0)+1;
   S.placed = JSON.parse(JSON.stringify(fl.placed));
   S.meas   = JSON.parse(JSON.stringify(fl.meas));
   S.scale  = JSON.parse(JSON.stringify(fl.scale));
   S.devN   = fl.devN;
   S.undoStack = []; S.redoStack = []; updateUndoUI();
   if(fl.fp && fl.fp.imgData){
+    var target=S.fp=Object.assign({},fl.fp,{img:null});
     var img = new Image();
-    img.onload = function(){ S.fp = {img:img, imgData:fl.fp.imgData, x:fl.fp.x, y:fl.fp.y, w:fl.fp.w, h:fl.fp.h, opa:fl.fp.opa, locked:fl.fp.locked}; sigsSetPlantLocked(!!fl.fp.locked); render(); updateStats(); };
+    img.onload = function(){ if(S.floorPlanLoadId!==loadId||S.fp!==target)return; target.img=img; sigsSetPlantLocked(!!target.locked); fitView(); render(); updateStats(); };
     img.src = fl.fp.imgData;
   } else {
     S.fp = null;
