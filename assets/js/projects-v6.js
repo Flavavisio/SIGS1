@@ -75,7 +75,7 @@ function saveProject(mode){
     openNewProjectWizard();return Promise.resolve(null);
   }
   if(V6.currentStatus==='ARCHIVED'){if(mode!=='auto'&&typeof notify==='function')notify('Projeto arquivado. Altere o estado para Rascunho ou Ativo antes de guardar.');saveChip('archived','🔒 Arquivado');return Promise.resolve(null);}
-  if(V6.saving||V6.restoring)return Promise.resolve(null);
+  if(V6.saving||V6.restoring||V6.deleting)return Promise.resolve(null);
   if(mode==='auto'&&!V6.dirty)return Promise.resolve(null);
   V6.saving=true;saveChip('saving');
   var patch,pid=projectId(),savedFingerprint;try{patch=buildPatch();savedFingerprint=fingerprint();}catch(e){V6.saving=false;V6.dirty=true;saveChip('error');return Promise.reject(e);}
@@ -193,7 +193,27 @@ function openVersions(){
 }
 window.sigsV6OpenVersions=openVersions;
 
-function deleteProject(id,name){if(!confirm('Apagar definitivamente "'+name+'"?'))return;var cfg=sb();return api(cfg.url+'/rest/v1/projects?id=eq.'+encodeURIComponent(id),{method:'DELETE',headers:h()}).then(function(){if(CLOUD.projectId===id){CLOUD.projectId=null;CLOUD.projectName=null;V6.currentStatus=null;V6.dirty=false;}if(typeof notify==='function')notify('Projeto apagado.');renderProjectManager();if(typeof loadContext==='function')loadContext().catch(function(){});});}
+async function deleteProject(id,name){
+  if(!id||V6.deleting)return false;
+  if(V6.saving||V6.restoring){notify('Aguarda a gravação em curso antes de apagar.');return false;}
+  if(!confirm('Apagar definitivamente "'+name+'"? O projeto e o seu histórico serão eliminados. Esta ação não pode ser desfeita.'))return false;
+  V6.deleting=id;
+  try{
+    var cfg=sb(),rows=await api(cfg.url+'/rest/v1/projects?id=eq.'+encodeURIComponent(id)+'&select=id',{method:'DELETE',headers:h({'Prefer':'return=representation'})});
+    if(!Array.isArray(rows)||!rows.some(function(p){return p.id===id;}))throw new Error('Projeto não encontrado ou sem permissão para apagar.');
+    if(CLOUD.projectId===id){clearTimeout(V6.autoTimer);V6.autoTimer=null;CLOUD.projectId=null;CLOUD.projectName=null;V6.currentStatus=null;V6.dirty=false;V6.lastFingerprint=null;V6.lastSavedAt=null;closeOverlay('sigs-v6-versions');saveChip('clean','Sem projeto aberto');if(typeof sigsPortalOpenProjects==='function')sigsPortalOpenProjects();}
+    if(typeof notify==='function')notify('Projeto apagado.');
+    renderProjectManager();
+    if(typeof loadLicenseContext==='function')loadLicenseContext().catch(function(){});
+    return true;
+  }catch(e){if(typeof notify==='function')notify('Não foi possível apagar: '+e.message);return false;}
+  finally{V6.deleting=null;}
+}
+window.sigsPortalDeleteProject=async function(button){
+  button.disabled=true;
+  try{if(await deleteProject(button.dataset.deleteProject,button.dataset.projectName)){if(typeof sigsPortalRender==='function')sigsPortalRender();}}
+  finally{button.disabled=false;}
+};
 window.cloudDeleteProject=deleteProject;
 
 function projectManagerShell(){
