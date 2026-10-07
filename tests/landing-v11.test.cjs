@@ -34,7 +34,7 @@ assert.equal(ids.length, new Set(ids).size, 'IDs must be unique');
 for (const match of html.split('<script>')[0].matchAll(/\b(?:href|src)="([^"]+)"/g)) {
   const target = match[1];
   if (target.startsWith('#')) assert.ok(ids.includes(target.slice(1)), target);
-  else if (!/^(?:data:|https?:|mailto:)/.test(target)) assert.ok(fs.existsSync(path.join(root, target.split('?')[0])), target);
+  else if (!/^(?:data:|https?:|mailto:|tel:)/.test(target)) assert.ok(fs.existsSync(path.join(root, target.split('?')[0])), target);
 }
 for (const match of script.matchAll(/el\('([^']+)'\)/g)) assert.ok(ids.includes(match[1]), match[1]);
 assert.ok(html.includes('prefers-reduced-motion'));

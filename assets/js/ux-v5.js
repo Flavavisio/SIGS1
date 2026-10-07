@@ -307,7 +307,7 @@ function auditProject(){
       var d=deviceOf(p)||{},mp=Number(p.mp||d.mp)||0,codec=p.codec||'ultra265b';maxMP=Math.max(maxMP,mp);
       var br=4;try{br=(typeof cameraNetworkMbps==='function')?cameraNetworkMbps(p):((BITRATE_TABLE[codec]||BITRATE_TABLE.h265)[mp]||4);}catch(e){}totalBW+=br;
       var days=Number(p.days)||30;if(days<30)add('warning','Retenção '+p.label,'Configurada para '+days+' dias, abaixo do objetivo de 30 dias deste projeto.');
-      try{if(typeof calcStorage==='function')totalGB+=calcStorage(mp||4,codec,days).gb;}catch(e){}
+      try{if(typeof calcStorage==='function')totalGB+=calcStorage(mp||4,codec,days,p).gb;}catch(e){}
       if(!p.netMbps)bitrateEstimated.push(p.label);
       try{if(typeof poeDeviceWatts==='function'&&poeDeviceWatts(p,d).source==='estimated')poeEstimated.push(p.label);}catch(e){}
       try{var lens=Number(p.lens||d.baseLens||2.8),dr=typeof doriCalc==='function'?doriCalc(d,lens):null;if(!dr||!isFinite(dr.i)||dr.i<=0||!Number(d.fov)||!mp)doriMissing.push(p.label);}catch(e){doriMissing.push(p.label);}

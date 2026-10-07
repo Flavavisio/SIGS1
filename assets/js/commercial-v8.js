@@ -32,7 +32,7 @@ function rows(){
  if(cams.length){
   var bw=0,mp=0,gb=0,cable=0,estimated=0;
   cams.forEach(function(x){var p=x.p,cod=p.codec||'ultra265b',res=p.mp||4;
-   bw+=(BITRATE_TABLE[cod]||BITRATE_TABLE.h265)[res]||4;mp=Math.max(mp,res);gb+=calcStorage(res,cod,p.days||30).gb;
+   bw+=typeof cameraNetworkMbps==='function'?cameraNetworkMbps(p):((BITRATE_TABLE[cod]||BITRATE_TABLE.h265)[res]||4);mp=Math.max(mp,res);gb+=calcStorage(res,cod,p.days||30,p).gb;
    var len=null;
    if(window.SIGSSiteGeometry&&p.cableRoute&&p.cableRoute.length>=2){
     var route=SIGSSiteGeometry.cable(p,x.fl.scale,x.fl.cabling);if(route)len=route.total;

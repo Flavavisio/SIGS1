@@ -306,7 +306,7 @@ function drawCov(p,dev){
   // Draw DORI rings for CCTV (only when scale is set)
   if(MOD==='cctv' && S.scale.ok && p.visible!==false && range>0){
     var lens=p.lens||2.8;
-    var dr=doriCalc(dev,lens);
+    var dr=doriCalc(window.SIGSEngineeringModel&&typeof p!=='undefined'?Object.assign({},dev,{resW:SIGSEngineeringModel.widthPixels(p,dev)}):dev,lens);
     var pairs=[
       [dr.i*S.scale.ppm*S.zoom, 'rgba(240,48,80,0.55)',  'rgba(240,48,80,0.9)'],
       [dr.r*S.scale.ppm*S.zoom, 'rgba(240,160,0,0.45)', 'rgba(240,160,0,0.85)'],
@@ -818,7 +818,7 @@ function placeDevice(x,y){
   var pre=(prefixes[dev.type]||'DEV');
   var n=nextNum(pre);
   S.devN++; // keep for save-format compatibility
-  var pc={id:uid(),libId:dev.id,x:x,y:y,rotation:0,label:pre+(n<10?'0':'')+n,color:dev.color,opacity:0.22,visible:true,lens:2.8,afov:dev.fov,arange:dev.range,zone:1,mp:dev.mp||4,codec:'ultra265b',days:30,instHeight:dev.height||3,instTilt:30};
+  var pc={id:uid(),libId:dev.id,x:x,y:y,rotation:0,label:pre+(n<10?'0':'')+n,color:dev.color,opacity:0.22,visible:true,lens:2.8,afov:dev.fov,arange:dev.range,zone:1,mp:dev.mp||4,codec:(String(dev.brand||'').toLowerCase().includes('unv')||String(dev.brand||'').toLowerCase().includes('uniview'))?'ultra265b':'h265',days:30,instHeight:dev.height||3,instTilt:30};
   pushUndo();
   S.placed.push(pc);
   S.justPlaced=true; // block next onClick from placing another
@@ -1712,7 +1712,7 @@ function openPrintModal(){
   var totalGB=0, lines=[];
   cams.forEach(function(p){
     var mp=p.mp||4, codec=p.codec||'ultra265b', days=p.days||30;
-    var st=calcStorage(mp,codec,days);
+    var st=calcStorage(mp,codec,days,p);
     totalGB+=st.gb;
     lines.push(p.label+': '+mp+'MP · '+codecLabel(codec)+' · '+days+'d → '+fmtGB(st.gb));
   });
@@ -1766,9 +1766,9 @@ function doPrint(){
       var lens=p.lens||2.8;
       var fov=lFOV(dev.fov,lens).toFixed(0)+'°';
       var range=lRange(dev.range,lens).toFixed(0)+'m';
-      var dr=doriCalc(dev,lens);
+      var dr=doriCalc(window.SIGSEngineeringModel&&typeof p!=='undefined'?Object.assign({},dev,{resW:SIGSEngineeringModel.widthPixels(p,dev)}):dev,lens);
       var mp=p.mp||dev.mp||8, codec=p.codec||'ultra265b', days=p.days||30;
-      var st=calcStorage(mp,codec,days);
+      var st=calcStorage(mp,codec,days,p);
       grandStorTotal+=st.gb;
       tbody+='<tr><td>'+(i+1)+'</td><td><b>'+p.label+'</b></td><td style="font-size:8.5px">'+(dev.model||'—')+'</td><td>'+dev.type+'</td><td>'+lens.toFixed(1)+'mm</td><td>'+fov+'</td><td>'+range+'</td><td>'+dr.d.toFixed(0)+'m</td><td>'+dr.i.toFixed(0)+'m</td><td>'+mp+'MP</td><td>'+fmtGB(st.gb)+'</td></tr>';
     });
@@ -1782,7 +1782,7 @@ function doPrint(){
     var storRows=''; var grandTotal=0;
     cams.forEach(function(p){
       var mp=p.mp||4,codec=p.codec||'ultra265b',days=p.days||30;
-      var st=calcStorage(mp,codec,days); grandTotal+=st.gb;
+      var st=calcStorage(mp,codec,days,p); grandTotal+=st.gb;
       storRows+='<b>'+p.label+'</b>: '+mp+'MP · '+codecLabel(codec)+' · '+days+' dias → <b>'+fmtGB(st.gb)+'</b><br>';
     });
     // Total disco em destaque
@@ -1825,7 +1825,7 @@ function doPrint(){
   if((rptOn('rpt-nvr')||rptOn('rpt-poe'))&&MOD==='cctv'&&cams.length){
     nvrSec.style.display='';
     var totalBW2=0,maxMP2=0,totalGB3=0;
-    cams.forEach(function(p){var mp=p.mp||4,codec=p.codec||'ultra265b',days=p.days||30;var br=(BITRATE_TABLE[codec]||BITRATE_TABLE.h265)[mp]||4;totalBW2+=br;totalGB3+=calcStorage(mp,codec,days).gb;if(mp>maxMP2)maxMP2=mp;});
+    cams.forEach(function(p){var mp=p.mp||4,codec=p.codec||'ultra265b',days=p.days||30;var br=cameraNetworkMbps(p);totalBW2+=br;totalGB3+=calcStorage(mp,codec,days,p).gb;if(mp>maxMP2)maxMP2=mp;});
     var nvrHtml='<b>Projeto:</b> '+cams.length+' câmaras · '+totalBW2.toFixed(1)+' Mbps BW total · 💾 '+fmtGB(totalGB3)+'<br><br>';
     if(rptOn('rpt-nvr')){
       var matches2=suggestNVR(cams.length,maxMP2,totalBW2);
@@ -2075,7 +2075,7 @@ function updateProjSummary(){
   var totalGB=0, minDays=999, maxDays=0;
   cams.forEach(function(p){
     var mp=p.mp||4, codec=p.codec||'ultra265b', days=p.days||30;
-    var br=(BITRATE_TABLE[codec]||BITRATE_TABLE.h265)[mp]||4;
+    var br=cameraNetworkMbps(p);
     var gb=br*3600*24*days/8/(1024*1024*1024)*1e6;
     totalGB+=Math.ceil(gb);
     if(days<minDays) minDays=days;
@@ -2214,10 +2214,11 @@ function doriCalc(dev,lens){
 
 // Update DORI panel in right properties pane
 function updateDoriPanel(dev,lens){
+  var selected=fP(S.selId);if(dev&&selected&&window.SIGSEngineeringModel)dev=Object.assign({},dev,{resW:SIGSEngineeringModel.widthPixels(selected,dev)});
   var panel=document.getElementById('cctv-dori');
   if(!dev){if(panel)panel.style.display='none';return;}
   if(panel)panel.style.display='';
-  var dr=doriCalc(dev,lens);
+  var dr=doriCalc(window.SIGSEngineeringModel&&typeof p!=='undefined'?Object.assign({},dev,{resW:SIGSEngineeringModel.widthPixels(p,dev)}):dev,lens);
   document.getElementById('dori-dv').textContent=dr.d.toFixed(1)+'m';
   document.getElementById('dori-ov').textContent=dr.o.toFixed(1)+'m';
   document.getElementById('dori-rv').textContent=dr.r.toFixed(1)+'m';
@@ -2459,7 +2460,7 @@ function buildBudget(){
 
   // ── SECTION: HDD ──
   var totalGB=0;
-  cams.forEach(function(p){totalGB+=calcStorage(p.mp||4,p.codec||'ultra265b',p.days||30).gb;});
+  cams.forEach(function(p){totalGB+=calcStorage(p.mp||4,p.codec||'ultra265b',p.days||30,p).gb;});
   var hddTB = nearestHDD(totalGB);
   BUDGET.hddSize = hddTB;
   var hddSection = document.getElementById('budget-hdd-section');
@@ -2504,7 +2505,7 @@ function buildBudget(){
 
     if(cams.length){
       var totalBW2=0,maxMP2=0;
-      cams.forEach(function(p){var mp=p.mp||4,codec=p.codec||'ultra265b';var br=(BITRATE_TABLE[codec]||BITRATE_TABLE.h265)[mp]||4;totalBW2+=br;if(mp>maxMP2)maxMP2=mp;});
+      cams.forEach(function(p){var mp=p.mp||4,codec=p.codec||'ultra265b';var br=cameraNetworkMbps(p);totalBW2+=br;if(mp>maxMP2)maxMP2=mp;});
       var nvrMatch=suggestNVR(cams.length,maxMP2,totalBW2);
       var poe=calcPoE(cams);
       var systemItems=[
@@ -2641,7 +2642,7 @@ function openBOM(){
   var extraRows = [];
   if(cams.length){
     var totalBW=0,maxMP=0,totalGB=0;
-    cams.forEach(function(p){var mp=p.mp||4,codec=p.codec||'ultra265b',days=p.days||30;var br=(BITRATE_TABLE[codec]||BITRATE_TABLE.h265)[mp]||4;totalBW+=br;totalGB+=calcStorage(mp,codec,days).gb;if(mp>maxMP)maxMP=mp;});
+    cams.forEach(function(p){var mp=p.mp||4,codec=p.codec||'ultra265b',days=p.days||30;var br=cameraNetworkMbps(p);totalBW+=br;totalGB+=calcStorage(mp,codec,days,p).gb;if(mp>maxMP)maxMP=mp;});
     var nvr=suggestNVR(cams.length,maxMP,totalBW);
     var poe=calcPoE(cams);
     var hddTB=nearestHDD(totalGB);
@@ -2834,18 +2835,18 @@ render = function(){
 // STORAGE CALCULATION
 // ════════════════════════════════════════
 // Bitrate table (Mbps) by MP and codec
-// Sources: Uniview Ultra 265 specs (U-Code + H.265 technology)
-// H.264 industry standard → H.265+ saves ~50% → Ultra265 Basic saves ~75% vs H.264
-// Ultra265 Advanced (U-Code Adv) saves ~90% vs H.264 → Ultra265 Max ~95%
+// Legacy fallback estimates; canonical model: engineering-model-v39.js.
+// Ultra 265 savings depend on the scene. These are planning scenarios, not official modes.
 var BITRATE_TABLE = {
   h264:      {2:4,    4:8,    5:10,  8:16,   12:24  },  // H.264 — baseline
-  h265:      {2:2,    4:4,    5:5,   8:8,    12:12  },  // H.265+ — ~50% vs H.264
+  h265:      {2:2,    4:4,    5:5,   8:8,    12:12  },  // H.265 planning estimate
   ultra265b: {2:1,    4:2,    5:2.5, 8:4,    12:6   },  // Ultra 265 Basic  — ~75% vs H.264
-  ultra265a: {2:0.5,  4:1,    5:1.2, 8:2,    12:3   },  // Ultra 265 Advanced — ~90% vs H.264
-  ultra265m: {2:0.25, 4:0.5,  5:0.6, 8:1,    12:1.5 },  // Ultra 265 Max — ~95% vs H.264
+  ultra265a: {2:0.5,  4:1,    5:1.2, 8:2,    12:3   },  // Quiet-scene planning estimate
+  ultra265m: {2:0.2, 4:0.4,  5:0.5, 8:0.8,    12:1.2 },  // Very quiet scene; verify measured bitrate
 };
 
-function calcStorage(mp, codec, days){
+function calcStorage(mp, codec, days, settings){
+  if(window.SIGSEngineeringModel)return SIGSEngineeringModel.storage(mp,codec,days,settings);
   var br = (BITRATE_TABLE[codec]||BITRATE_TABLE.h265)[mp] || 8; // Mbps
   // Storage = bitrate(Mbps) * 3600s * 24h * days / 8 (bits→bytes) / 1024^3 (→GB)
   var gb = br * 3600 * 24 * days / 8 / (1024*1024*1024) * 1e6;
@@ -2854,15 +2855,16 @@ function calcStorage(mp, codec, days){
 
 function codecLabel(codec){
   var labels={
-    ultra265m:'Ultra 265 Max (UNV)',
-    ultra265a:'Ultra 265 Adv (UNV)',
-    ultra265b:'Ultra 265 Basic (UNV)',
-    h265:'H.265+',
+    ultra265m:'Ultra 265 · cena muito calma (UNV)',
+    ultra265a:'Ultra 265 · cena calma (UNV)',
+    ultra265b:'Ultra 265 · cenário de projeto (UNV)',
+    h265:'H.265',
     h264:'H.264'
   };
   return labels[codec]||codec.toUpperCase();
 }
 function fmtGB(gb){
+  if(window.SIGSEngineeringModel)return SIGSEngineeringModel.displayStorage(gb);
   if(gb >= 1024) return (gb/1024).toFixed(1)+' TB';
   return gb+' GB';
 }
@@ -2872,7 +2874,7 @@ function updateStoragePanel(){
   var mp    = pc.mp    || 8;
   var codec = pc.codec || 'h265';
   var days  = pc.days  || 30;
-  var res   = calcStorage(mp, codec, days);
+  var res   = calcStorage(mp, codec, days, pc);
   document.getElementById('stor-bitrate').textContent = res.bitrate+' Mbps';
   document.getElementById('stor-percam').textContent  = fmtGB(res.gb);
   // Total all cameras in project (all floors)
@@ -2882,8 +2884,8 @@ function updateStoragePanel(){
     fl.placed.forEach(function(p){
       if(gD(p.libId) && gD(p.libId).type !== undefined){
         var dev=gD(p.libId);
-        if(['dome','bullet','ptz'].indexOf(dev.type)>=0){
-          var r2=calcStorage(p.mp||4, p.codec||'ultra265b', p.days||30);
+        if(['dome','bullet','turret','ptz','fisheye','thermal_bi'].indexOf(dev.type)>=0){
+          var r2=calcStorage(p.mp||4, p.codec||'ultra265b',p.days||30,p);
           total += r2.gb;
         }
       }
@@ -2995,8 +2997,8 @@ function buildSystemTab(){
   var totalBW=0, totalGB=0, maxMP=0, defDays=30;
   cams.forEach(function(p){
     var mp=p.mp||4, codec=p.codec||'ultra265b', days=p.days||defDays;
-    var br=(BITRATE_TABLE[codec]||BITRATE_TABLE.h265)[mp]||4;
-    totalBW+=br; totalGB+=calcStorage(mp,codec,days).gb;
+    var br=cameraNetworkMbps(p);
+    totalBW+=br; totalGB+=calcStorage(mp,codec,days,p).gb;
     if(mp>maxMP)maxMP=mp;
   });
 
@@ -3396,7 +3398,8 @@ function poeDeviceWatts(p,dev){
 }
 
 function cameraNetworkMbps(p){
-  if(p&&Number(p.netMbps)>0)return Number(p.netMbps);
+  if(p&&Number(p.netMbps)>0)return Math.max(Number(p.netMbps),Number(p.recordMbps)||0);
+  if(window.SIGSEngineeringModel)return Math.max(Number(p.recordMbps)||0,SIGSEngineeringModel.bitrate(p.mp||4,'h265',p.recordFps||25));
   var mp=p.mp||4,codec=p.codec||'ultra265b';
   return Number(((BITRATE_TABLE[codec]||BITRATE_TABLE.h265)[mp]||4));
 }
@@ -3875,7 +3878,7 @@ function _generatePDF(){
     {label:'Câmaras',val:String(cams.length)},
   ];
   if(S.scale.ok){
-    var totalGB2=0;cams.forEach(function(p){totalGB2+=calcStorage(p.mp||4,p.codec||'ultra265b',p.days||30).gb;});
+    var totalGB2=0;cams.forEach(function(p){totalGB2+=calcStorage(p.mp||4,p.codec||'ultra265b',p.days||30,p).gb;});
     stats.push({label:'Armazenamento',val:fmtGB(totalGB2)});
   }
   var statW=(W-2*margin)/stats.length;
@@ -3968,7 +3971,7 @@ function _generatePDF(){
       var lens=p.lens||2.8;
       var flName='—';
       FLOORS.forEach(function(fl){if(fl.placed.some(function(q){return q.id===p.id;}))flName=fl.name;});
-      var st=calcStorage(p.mp||dev.mp||4,p.codec||'ultra265b',p.days||30);
+      var st=calcStorage(p.mp||dev.mp||4,p.codec||'ultra265b',p.days||30,p);
       y=tableRow(doc,[p.label,(dev.model||dev.name),flName,lens.toFixed(1)+'mm',lFOV(dev.fov,lens).toFixed(0)+'°',lRange(dev.range,lens).toFixed(0)+'m',(p.mp||4)+'MP',fmtGB(st.gb)],cols,y,i%2===0);
     });
     y+=6;
@@ -4009,7 +4012,7 @@ function _generatePDF(){
     y=checkPage(doc,y,30);
     y=sectionTitle(doc,'🖥  Sistema & Armazenamento',y);
     var totalBW=0,maxMP=0,totalGB=0;
-    cams.forEach(function(p){var mp=p.mp||4,codec=p.codec||'ultra265b',days=p.days||30;var br=(BITRATE_TABLE[codec]||BITRATE_TABLE.h265)[mp]||4;totalBW+=br;totalGB+=calcStorage(mp,codec,days).gb;if(mp>maxMP)maxMP=mp;});
+    cams.forEach(function(p){var mp=p.mp||4,codec=p.codec||'ultra265b',days=p.days||30;var br=cameraNetworkMbps(p);totalBW+=br;totalGB+=calcStorage(mp,codec,days,p).gb;if(mp>maxMP)maxMP=mp;});
     var matches=suggestNVR(cams.length,maxMP,totalBW);
     var poe=calcPoE(cams);
 
@@ -4078,7 +4081,7 @@ function _generatePDF(){
     var qcams=allPlaced.filter(function(p){var d=gD(p.libId);return d&&CAMT.indexOf(d.type)>=0;});
     if(qcams.length){
       var tBW=0,mMP=0,tGB=0;
-      qcams.forEach(function(p){var mp=p.mp||4,cod=p.codec||'ultra265b';var br=(BITRATE_TABLE[cod]||BITRATE_TABLE.h265)[mp]||4;tBW+=br;tGB+=calcStorage(mp,cod,p.days||30).gb;if(mp>mMP)mMP=mp;});
+      qcams.forEach(function(p){var mp=p.mp||4,cod=p.codec||'ultra265b';var br=cameraNetworkMbps(p);tBW+=br;tGB+=calcStorage(mp,cod,p.days||30,p).gb;if(mp>mMP)mMP=mp;});
       var nv=suggestNVR(qcams.length,mMP,tBW), pe=calcPoE(qcams), hd=nearestHDD(tGB);
       if(nv[0]) qrows.push({ref:nv[0].name,name:'NVR Recomendado',qty:1,unit:''});
       if(pe.suggested[0]) qrows.push({ref:pe.suggested[0].name,name:'Switch PoE',qty:1,unit:''});
@@ -4793,9 +4796,9 @@ var DC_BRANDS = {
     ]},
   uniview:{name:'Uniview (UNV)',icon:'🔵',color:'#3b82f6',logoURL:null,
     codecs:[
-      {id:'uv_ultra265max',label:'Ultra 265 Max', note:'Estimativa inteligente · confirme bitrate',factor:0.16},
-      {id:'uv_ultra265adv',label:'Ultra 265 Adv', note:'Estimativa inteligente · depende da cena',factor:0.19},
-      {id:'uv_ultra265',   label:'Ultra 265',     note:'Codec inteligente · estimativa',factor:0.23},
+      {id:'uv_ultra265max',label:'Ultra 265 · cena muito calma', note:'Cenário até 95% abaixo de H.264; só validar com bitrate medido. Não é um modo oficial',factor:0.025},
+      {id:'uv_ultra265adv',label:'Ultra 265 · cena calma', note:'Hipótese de projeto: 87,5% abaixo de H.264; a atividade e a luz podem aumentar o bitrate',factor:0.0625},
+      {id:'uv_ultra265',   label:'Ultra 265 · cenário de projeto', note:'Hipótese: 75% abaixo de H.264 a 25 fps. Confirma bitrate médio real; não é um modo oficial.',factor:0.125},
       {id:'uv_h265',       label:'H.265',         note:'HEVC · estimativa de projeto',factor:0.30},
       {id:'uv_h264',       label:'H.264',         note:'Baseline',                            factor:0.50},
     ],defaultCodec:'uv_ultra265',
@@ -4847,7 +4850,7 @@ function dcGetCodecNote(id){
   var c=DC_BRANDS[_dcBrand].codecs.find(function(c){return c.id===id;});
   return c?c.note:'';
 }
-function dcFmtGB(gb){return gb>=1024?(gb/1024).toFixed(2)+' TB':Math.ceil(gb)+' GB';}
+function dcFmtGB(gb){if(window.SIGSEngineeringModel)return SIGSEngineeringModel.displayStorage(gb);return gb>=1024?(gb/1024).toFixed(2)+' TB':Math.ceil(gb)+' GB';}
 
 var _dcUploadTarget = null;
 function dcUploadBrandLogo(brand){
@@ -5103,7 +5106,7 @@ function dcAddCam(){
 function dcMakeCamCard(id){
   var cam=_dcCams.find(function(c){return c.id===id;}); if(!cam||!_dcBrand) return document.createElement('div');
   var b=DC_BRANDS[_dcBrand];
-  var brBase=dcGetResBase(cam.resId)*dcGetCodecFactor(cam.codecId)*Math.min(cam.fps/25,1);
+  var brBase=dcEffectiveBitrate(cam);
 
   var card=document.createElement('div');
   card.className='dc-cam-card';
@@ -5151,6 +5154,7 @@ function _dcCamBitrate(id,v){
   dcCalc();
 }
 function dcAutoBitrate(cam){
+  if(window.SIGSEngineeringModel)return SIGSEngineeringModel.bitrate(parseFloat(cam.resId)||4,cam.codecId,cam.fps);
   return dcGetResBase(cam.resId)*dcGetCodecFactor(cam.codecId)*Math.min(Math.max(cam.fps,1)/25,1.2);
 }
 function dcEffectiveBitrate(cam){
@@ -5179,7 +5183,7 @@ function dcCalc(){
   var days     = Math.max(1,parseInt((document.getElementById('dc-days')||{value:30}).value)||30);
   var hours    = Math.min(24,Math.max(1,parseInt((document.getElementById('dc-hours')||{value:24}).value)||24));
   var raidPct  = parseInt((document.getElementById('dc-raid')||{value:0}).value)||0;
-  var margPct  = parseInt((document.getElementById('dc-margin')||{value:20}).value)||20;
+  var margPct  = Math.max(0,Number((document.getElementById('dc-margin')||{value:20}).value));
   var overheadPct=parseInt((document.getElementById('dc-overhead')||{value:5}).value)||0;
   var recordDuty=dcRecordingModeChanged();
   var recordMode=(document.getElementById('dc-record-mode')||{value:'continuous'}).value;
@@ -5193,7 +5197,7 @@ function dcCalc(){
   _dcCams.forEach(function(cam){
     var baseBr=dcEffectiveBitrate(cam);
     // Scene-complexity simulation affects the bitrate while a stream is being recorded.
-    var motMix=_dcMotionOn?((1-motPct)*1+motPct*motFac):1;
+    var motMix=_dcMotionOn&&!cam.bitrate?((1-motPct)*1+motPct*motFac):1;
     var streamBr=baseBr*motMix;
     var recordedBr=streamBr*recordDuty;
     var gbCam=recordedBr*mbpsToGB;
@@ -5210,7 +5214,7 @@ function dcCalc(){
       brel.textContent=streamBr.toFixed(2)+' Mbps · '+src+(motMix>1?' ⚡':'');
     }
     var totel=document.getElementById('dc-ctot-'+cam.id);
-    if(totel)totel.textContent=dcFmtGB(Math.ceil(gbGrp));
+    if(totel)totel.textContent=dcFmtGB(gbGrp);
 
     groups.push({name:cam.name,qty:cam.qty,gb:gbGrp,bitrate:streamBr,recordedBitrate:recordedBr});
   });
@@ -5219,7 +5223,7 @@ function dcCalc(){
   var gbOverhead=totalRaw*(1+overheadPct/100);
   var gbRaid=gbOverhead*(1+raidPct/100);
   var gbFinal=gbRaid*(1+margPct/100);
-  var tbFinal=gbFinal/1024;
+  var tbFinal=gbFinal*Math.pow(1024,3)/1e12;
 
   // Reference without scene-complexity simulation.
   var rawNoMotion=_dcCams.reduce(function(s,cam){
@@ -5237,7 +5241,7 @@ function dcCalc(){
   var col=tbFinal>50?'#ef4444':tbFinal>10?'#f59e0b':'#10b981';
   var heroNum=document.getElementById('dc-hero-num');
   if(heroNum){
-    heroNum.textContent=tbFinal>=1?tbFinal.toFixed(2)+' TB':Math.ceil(gbFinal)+' GB';
+    heroNum.textContent=dcFmtGB(gbFinal);
     heroNum.style.color=col;
     heroNum.classList.remove('dc-hero-bump');
     void heroNum.offsetWidth;
@@ -5249,7 +5253,7 @@ function dcCalc(){
   var heroSub=document.getElementById('dc-hero-sub');
   if(heroSub)heroSub.innerHTML=
     '<strong style="color:var(--acc3)">'+totalCams+'</strong> câmara'+(totalCams===1?'':'s')+
-    ' · pico '+(totalPeakBW>=1000?(totalPeakBW/1000).toFixed(2)+' Gbps':totalPeakBW.toFixed(1)+' Mbps')+
+    ' · rede estimada '+(totalPeakBW>=1000?(totalPeakBW/1000).toFixed(2)+' Gbps':totalPeakBW.toFixed(1)+' Mbps')+
     ' · gravação média '+(totalRecordedBW>=1000?(totalRecordedBW/1000).toFixed(2)+' Gbps':totalRecordedBW.toFixed(1)+' Mbps');
 
   var hero=document.getElementById('dc-hero');
@@ -5261,16 +5265,16 @@ function dcCalc(){
   setStat('dc-s-cams',totalCams+(totalCams===1?' câmara':' câmaras'));
   setStat('dc-s-bw',totalPeakBW>=1000?(totalPeakBW/1000).toFixed(2)+' Gbps':totalPeakBW.toFixed(1)+' Mbps');
   setStat('dc-s-rec-bw',totalRecordedBW>=1000?(totalRecordedBW/1000).toFixed(2)+' Gbps':totalRecordedBW.toFixed(1)+' Mbps');
-  setStat('dc-s-raw',dcFmtGB(Math.ceil(totalRaw)));
-  setStat('dc-s-raid',dcFmtGB(Math.ceil(gbRaid))+(raidPct?' + reserva '+raidPct+'%':''));
-  setStat('dc-s-margin',dcFmtGB(Math.ceil(gbFinal))+' · margem '+margPct+'%');
+  setStat('dc-s-raw',dcFmtGB(totalRaw));
+  setStat('dc-s-raid',dcFmtGB(gbRaid)+(raidPct?' + reserva '+raidPct+'%':''));
+  setStat('dc-s-margin',dcFmtGB(gbFinal)+' · margem '+margPct+'%');
   setStat('dc-s-days',days+'d · '+hours+'h/dia · '+Math.round(recordDuty*100)+'%');
 
   var imp=document.getElementById('dc-impact');
   if(_dcMotionOn&&imp){
     imp.style.display='';
-    setStat('dc-mi-base',dcFmtGB(Math.ceil(gbFinalNoMotion)));
-    setStat('dc-mi-motion',dcFmtGB(Math.ceil(gbFinal)));
+    setStat('dc-mi-base',dcFmtGB(gbFinalNoMotion));
+    setStat('dc-mi-motion',dcFmtGB(gbFinal));
     var diff=gbFinal-gbFinalNoMotion;
     var diffPct=gbFinalNoMotion>0?(diff/gbFinalNoMotion*100):0;
     setStat('dc-mi-diff',(diff>=0?'+':'')+dcFmtGB(Math.ceil(Math.abs(diff)))+' ('+(diff>=0?'+':'')+diffPct.toFixed(0)+'%)');
@@ -5281,8 +5285,8 @@ function dcCalc(){
     hddGrid.innerHTML='';
     var best=[];
     DC_HDD_SIZES.forEach(function(t){
-      var q=Math.ceil(gbFinal/(t*1024));
-      if(q>=1&&q<=32)best.push({t:t,q:q,tot:t*1024*q});
+      var q=Math.ceil(gbFinal/(t*1e12/Math.pow(1024,3)));
+      if(q>=1&&q<=32)best.push({t:t,q:q,tot:t*1e12/Math.pow(1024,3)*q});
     });
     // Prefer the first option using at most 4 disks, otherwise nearest larger set.
     var preferred=0;
@@ -5294,7 +5298,7 @@ function dcCalc(){
       d.className='dc-hdd-card'+(isBest?' best':'');
       d.innerHTML='<div class="dc-hdd-tb">'+h.t+' TB</div>'+
         '<div class="dc-hdd-qty">'+h.q+' disco'+(h.q!==1?'s':'')+'</div>'+
-        '<div style="font-size:7.5px;color:var(--txt3);margin-top:1px">'+dcFmtGB(Math.ceil(h.tot))+'</div>';
+        '<div style="font-size:7.5px;color:var(--txt3);margin-top:1px">'+dcFmtGB(h.tot)+'</div>';
       hddGrid.appendChild(d);
     });
   }
@@ -5310,7 +5314,7 @@ function dcCalc(){
       gb2.innerHTML+='<div class="dc-bar">'+
         '<span class="dc-bar-lbl" title="'+g.name+(g.qty>1?' ×'+g.qty:'')+'">'+g.name+(g.qty>1?' ×'+g.qty:'')+'</span>'+
         '<div class="dc-bar-track"><div class="dc-bar-fill" style="width:'+pct.toFixed(0)+'%;background:'+b.color+'"></div></div>'+
-        '<span class="dc-bar-val">'+dcFmtGB(Math.ceil(g.gb))+'</span>'+
+        '<span class="dc-bar-val">'+dcFmtGB(g.gb)+'</span>'+
       '</div>';
     });
   } else if(gw)gw.style.display='none';
@@ -5381,7 +5385,7 @@ function dcExportTxt(){
   var lines=[
     '═══════════════════════════════════════════',
     '  RELATÓRIO TÉCNICO DE ARMAZENAMENTO CCTV',
-    '  SIGS Design',
+    '  SIGS Studio',
     '═══════════════════════════════════════════',
     'Data:        '+new Date().toLocaleDateString('pt-PT'),
     'Marca:       '+b.name,
@@ -5409,7 +5413,7 @@ function dcExportTxt(){
     '',
     '── Resultado ────────────────────────────',
     '  Capacidade recomendada: '+(heroEl?heroEl.textContent:'—'),
-    '  Bitrate pico:           '+(bwEl?bwEl.textContent:'—'),
+    '  Rede estimada:          '+(bwEl?bwEl.textContent:'—'),
     '  Bitrate gravado médio:  '+(recBwEl?recBwEl.textContent:'—'),
     '',
     'Nota: cálculo de projeto. Para dimensionamento final, usar o bitrate configurado/medido em cada câmara sempre que disponível.',

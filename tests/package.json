@@ -1,0 +1,1 @@
+{"private":true,"description":"DOM integration tests for SIGS Studio","devDependencies":{"jsdom":"26.1.0"}}

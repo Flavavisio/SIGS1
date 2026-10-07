@@ -1,23 +1,23 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-<script src="assets/js/email-callback-v15.js?v=20261007-0645"></script>
+<script src="assets/js/email-callback-v15.js?v=20261007-0700"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="SIGS Studio — ferramenta profissional de design de sistemas CCTV e intrusão: plantas, cobertura de câmaras, DORI, cálculo de armazenamento, PoE e orçamento.">
 <meta name="theme-color" content="#050810">
 <title>SIGS Studio</title>
 
-<link rel="stylesheet" href="assets/css/sigs.css?v=20261007-0645">
-<script src="assets/js/block-01.js?v=20261007-0645"></script>
-<script src="assets/js/block-02.js?v=20261007-0645"></script>
+<link rel="stylesheet" href="assets/css/sigs.css?v=20261007-0700">
+<script src="assets/js/block-01.js?v=20261007-0700"></script>
+<script src="assets/js/block-02.js?v=20261007-0700"></script>
 
-<link rel="stylesheet" href="assets/css/commercial-v8.css?v=20261007-0645">
-<link rel="stylesheet" href="assets/css/premium-v9.css?v=20261007-0645">
-<link rel="stylesheet" href="assets/css/proposal-v10.css?v=20261007-0645">
-<link rel="stylesheet" href="assets/css/workflow-v12.css?v=20261007-0645">
-<link rel="stylesheet" href="assets/css/sidebar-v13.css?v=20261007-0645">
-<link rel="stylesheet" href="assets/css/brand-v23.css?v=20261007-0645"><link rel="icon" type="image/svg+xml" href="assets/brand/sigs-favicon.svg"><link rel="stylesheet" href="assets/css/recommendations-v24.css?v=20261007-0645"></head>
+<link rel="stylesheet" href="assets/css/commercial-v8.css?v=20261007-0700">
+<link rel="stylesheet" href="assets/css/premium-v9.css?v=20261007-0700">
+<link rel="stylesheet" href="assets/css/proposal-v10.css?v=20261007-0700">
+<link rel="stylesheet" href="assets/css/workflow-v12.css?v=20261007-0700">
+<link rel="stylesheet" href="assets/css/sidebar-v13.css?v=20261007-0700">
+<link rel="stylesheet" href="assets/css/brand-v23.css?v=20261007-0700"><link rel="icon" type="image/svg+xml" href="assets/brand/sigs-favicon.svg"><link rel="stylesheet" href="assets/css/recommendations-v24.css?v=20261007-0700"></head>
 <body class="sigs-locked sigs-premium">
 
 
@@ -134,7 +134,7 @@
             <div class="dc-brand-tile" data-brand="uniview" onclick="dcSelectBrand('uniview')" style="--bc:#3b82f6">
               <div class="dbt-logo" id="dc-blogo-uniview" style="background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.25)">🔵</div>
               <div class="dbt-name">Uniview</div>
-              <div class="dbt-codec">Ultra 265 Max<br>Ultra 265</div>
+              <div class="dbt-codec">Ultra 265 · U-Code<br>Cenários por atividade</div>
               <div class="dbt-logo-upload" onclick="event.stopPropagation();dcUploadBrandLogo('uniview')" title="Carregar logo">📁</div>
             </div>
             <div class="dc-brand-tile" data-brand="safire" onclick="dcSelectBrand('safire')" style="--bc:#10b981">
@@ -271,7 +271,7 @@
         <div id="dc-gauge-label" style="font-size:8.5px;color:var(--txt3);text-align:center;margin-top:-4px"></div>
         <div class="dc-stats">
           <div class="dc-stat"><div class="dc-sl">Câmaras</div><div class="dc-sv" id="dc-s-cams">—</div></div>
-          <div class="dc-stat"><div class="dc-sl">Bitrate Pico</div><div class="dc-sv" id="dc-s-bw">—</div></div>
+          <div class="dc-stat"><div class="dc-sl">Rede estimada</div><div class="dc-sv" id="dc-s-bw">—</div></div>
           <div class="dc-stat"><div class="dc-sl">Bitrate Gravado Médio</div><div class="dc-sv" id="dc-s-rec-bw">—</div></div>
           <div class="dc-stat"><div class="dc-sl">Bruto</div><div class="dc-sv" id="dc-s-raw">—</div></div>
           <div class="dc-stat"><div class="dc-sl">Com RAID</div><div class="dc-sv" id="dc-s-raid">—</div></div>
@@ -608,10 +608,10 @@
             <div class="fr">
               <span class="fl">Compressão</span>
               <select class="fi" id="p-codec" onchange="updP('codec',this.value)">
-                <option value="ultra265m">Ultra 265 Max (Uniview)</option>
-                <option value="ultra265a">Ultra 265 Advanced (Uniview)</option>
-                <option value="ultra265b" selected>Ultra 265 Basic (Uniview)</option>
-                <option value="h265">H.265+</option>
+                <option value="ultra265m">Ultra 265 · cena muito calma</option>
+                <option value="ultra265a">Ultra 265 · cena calma</option>
+                <option value="ultra265b" selected>Ultra 265 · cenário de projeto</option>
+                <option value="h265">H.265</option>
                 <option value="h264">H.264</option>
               </select>
             </div>
@@ -799,10 +799,10 @@
     <option value="8">8MP</option><option value="12">12MP</option>
   </select>
   <select id="multi-codec" onchange="applyMultiStorage()" style="padding:3px 6px;border-radius:5px;background:var(--bg4);border:1px solid var(--bdr2);color:var(--txt2);font-size:10px;cursor:pointer;font-family:var(--m)" title="Codec para todos">
-    <option value="ultra265m">Ultra265 Max</option>
-    <option value="ultra265a">Ultra265 Adv</option>
-    <option value="ultra265b" selected>Ultra265 Basic</option>
-    <option value="h265">H.265+</option>
+    <option value="ultra265m">Ultra 265 · muito calma</option>
+    <option value="ultra265a">Ultra 265 · calma</option>
+    <option value="ultra265b" selected>Ultra 265 · projeto</option>
+    <option value="h265">H.265</option>
     <option value="h264">H.264</option>
   </select>
   <input id="multi-days" type="number" min="1" max="365" value="30" onchange="applyMultiStorage()" style="width:52px;padding:3px 5px;border-radius:5px;background:var(--bg4);border:1px solid var(--bdr2);color:var(--txt2);font-size:10px;font-family:var(--m)" title="Dias de gravação">
@@ -1210,11 +1210,12 @@
   </div>
 </div>
 
-<script src="assets/data/equipment-catalog.js?v=20261007-0645"></script>
-<script src="assets/data/poe-network-catalog.js?v=20261007-0645"></script>
-<script src="assets/data/product-images.js?v=20261007-0645"></script>
-<script src="assets/js/optics-v13.js?v=20261007-0645"></script>
-<script src="assets/js/block-03.js?v=20261007-0645"></script>
+<script src="assets/data/equipment-catalog.js?v=20261007-0700"></script>
+<script src="assets/data/poe-network-catalog.js?v=20261007-0700"></script>
+<script src="assets/data/product-images.js?v=20261007-0700"></script>
+<script src="assets/js/optics-v13.js?v=20261007-0700"></script>
+<script src="assets/js/engineering-model-v39.js?v=20261007-0700"></script>
+<script src="assets/js/block-03.js?v=20261007-0700"></script>
 
 <!-- ══ PRESENTATION MODE OVERLAY ══ -->
 <div id="pres-overlay">
@@ -1239,36 +1240,38 @@
 
 
 
-<script src="assets/js/block-04.js?v=20261007-0645"></script>
+<script src="assets/js/block-04.js?v=20261007-0700"></script>
 
 
-<script src="assets/js/block-05.js?v=20261007-0645"></script>
-<script src="assets/js/catalog-supabase.js?v=20261007-0645"></script>
-<script src="assets/js/ux-v5.js?v=20261007-0645"></script>
-<script src="assets/js/projects-v6.js?v=20261007-0645"></script>
-<script src="assets/js/engineering-v7.js?v=20261007-0645"></script>
-<script src="assets/js/commercial-model-v8.js?v=20261007-0645"></script>
-<script src="assets/js/commercial-v8.js?v=20261007-0645"></script>
-<script src="assets/js/premium-v9.js?v=20261007-0645"></script>
-<script src="assets/js/accessory-model-v10.js?v=20261007-0645"></script>
-<script src="assets/js/site-geometry-model-v28.js?v=20261007-0645"></script>
-<script src="assets/js/proposal-optics-v27.js?v=20261007-0645"></script>
-<script src="assets/js/proposal-v10.js?v=20261007-0645"></script>
+<script src="assets/js/block-05.js?v=20261007-0700"></script>
+<script src="assets/js/catalog-supabase.js?v=20261007-0700"></script>
+<script src="assets/js/ux-v5.js?v=20261007-0700"></script>
+<script src="assets/js/projects-v6.js?v=20261007-0700"></script>
+<script src="assets/js/engineering-v7.js?v=20261007-0700"></script>
+<script src="assets/js/commercial-model-v8.js?v=20261007-0700"></script>
+<script src="assets/js/commercial-v8.js?v=20261007-0700"></script>
+<script src="assets/js/premium-v9.js?v=20261007-0700"></script>
+<script src="assets/js/accessory-model-v10.js?v=20261007-0700"></script>
+<script src="assets/js/site-geometry-model-v28.js?v=20261007-0700"></script>
+<script src="assets/js/proposal-optics-v27.js?v=20261007-0700"></script>
+<script src="assets/js/proposal-v10.js?v=20261007-0700"></script>
 
-<script src="assets/js/workflow-model-v12.js?v=20261007-0645"></script>
-<script src="assets/js/quote-view-v12.js?v=20261007-0645"></script>
-<script src="assets/js/pending-model-v25.js?v=20261007-0645"></script>
-<script src="assets/js/alternatives-model-v26.js?v=20261007-0645"></script>
-<script src="assets/js/workflow-v12.js?v=20261007-0645"></script>
-<script src="assets/js/sidebar-v13.js?v=20261007-0645"></script>
-<script src="assets/js/brand-v23.js?v=20261007-0645"></script>
-<script src="assets/js/technical-report-v22.js?v=20261007-0645"></script>
-<script src="assets/js/recommendation-model-v24.js?v=20261007-0645"></script>
-<script src="assets/js/recommendations-v24.js?v=20261007-0645"></script>
-<link rel="stylesheet" href="assets/css/site-geometry-v28.css?v=20261007-0645">
-<script src="assets/js/site-geometry-v28.js?v=20261007-0645"></script>
-<link rel="stylesheet" href="assets/css/scene-v29.css?v=20261007-0645">
-<script src="assets/js/scene-model-v29.js?v=20261007-0645"></script>
-<script src="assets/js/scene-v29.js?v=20261007-0645"></script>
+<script src="assets/js/workflow-model-v12.js?v=20261007-0700"></script>
+<script src="assets/js/quote-view-v12.js?v=20261007-0700"></script>
+<script src="assets/js/pending-model-v25.js?v=20261007-0700"></script>
+<script src="assets/js/alternatives-model-v26.js?v=20261007-0700"></script>
+<script src="assets/js/workflow-v12.js?v=20261007-0700"></script>
+<script src="assets/js/sidebar-v13.js?v=20261007-0700"></script>
+<script src="assets/js/brand-v23.js?v=20261007-0700"></script>
+<script src="assets/js/technical-report-v22.js?v=20261007-0700"></script>
+<script src="assets/js/recommendation-model-v24.js?v=20261007-0700"></script>
+<script src="assets/js/recommendations-v24.js?v=20261007-0700"></script>
+<link rel="stylesheet" href="assets/css/site-geometry-v28.css?v=20261007-0700">
+<script src="assets/js/site-geometry-v28.js?v=20261007-0700"></script>
+<link rel="stylesheet" href="assets/css/scene-v29.css?v=20261007-0700">
+<script src="assets/js/scene-model-v29.js?v=20261007-0700"></script>
+<script src="assets/js/scene-v29.js?v=20261007-0700"></script>
+<link rel="stylesheet" href="assets/css/engineering-v39.css?v=20261007-0700">
+<script src="assets/js/engineering-v39.js?v=20261007-0700"></script>
 </body>
 </html>
