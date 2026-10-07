@@ -325,11 +325,11 @@ function drawCov(p,dev){
         ctx.setLineDash([]);
         var ang=fov>=355?(-Math.PI/2):(((-hf-90)+hf/2)*Math.PI/180);
         var lx=Math.cos(ang)*r2, ly=Math.sin(ang)*r2;
-        ctx.save(); ctx.rotate(-rot+(p.rotation-90)*Math.PI/180);
-        // rotate back to draw label upright
+        ctx.save(); ctx.translate(lx,ly); ctx.rotate(-rot);
+        // Anchor on the rotated arc, then keep only the text upright.
         ctx.font='bold 8px sans-serif';
         ctx.fillStyle=labels[idx][1];
-        ctx.fillText(labels[idx][0], lx+2, ly-2);
+        ctx.fillText(labels[idx][0], 2, -2);
         ctx.restore();
         ctx.setLineDash([4,3]);
       }
