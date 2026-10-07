@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /supabase/
+Disallow: /tests/
+Disallow: /scripts/
+
+Sitemap: https://www.sigs-studio.pt/sitemap.xml
