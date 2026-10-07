@@ -23,3 +23,6 @@ Passo externo restante: verificar a propriedade www.sigs-studio.pt na Google Sea
 Validação RLS no Supabase: fixture em transação com rollback; Admin sem acesso, Super Admin com acesso, INSERT negado a authenticated.
 Endpoint publicado: dashboard anónimo 401; visita sem consentimento 400; página inválida 400.
 Nenhuma palavra-passe real alterada durante testes. Nenhum registo de utilizador real apagado.
+
+## Atualização: recolha pública desativada
+Em 7 de outubro de 2026, a pedido do titular do site, foi retirado o aviso de estatísticas. Nenhuma página carrega o script de visitas, a rota pública devolve 410, e o painel deixa de apresentar Visitas ao site. O histórico já recolhido permanece até à eliminação automática em 30 dias. Permanecem os acessos autenticados e a alteração da própria palavra-passe.

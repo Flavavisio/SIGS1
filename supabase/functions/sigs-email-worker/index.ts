@@ -44,7 +44,7 @@ Deno.serve(async(req:Request)=>{
    try{
     if(!/^[^\s,;<>@]+@[^\s,;<>@]+\.[^\s,;<>@]+$/.test(job.recipient))throw Error('INVALID_RECIPIENT');
     const message=renderEmail(job.event,job.payload,{appURL:env('SIGS_APP_URL')||undefined});
-    const result=await transport.sendMail({from:{name:'SIGS Studio',address:env('SMTP_FROM')},to:job.recipient,...message,messageId:`<${job.id}@sigs-studio>`,...(env('SMTP_REPLY_TO')?{replyTo:env('SMTP_REPLY_TO')}:{})});
+    const result=await transport.sendMail({from:{name:'SIGS Studio',address:env('SMTP_FROM')},to:job.recipient,...message,messageId:`<${job.id}@${env('SMTP_FROM').split('@')[1]}>`,...(env('SMTP_REPLY_TO')?{replyTo:env('SMTP_REPLY_TO')}:{})});
     accepted=(result.accepted||[]).length>0;if(!accepted)throw Error('SMTP_REJECTED');
     const completed=await api('/rest/v1/rpc/sigs_email_complete',{job_id:job.id,lease:job.lease_id,success:true});if(!completed)throw Error('DELIVERY_UNKNOWN');sent++;
    }catch(error){

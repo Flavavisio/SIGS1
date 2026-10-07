@@ -1,7 +1,7 @@
 import {renderEmail,esc,appURL} from './email-model.mjs';
 
 const kinds={signup:'confirmation',email:'confirmation',invite:'invite',magiclink:'magic_link',recovery:'recovery',email_change:'email_change',reauthentication:'reauthentication',password_changed_notification:'password_changed_notification',email_changed_notification:'email_changed_notification'};
-const origins=['https://sigs-studio.flowy-mouse-8040.chatgpt.site','https://flavavisio.github.io'];
+const origins=['https://sigs-studio.flowy-mouse-8040.chatgpt.site','https://flavavisio.github.io','https://www.sigs-studio.pt','https://sigs-studio.pt'];
 const paths=['/app-Sigs.html','/acesso.html','/SIGS1/app-Sigs.html','/SIGS1/acesso.html','/Sigs/app-Sigs.html','/Sigs/acesso.html'];
 function address(value){if(typeof value!=='string'||value.length>254||!/^\S+@[^\s,;<>@]+\.[^\s,;<>@]+$/.test(value)||/[\r\n,;<>]/.test(value))throw Error('INVALID_RECIPIENT');return value;}
 function redirect(value,kind){

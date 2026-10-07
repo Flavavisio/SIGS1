@@ -143,6 +143,6 @@ document.querySelectorAll('[data-demo-module]').forEach(function(b){b.onclick=fu
 el('demo-minus').onclick=function(){state.count=Math.max(1,state.count-1);if(state.selected>=state.count)state.selected=null;render();};el('demo-plus').onclick=function(){state.count=Math.min(8,state.count+1);render();toast('Equipamentos e materiais atualizados no exemplo.');};el('demo-coverage').onchange=function(){state.coverage=this.checked;render();};el('helper-projects').oninput=updateRecommendation;el('helper-items').oninput=updateRecommendation;render();updateRecommendation();
 })();
 </script>
-<script src="assets/js/visits-v42.js?v=20261007-1515" defer></script>
+
 </body>
 </html>

@@ -13,6 +13,7 @@ const secure=fixture('email_change');secure.email_data.token_hash_new=newHash;se
 const pair=authMessages(secure);assert.equal(pair.length,2);assert.equal(pair[0].to,'current@example.com');assert.ok(pair[0].text.includes(newHash));assert.equal(pair[1].to,'new@example.com');assert.ok(pair[1].text.includes(hash));
 assert.equal(authMessages(fixture('email_change'))[0].to,'new@example.com');
 const bad=fixture('signup');bad.email_data.redirect_to='https://evil.test/acesso.html';assert.throws(()=>authMessages(bad));
+const domain=fixture('recovery');domain.email_data.redirect_to='https://www.sigs-studio.pt/acesso.html';assert.ok(authMessages(domain)[0].text.includes(encodeURIComponent('https://www.sigs-studio.pt/acesso.html')));
 bad.email_data.redirect_to='https://flavavisio.github.io/other/app-Sigs.html';assert.throws(()=>authMessages(bad));
 bad.email_data.redirect_to='https://flavavisio.github.io/SIGS1/app-Sigs.html';bad.user.email='a@example.com\r\nBcc: b@example.com';assert.throws(()=>authMessages(bad));
 const sent=[];let closed=0,accept=true;
