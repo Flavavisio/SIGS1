@@ -35,7 +35,7 @@
     el('leafmap').innerHTML='';marker=null;fallback=true;
     var b=el('sigs-map-names');if(b)b.hidden=true;
     if(error)console.warn('SIGS MapLibre: '+error.message);
-    status(error?'Este navegador não conseguiu iniciar o mapa gráfico. Vista de satélite de compatibilidade ativa.':'Vista de compatibilidade · satélite');legacy.open();observe();requestAnimationFrame(resize);
+    status(error?(/WebGL/i.test(error.message)?'A aceleração gráfica (WebGL) não está disponível neste navegador. Satélite em modo de compatibilidade.':'Vista de compatibilidade ativa. O mapa gráfico não arrancou: '+error.message):'Vista de compatibilidade · satélite');legacy.open();observe();requestAnimationFrame(resize);
   }
   w.openMap=function(){
     if(fallback){show();legacy.open();return;}
@@ -64,7 +64,12 @@
     viewId++;searchId++;S.mapOpen=false;document.body.classList.remove('sigs-map-open');legacy.close();
   };
   // A captured plant stays locked; reopening the viewer must still allow a new location.
-  w._applyMapLock=function(){if(!map)legacy.lock();};
+  w._applyMapLock=function(){
+    if(map)return;
+    var locked=S.mapLocked;
+    if(S.mapOpen)S.mapLocked=false;
+    try{legacy.lock();}finally{S.mapLocked=locked;}
+  };
   w.sigsMapToggleNames=function(){
     if(!map||!map.isStyleLoaded())return;
     names=!names;['sigs-roads','sigs-places'].forEach(function(id){map.setLayoutProperty(id,'visibility',names?'visible':'none');});
