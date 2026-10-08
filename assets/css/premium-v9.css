@@ -35,3 +35,6 @@ body.sigs-premium.light{--bg0:#f1f4f8;--bg1:#fff;--bg2:#f7f9fc;--bg3:#edf2f8;--b
 .sigs-premium #launcher{padding-top:100px}
 .lau-menu-return{position:absolute;top:24px;left:16px;right:16px;display:flex;justify-content:center;z-index:2}
 .lau-menu-return .sag-btn{min-height:44px;padding:11px 20px}
+
+/* Keep focal-length specifications readable in the equipment library. */
+.sigs-premium .sigs-lens-label{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.5;margin-top:3px;color:var(--txt2)}

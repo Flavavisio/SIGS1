@@ -1,6 +1,7 @@
 /* Lens capabilities from catalogue metadata; no optical zoom on fixed lenses. */
 (function(root){'use strict';
 function number(v){const n=Number(v);return Number.isFinite(n)&&n>0?n:null;}
+function mm(v){return String(Number(v)).replace('.',',');}
 function policy(d){d=d||{};const optics=d.optics||{},text=[d.lensType,d.lens_type,d.focalType,optics.type,d.name,d.desc,typeof d.lens==='string'?d.lens:'',typeof d.focalLength==='string'?d.focalLength:'',d.lensRange,d.focal_range].filter(Boolean).join(' ').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
  const explicit=String(d.lensType||d.lens_type||d.focalType||optics.type||'').toLowerCase();
  const range=text.match(/(\d+(?:[.,]\d+)?)\s*(?:mm\s*)?[-–—]\s*(\d+(?:[.,]\d+)?)\s*mm/);
@@ -11,9 +12,9 @@ function policy(d){d=d||{};const optics=d.optics||{},text=[d.lensType,d.lens_typ
  const scalar=text.match(/(?:^|\s)(\d+(?:[.,]\d+)?)\s*mm\b/);
  const focal=number(d.focalLength??d.fixedFocalLength??d.focal_length??optics.focal??(typeof d.lens==='number'?d.lens:null))||(scalar?number(scalar[1].replace(',','.')):null);
  const base=number(d.baseLens??d.refLens)||focal||2.8;
- if(!adjustable){const value=focal||min||base;return {adjustable:false,min:value,max:value,initial:value,base:number(d.baseLens??d.refLens)||value,documented:!!(focal||min||d.baseLens||d.refLens),label:'Lente fixa — ajuste bloqueado'};}
+ if(!adjustable){const value=focal||min||base,documented=!!(focal||min||d.baseLens||d.refLens);return {adjustable:false,min:value,max:value,initial:value,base:number(d.baseLens??d.refLens)||value,documented,label:documented?'Lente fixa · '+mm(value)+' mm — ajuste bloqueado':'Lente fixa · distância focal por confirmar (simulação: '+mm(value)+' mm) — ajuste bloqueado'};}
  const documented=!!(min&&max&&max>min);if(!documented){min=2.8;max=13;}
- return {adjustable:true,min,max,initial:min,base:number(d.baseLens??d.refLens)||2.8,documented,label:documented?'Lente ajustável · '+min+'–'+max+' mm':'Lente ajustável · intervalo de simulação 2,8–13 mm; limites do modelo por confirmar'};
+ return {adjustable:true,min,max,initial:min,base:number(d.baseLens??d.refLens)||2.8,documented,label:documented?'Lente varifocal · '+mm(min)+'–'+mm(max)+' mm':'Lente ajustável · intervalo de simulação 2,8–13 mm; limites do modelo por confirmar'};
 }
 function effective(p,d){const q=policy(d);return q.adjustable?Math.max(q.min,Math.min(q.max,number(p&&p.lens)||q.initial)):q.initial;}
 function fov(p,d){d=d||{};const q=policy(d),lens=effective(p,d),base=Math.max(1,Math.min(179,number(d.fov)||90));

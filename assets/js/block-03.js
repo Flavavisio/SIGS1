@@ -849,6 +849,7 @@ function select(id){
   document.getElementById('rpill').style.display='';
   document.getElementById('pname').textContent=dev?dev.name:'—';
   document.getElementById('pmodel').textContent=dev?(dev.model||'—'):'—';
+  if(MOD==='cctv'&&dev&&['dome','bullet','ptz','fisheye','turret'].indexOf(dev.type)>=0&&typeof SIGSLensModel!=='undefined')document.getElementById('pmodel').textContent+=' · '+SIGSLensModel.policy(dev).label;
   document.getElementById('cctv-lens').style.display=(MOD==='cctv'&&dev&&dev.type!=='radar'&&dev.type!=='thermal_bi')?'':'none';
   var installPanel=document.getElementById('cctv-install');
   if(installPanel) installPanel.style.display=(MOD==='cctv')?'':'none';
@@ -1181,6 +1182,11 @@ function _makeDevItem(dev){
   d.innerHTML=iconHtml
     +'<div class="din"><div class="dname">'+_titleTxt+'</div><div class="dmeta">'+meta+'</div></div>'
     +(dev.custom?'<span style="font-size:8px;padding:1px 4px;border-radius:3px;background:rgba(240,160,0,.12);color:#f0a000;border:1px solid rgba(240,160,0,.25)">+</span>':'');
+  if(MOD==='cctv'&&_camType&&typeof SIGSLensModel!=='undefined'){
+    var lensLabel=document.createElement('div');lensLabel.className='dmeta sigs-lens-label';
+    lensLabel.textContent=SIGSLensModel.policy(dev).label;
+    d.querySelector('.din').appendChild(lensLabel);
+  }
   d.onclick=function(e){e.stopPropagation();sLib(dev);};
   d.ondblclick=function(e){
     e.stopPropagation();
@@ -1238,9 +1244,9 @@ function renderDevList(){
   // CCTV module: group by family
   var families=[
     {key:'cctv',    label:'Câmaras CCTV',          icon:'📹', cls:'lib-family-cctv',    filter:function(d){return !d.brand&&(d.family==='cctv'||(!d.family&&['dome','bullet','ptz','fisheye','turret'].indexOf(d.type)>=0));}},
-    {key:'hikvision',label:'Hikvision · 30 +vendidas', icon:'🔴', cls:'lib-family-hik',     filter:function(d){return d.brand==='hikvision';}},
+    {key:'hikvision',label:'Hikvision', icon:'🔴', cls:'lib-family-hik',     filter:function(d){return d.brand==='hikvision';}},
     {key:'dahua',   label:'Dahua · 30 +vendidas',  icon:'🟠', cls:'lib-family-dahua',   filter:function(d){return d.brand==='dahua';}},
-    {key:'uniview', label:'Uniview · 30 +vendidas', icon:'🔵', cls:'lib-family-uniview', filter:function(d){return d.brand==='uniview';}},
+    {key:'uniview', label:'Uniview', icon:'🔵', cls:'lib-family-uniview', filter:function(d){return d.brand==='uniview';}},
     {key:'radar',   label:'Radares Perimetrais',    icon:'📡', cls:'lib-family-radar',   filter:function(d){return d.family==='radar'||d.type==='radar';}},
     {key:'thermal', label:'Térmicas Bi-Spectrum',   icon:'🌡', cls:'lib-family-thermal', filter:function(d){return d.family==='thermal'||d.type==='thermal_bi';}},
     {key:'custom',  label:'Personalizadas',         icon:'⚙',  cls:'lib-family-custom',  filter:function(d){return d.custom&&d.family!=='cctv'&&d.family!=='radar'&&d.family!=='thermal';}}
@@ -1908,7 +1914,7 @@ function _restoreProjectData(d){
   if(typeof closeMap==='function') closeMap();
   S.floorPlanLoadId=(S.floorPlanLoadId||0)+1;
   if(d.module&&d.module!==MOD) startModule(d.module);
-  if(d.lib)S.lib=d.lib; if(MOD==='cctv'&&typeof SIGSAjaxCCTV!=='undefined')S.lib=SIGSAjaxCCTV.merge(S.lib); if(d.placed)S.placed=d.placed; if(d.meas)S.meas=d.meas;
+  if(d.lib)S.lib=d.lib; if(MOD==='cctv'&&typeof SIGSAjaxCCTV!=='undefined')S.lib=SIGSAjaxCCTV.merge(S.lib); if(MOD==='cctv'&&typeof SIGSCCTVExpansion!=='undefined')S.lib=SIGSCCTVExpansion.merge(S.lib); if(d.placed)S.placed=d.placed; if(d.meas)S.meas=d.meas;
   if(d.scale)S.scale=d.scale; if(d.devN)S.devN=d.devN;
   if(d.floors&&d.floors.length){ FLOORS=d.floors; FLOOR_CUR=d.floorCur||0; renderFloorBar(); }
   else { FLOORS[0]={id:uid(),name:'Piso 0',placed:d.placed||[],meas:d.meas||[],fp:null,scale:d.scale||S.scale,devN:d.devN||0}; FLOOR_CUR=0; renderFloorBar(); }
@@ -2030,7 +2036,7 @@ function doLoadProj(e){
     try{
       var d=JSON.parse(ev.target.result);
       if(d.module&&d.module!==MOD)startModule(d.module);
-      if(d.lib)S.lib=d.lib; if(MOD==='cctv'&&typeof SIGSAjaxCCTV!=='undefined')S.lib=SIGSAjaxCCTV.merge(S.lib); if(d.placed)S.placed=d.placed; if(d.meas)S.meas=d.meas;
+      if(d.lib)S.lib=d.lib; if(MOD==='cctv'&&typeof SIGSAjaxCCTV!=='undefined')S.lib=SIGSAjaxCCTV.merge(S.lib); if(MOD==='cctv'&&typeof SIGSCCTVExpansion!=='undefined')S.lib=SIGSCCTVExpansion.merge(S.lib); if(d.placed)S.placed=d.placed; if(d.meas)S.meas=d.meas;
       if(d.scale)S.scale=d.scale; if(d.devN)S.devN=d.devN;
       // Restore floors
       if(d.floors&&d.floors.length){FLOORS=d.floors;FLOOR_CUR=d.floorCur||0;renderFloorBar();}else{FLOORS[0]={id:uid(),name:'Piso 0',placed:d.placed||[],meas:d.meas||[],fp:null,scale:d.scale||S.scale,devN:d.devN||0};FLOOR_CUR=0;renderFloorBar();}
