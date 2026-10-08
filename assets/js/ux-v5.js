@@ -93,7 +93,6 @@ function buildTopNav(){
 
   nav.appendChild(menu('📁','Projeto',[
     {icon:'＋',label:'Novo projeto',fn:newProject},
-    {icon:'☁️',label:'Guardar projeto',fn:smartSave},
     {sep:true},
     {icon:'🏢',label:'Pisos',fn:function(){safeCall('openFloorOverview');}},
     {icon:'🏗️',label:'Templates',fn:function(){safeCall('openTemplates');}},
@@ -134,10 +133,10 @@ function buildTopNav(){
     {icon:'💶',label:'Orçamento',fn:openBudget}
   ]));
 
-  nav.appendChild(menu('📄','Relatório técnico',[
+  var reportMenu=menu('📄','Relatório técnico',[
     {icon:'🖨️',label:'Dossier técnico / PDF',fn:function(){safeCall('openPrintModal');}},
     {icon:'🖼️',label:'Exportar PNG',fn:function(){safeCall('exportPNG');}}
-  ]));
+  ]);reportMenu.id='sigs-v5-report-menu';nav.appendChild(reportMenu);
 
   var present=document.createElement('div');present.className='sigs-v5-menu';
   var pb=document.createElement('button');pb.type='button';pb.className='sigs-v5-menu-btn';

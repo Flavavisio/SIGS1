@@ -148,7 +148,7 @@ function loadProject(id,name){
     var p=rows&&rows[0];if(!p||!p.project_data)throw new Error('Projeto sem dados guardados.');CLOUD.projectId=p.id;CLOUD.projectName=p.name;if(document.body.classList.contains('sigs-locked')&&typeof sigsPortalOpenDesigner==='function')sigsPortalOpenDesigner({projectReady:true});V6.suppress=true;try{startModule(p.module==='INTRUSION'?'alarm':p.module==='FIRE'?'fire':'cctv');_restoreProjectData(p.project_data);}finally{V6.suppress=false;}V6.currentStatus=p.status||'ACTIVE';armAutosave();V6.dirty=false;V6.lastSavedAt=p.last_saved_at?new Date(p.last_saved_at):new Date();V6.lastFingerprint=fingerprint();V6.suppress=false;saveChip(V6.currentStatus==='ARCHIVED'?'archived':'clean',V6.currentStatus==='ARCHIVED'?'🔒 Arquivado':null);setTimeout(function(){if(typeof sigsV5UpdateFlow==='function')sigsV5UpdateFlow();},180);return p;
   });
 }
-window.cloudOpenProject=function(id,name){return loadProject(id,name).then(function(p){closeCloud();if(typeof notify==='function')notify('✓ Projeto aberto: '+(name||p.name));}).catch(function(e){if(typeof notify==='function')notify('Erro ao abrir: '+e.message);});};
+window.cloudOpenProject=function(id,name){return loadProject(id,name).then(function(p){closeCloud();if(typeof notify==='function')notify('✓ Projeto aberto: '+(name||p.name));return p;}).catch(function(e){if(typeof notify==='function')notify('Erro ao abrir: '+e.message);return null;});};
 window.sigsAdminOpenProject=function(id,name){return window.cloudOpenProject(id,name);};
 
 function duplicateProject(id){
@@ -229,9 +229,14 @@ window.openCloud=function(module){
   if(window.CLOUD&&CLOUD.user&&(CLOUD.user.role==='ADMIN'||CLOUD.user.role==='SALES')&&typeof window.sigsPortalOpenProjects==='function')return window.sigsPortalOpenProjects();
   return openProjectManager(module);
 };
+function listSavedProjects(module){
+  var cfg=sb();if(!logged())return Promise.reject(new Error('Inicia sessão primeiro.'));
+  return _sigsEnsureContext().then(function(ctx){var co=ctx.company&&ctx.company.id;return api(cfg.url+'/rest/v1/projects?select=id,name,customer_name,customer_company,module,status,camera_count,detector_count,fire_detector_count,floor_count,created_by,assigned_to,updated_at,last_saved_at,version_no&order=updated_at.desc'+(co?'&company_id=eq.'+encodeURIComponent(co):'')+(module?'&module=eq.'+module:''),{headers:h()});});
+}
+window.sigsV6ListProjects=listSavedProjects;
 function renderProjectManager(){
-  var cfg=sb(),host=ge('v6-project-list');if(!host)return;host.innerHTML='<div class="sigs-v6-loading">A carregar projetos…</div>';
-  _sigsEnsureContext().then(function(ctx){var co=ctx.company&&ctx.company.id;return api(cfg.url+'/rest/v1/projects?select=id,name,customer_name,customer_company,module,status,camera_count,detector_count,fire_detector_count,floor_count,created_by,assigned_to,updated_at,last_saved_at,version_no&order=updated_at.desc'+(co?'&company_id=eq.'+encodeURIComponent(co):'')+(V6.managerModule?'&module=eq.'+V6.managerModule:''),{headers:h()});}).then(function(rows){V6.manager=rows||[];renderManagerRows();}).catch(function(e){host.innerHTML='<div class="sigs-v6-empty">Erro: '+esc(e.message)+'</div>';});
+  var host=ge('v6-project-list');if(!host)return;host.innerHTML='<div class="sigs-v6-loading">A carregar projetos…</div>';
+  listSavedProjects(V6.managerModule).then(function(rows){V6.manager=rows||[];renderManagerRows();}).catch(function(e){host.innerHTML='<div class="sigs-v6-empty">Erro: '+esc(e.message)+'</div>';});
 }
 function renderManagerRows(){
   var host=ge('v6-project-list');if(!host)return;var q=((ge('v6-project-search')||{}).value||'').toLowerCase(),st=((ge('v6-project-status')||{}).value||'');var rows=(V6.manager||[]).filter(function(p){if(st&&p.status!==st)return false;var t=[p.name,p.customer_name,p.customer_company,p.module].join(' ').toLowerCase();return !q||t.indexOf(q)>=0;});
