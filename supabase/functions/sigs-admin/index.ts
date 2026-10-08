@@ -39,6 +39,22 @@ Deno.serve(async (req) => {
   }
 
   try {
+    if (action === "provision_customer") {
+      if (!isSuper) return json({ error: "SUPER_ADMIN required" }, 403);
+      const email=String(body.email||"").trim().toLowerCase(), name=String(body.name||"").trim();
+      if (!name || !String(body.company_name||"").trim()) return json({error:"Empresa e nome do cliente são obrigatórios."},400);
+      const {error: checkError}=await admin.rpc("sigs_admin_customer",{p_caller:callerId,p_action:"check_email",p_data:{email}});
+      if(checkError) return json({error:checkError.message},checkError.code==="23505"?409:400);
+      const {data: invited,error:inviteError}=await admin.auth.admin.inviteUserByEmail(email,{redirectTo:"https://www.sigs-studio.pt/acesso.html",data:{name}});
+      if(inviteError) return json({error:inviteError.message},inviteError.status===422?409:502);
+      const userId=invited.user?.id;if(!userId) return json({error:"O convite não criou uma conta."},500);
+      const {data: customer,error:createError}=await admin.rpc("sigs_admin_customer",{p_caller:callerId,p_action:"create",p_data:{...body,email,name,user_id:userId}});
+      if(createError){
+        const {error:cleanupError}=await admin.rpc("sigs_admin_customer",{p_caller:callerId,p_action:"cancel_invite",p_data:{user_id:userId}});
+        return json({error:cleanupError?"O registo falhou e a conta do convite precisa de revisão pelo Super Admin.":"O registo não foi concluído. Nenhuma empresa ou licença foi criada; tenta novamente."},500);
+      }
+      return json(customer);
+    }
     if (action === "create_company") {
       if (!isSuper) return json({ error: "SUPER_ADMIN required" }, 403);
       const name = String(body.name || "").trim();
@@ -294,28 +310,19 @@ Deno.serve(async (req) => {
 
     if (action === "delete_company") {
       if (!isSuper) return json({ error: "SUPER_ADMIN required" }, 403);
-      const companyId = String(body.company_id || "");
-      if (!companyId) return json({ error: "company_id required" }, 400);
-
-      const { data: members } = await admin.from("company_members").select("user_id").eq("company_id", companyId);
-      const ids = (members || []).map((m: any) => m.user_id).filter(Boolean);
-
-      if (ids.length) {
-        await admin.from("profiles").update({ active: false }).in("id", ids);
-      }
-
-      const { error: de } = await admin.from("companies").delete().eq("id", companyId);
-      if (de) throw de;
-
-      await admin.from("audit_logs").insert({
-        company_id: null,
-        user_id: callerId,
-        action: "COMPANY_DELETED",
-        entity_type: "company",
-        entity_id: companyId
-      });
-
-      return json({ ok: true });
+      const companyId=String(body.company_id||"");if(!companyId)return json({error:"company_id required"},400);
+      const args={p_caller:callerId,p_data:{company_id:companyId}};
+      const {data:preview,error:previewError}=await admin.rpc("sigs_admin_customer",{...args,p_action:"delete_preview"});
+      if(previewError)return json({error:previewError.message},409);
+      const buckets=new Map<string,string[]>();
+      for(const item of preview.objects||[]){const paths=buckets.get(item.bucket)||[];paths.push(item.path);buckets.set(item.bucket,paths);}
+      for(const [bucket,paths] of buckets){for(let offset=0;offset<paths.length;offset+=1000){
+        const {error:storageError}=await admin.storage.from(bucket).remove(paths.slice(offset,offset+1000));
+        if(storageError)return json({error:"Não foi possível remover os ficheiros. A conta e a empresa foram mantidas; tenta novamente."},502);
+      }}
+      const {data:deleted,error:deleteError}=await admin.rpc("sigs_admin_customer",{...args,p_action:"delete"});
+      if(deleteError)return json({error:deleteError.message},409);
+      return json(deleted);
     }
 
     if (action === "update_license") {

@@ -133,20 +133,12 @@
 
     if(path==='/licensing/licenses' && opts.method==='POST'){
       var b=JSON.parse(opts.body||'{}');
-      return edge({action:'create_company',name:b.companyName,nif:b.nif||null,client_code:b.clientCode||null})
-        .then(function(x){
-          var cid=x.company.id;
-          var modules=[];
-          if(!b.modules||b.modules.cctv!==false)modules.push('CCTV');
-          if(!b.modules||b.modules.alarm!==false)modules.push('INTRUSION');
-          if(!b.modules||b.modules.fire!==false)modules.push('FIRE');
-          if(!b.modules||b.modules.cloud!==false)modules.push('CLOUD');
-          return edge({action:'issue_license',company_id:cid,plan_code:b.planCode||'EXPRESS',billing_interval:b.billingInterval||'MONTH',modules:modules})
-            .then(function(y){
-              return edge({action:'invite_user',role:'ADMIN',company_id:cid,email:b.adminEmail,name:b.adminName})
-                .then(function(){return {company:x.company,license:y.license};});
-            });
-        });
+      var modules=[];
+      if(!b.modules||b.modules.cctv!==false)modules.push('CCTV');
+      if(!b.modules||b.modules.alarm!==false)modules.push('INTRUSION');
+      if(!b.modules||b.modules.fire!==false)modules.push('FIRE');
+      if(!b.modules||b.modules.cloud!==false)modules.push('CLOUD');
+      return edge({action:'provision_customer',company_name:b.companyName,nif:b.nif||null,client_code:b.clientCode||null,email:b.adminEmail,name:b.adminName,plan_code:b.planCode||'EXPRESS',billing_interval:b.billingInterval||'MONTH',modules:modules});
     }
 
     var approval=path.match(/^\/licensing\/approve\/([^/]+)$/);
@@ -307,7 +299,7 @@
       '<div style="margin-top:10px;padding:10px;border:1px solid var(--bdr2);background:var(--bg1);border-radius:8px"><div style="font-size:9px;color:var(--txt3);font-family:var(--m);text-transform:uppercase">Fim da licença</div><div id="lic-end-preview" style="font-size:15px;font-weight:900;color:var(--txt);margin-top:3px">—</div><div style="font-size:9px;color:var(--txt3);margin-top:3px">Calculado automaticamente a partir da data de emissão.</div></div>'+
       '<div style="margin-top:11px;font-size:10px;color:var(--txt3);font-family:var(--m);text-transform:uppercase">Módulos</div><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin:7px 0 12px"><label><input id="lic-m-cctv" type="checkbox" checked> CCTV</label><label><input id="lic-m-alarm" type="checkbox" checked> Intrusão</label><label><input id="lic-m-fire" type="checkbox" checked> Incêndio</label><label><input id="lic-m-cloud" type="checkbox" checked> Cloud</label></div>'+
       '<button id="lic-emit-btn" type="button" onclick="licCreateLicense()" style="padding:10px 14px;border:0;border-radius:8px;background:var(--acc);color:#fff;font-family:var(--f);font-size:11px;font-weight:800;cursor:pointer">Emitir licença</button><div id="lic-emit-status" style="font-size:10px;color:var(--txt3);margin-top:8px;min-height:14px"></div>');
-    var rows=companies.map(function(x){var l=x.license||{},d=l.expiresAt?new Date(l.expiresAt).getTime():0,now=Date.now(),five=now+5*86400000,expired=d>0&&d<now,warning=!expired&&d>0&&d<=five&&l.status==='ACTIVE',displayStatus=expired?'EXPIRADA':l.status==='PENDING'?'Pendente de aprovação':l.status,kind=expired?'bad':warning?'warn':(l.status==='ACTIVE'?'ok':l.status==='SUSPENDED'?'warn':'bad'),rowBg=expired?'rgba(239,68,68,.10)':warning?'rgba(245,158,11,.08)':'transparent',rowBorder=expired?'rgba(239,68,68,.42)':warning?'rgba(245,158,11,.35)':'var(--bdr)';return '<div style="display:grid;grid-template-columns:1.5fr 1fr .7fr .7fr auto;gap:8px;align-items:center;padding:10px;border-bottom:1px solid '+rowBorder+';background:'+rowBg+'"><div><div style="font-weight:700;color:'+(expired?'#ef4444':'var(--txt)')+'">'+esc(x.name)+'</div><div style="font-size:10px;color:var(--txt3)">'+esc(x.adminEmail||'')+'</div></div><div style="font-size:11px;color:var(--txt2)">'+esc(l.plan||'SIGS')+'<br><span style="font-size:10px">'+(l.billingInterval==='YEAR'?'Anual':'Mensal')+'</span></div><div>'+pill(displayStatus||'—',kind)+'</div><div style="font-size:10px;color:'+(expired?'#ef4444':warning?'#f59e0b':'var(--txt3)')+'">'+fmtDate(l.expiresAt)+'</div><div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end">'+
+    var rows=companies.map(function(x){var l=x.license||{},d=l.expiresAt?new Date(l.expiresAt).getTime():0,now=Date.now(),five=now+5*86400000,expired=d>0&&d<now,warning=!expired&&d>0&&d<=five&&l.status==='ACTIVE',displayStatus=expired?'EXPIRADA':l.status==='PENDING'?'Pendente de aprovação':l.status,kind=expired?'bad':warning?'warn':(l.status==='ACTIVE'?'ok':l.status==='SUSPENDED'?'warn':'bad'),rowBg=expired?'rgba(239,68,68,.10)':warning?'rgba(245,158,11,.08)':'transparent',rowBorder=expired?'rgba(239,68,68,.42)':warning?'rgba(245,158,11,.35)':'var(--bdr)';return '<div style="display:grid;grid-template-columns:1.5fr 1fr .7fr .7fr auto;gap:8px;align-items:center;padding:10px;border-bottom:1px solid '+rowBorder+';background:'+rowBg+'"><div><div style="font-weight:700;color:'+(expired?'#ef4444':'var(--txt)')+'">'+esc(x.name)+'</div><div style="font-size:10px;color:var(--txt3)">'+esc(x.adminEmail||'Sem Admin associado · registo incompleto')+'</div></div><div style="font-size:11px;color:var(--txt2)">'+esc(l.plan||'SIGS')+'<br><span style="font-size:10px">'+(l.billingInterval==='YEAR'?'Anual':'Mensal')+'</span></div><div>'+pill(displayStatus||'—',kind)+'</div><div style="font-size:10px;color:'+(expired?'#ef4444':warning?'#f59e0b':'var(--txt3)')+'">'+fmtDate(l.expiresAt)+'</div><div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end">'+
       btn('Abrir','licOpenCompany(\''+esc(x.id)+'\')',false)+
       (l.id&&l.status!=='PENDING'?btn('Renovar','licRenewLicense(\''+esc(l.id)+'\')',false):'')+
       (l.id?btn('Alterar','licOpenChangeLicense(\''+esc(l.id)+'\',\''+esc(l.planCode||'EXPRESS')+'\',\''+esc(l.billingInterval||'MONTH')+'\')',false):'')+
@@ -335,7 +327,7 @@
       el.innerHTML=card('<div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:13px;font-weight:900">'+title+'</div><button onclick="document.getElementById(\'lic-counter-list\').style.display=\'none\'" style="background:none;border:0;color:var(--txt3);cursor:pointer">✕</button></div><div style="margin-top:8px">'+(items.join('')||'<div style="padding:12px;color:var(--txt3)">Sem utilizadores.</div>')+'</div>');
       el.style.display='block'; return;
     }
-    var rows=companies.map(function(x){var l=x.license||{};return '<div style="display:grid;grid-template-columns:1.5fr 1fr .8fr auto;gap:8px;align-items:center;padding:9px 10px;border-bottom:1px solid var(--bdr)"><div><b>'+esc(x.name)+'</b><div style="font-size:9px;color:var(--txt3)">'+esc(x.adminEmail||'')+'</div></div><div style="font-size:10px">'+esc(l.plan||'Sem licença')+' · '+(l.billingInterval==='YEAR'?'Anual':'Mensal')+'</div><div style="font-size:10px">'+fmtDate(l.expiresAt)+'</div><div>'+btn('Abrir','licOpenCompany(\''+esc(x.id)+'\')',false)+'</div></div>';}).join('');
+    var rows=companies.map(function(x){var l=x.license||{};return '<div style="display:grid;grid-template-columns:1.5fr 1fr .8fr auto;gap:8px;align-items:center;padding:9px 10px;border-bottom:1px solid var(--bdr)"><div><b>'+esc(x.name)+'</b><div style="font-size:9px;color:var(--txt3)">'+esc(x.adminEmail||'Sem Admin associado · registo incompleto')+'</div></div><div style="font-size:10px">'+esc(l.plan||'Sem licença')+' · '+(l.billingInterval==='YEAR'?'Anual':'Mensal')+'</div><div style="font-size:10px">'+fmtDate(l.expiresAt)+'</div><div>'+btn('Abrir','licOpenCompany(\''+esc(x.id)+'\')',false)+'</div></div>';}).join('');
     el.innerHTML=card('<div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:13px;font-weight:900">'+title+' <span style="color:var(--txt3);font-size:10px">('+companies.length+')</span></div><button onclick="document.getElementById(\'lic-counter-list\').style.display=\'none\'" style="background:none;border:0;color:var(--txt3);cursor:pointer">✕</button></div><div style="margin-top:8px">'+(rows||'<div style="padding:12px;color:var(--txt3)">Sem registos.</div>')+'</div>');
     el.style.display='block';
   };
@@ -442,11 +434,11 @@
   };
 
   window.licDeleteCompany=function(companyId,name){
-    var v=prompt('Esta ação elimina a empresa, licença, projetos e associações.\\n\\nPara confirmar a eliminação de \"'+name+'\", escreva APAGAR:');
+    var v=prompt('Esta ação elimina a empresa, licença, projetos e contas exclusivas desta empresa. Os emails dessas contas ficam disponíveis para um novo registo.\\n\\nPara confirmar a eliminação de \"'+name+'\", escreva APAGAR:');
     if(v!=='APAGAR')return;
     licenseApi('/licensing/company-delete',{method:'DELETE',body:JSON.stringify({companyId:companyId})})
-      .then(function(){
-        notify('Empresa e licença apagadas.');
+      .then(function(res){
+        notify(res.users_retained?'Empresa apagada. Contas associadas a outras empresas foram preservadas.':'Empresa e contas apagadas. Podes voltar a usar os emails num novo registo.');
         renderLicenseCenter();
       })
       .catch(function(e){notify('Erro: '+e.message);});
