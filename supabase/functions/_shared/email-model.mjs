@@ -1,4 +1,4 @@
-export const appURL='https://sigs-studio.flowy-mouse-8040.chatgpt.site/app-Sigs.html';
+export const appURL='https://www.sigs-studio.pt/app-Sigs.html';
 export const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export const events={
  recovery:{subject:'SIGS Studio · Recuperar palavra-passe',title:'Recupera o acesso ao SIGS',copy:'Recebemos um pedido para recuperar a palavra-passe da tua conta. Usa o botão abaixo para escolher uma nova.',cta:'Definir nova palavra-passe',auth:true},

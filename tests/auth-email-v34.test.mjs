@@ -4,8 +4,8 @@ import {createAuthEmailHandler} from '../supabase/functions/_shared/auth-email-h
 const hash='a'.repeat(64),newHash='b'.repeat(64);
 const fixture=action=>({user:{email:'current@example.com',new_email:'new@example.com'},email_data:{email_action_type:action,token:'123456',token_hash:hash,redirect_to:'https://flavavisio.github.io/SIGS1/app-Sigs.html?registration=confirmed'}});
 for(const action of ['signup','email','invite','recovery','magiclink','reauthentication','password_changed_notification','email_changed_notification']){
- const m=authMessages(fixture(action))[0];assert.equal(m.to,'current@example.com');assert.ok(!m.html.includes('{{'));assert.ok(m.html.includes('SIGS Studio'));
- if(['invite','recovery'].includes(action))assert.ok(m.text.includes(encodeURIComponent('/SIGS1/acesso.html')));
+ const m=authMessages(fixture(action))[0];assert.equal(m.to,'current@example.com');assert.ok(!m.html.includes('{{'));assert.ok(m.html.includes('SIGS Studio'));assert.ok(!m.html.includes('chatgpt.site'));assert.ok(!m.html.includes('github.io'));
+ if(['invite','recovery'].includes(action))assert.ok(m.text.includes(encodeURIComponent('https://www.sigs-studio.pt/acesso.html')));
  if(action==='signup')assert.ok(m.html.includes('Ativar conta'));
  if(action==='reauthentication')assert.ok(m.html.includes('123456'));
 }

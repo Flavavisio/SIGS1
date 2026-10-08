@@ -9,7 +9,7 @@ function redirect(value,kind){
  if(u.username||u.password||!origins.includes(u.origin)||!paths.includes(u.pathname))throw Error('INVALID_REDIRECT');
  // Recovery/invitation always land on the password screen. Confirmation lands on the app.
  const password=['recovery','invite'].includes(kind);
- u.pathname=u.pathname.replace(/(?:app-Sigs|acesso)\.html$/,password?'acesso.html':'app-Sigs.html');u.hash='';return u.href;
+ const canonical=new URL(password?'acesso.html':'app-Sigs.html',appURL);canonical.search=u.search;return canonical.href;
 }
 function build(kind,to,token,hash,action,returnURL){
  let url=returnURL;
