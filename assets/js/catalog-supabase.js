@@ -76,6 +76,7 @@
     if(cctv.length)window.CCTV_LIB=window.SIGSAjaxCCTV?SIGSAjaxCCTV.merge(cctv):cctv;
     if(cctv.length&&window.SIGSCCTVExpansion)window.CCTV_LIB=SIGSCCTVExpansion.merge(window.CCTV_LIB);
     if(cctv.length&&window.SIGSCCTVVisiotech)window.CCTV_LIB=SIGSCCTVVisiotech.merge(window.CCTV_LIB);
+    if(cctv.length&&window.SIGSCCTVVisiotech100)window.CCTV_LIB=SIGSCCTVVisiotech100.merge(window.CCTV_LIB);
     if(intrusion.length)window.AJAX_LIB=intrusion;
     if(fire.length)window.FIRE_LIB=fire;
     if(nvrs.length)window.NVR_DB=nvrs;
