@@ -58,7 +58,7 @@
       if(type==='nvr')nvrs.push({
         name:r.reference,reference:r.reference,productId:r.id,
         ch:Number(s.channels)||0,maxMP:Number(s.max_mp)||0,bw:Number(s.bandwidth_mbps)||0,hdd:Number(s.hdd_bays)||0,
-        brand:(r.brand&&r.brand.name)||'—',remote:true
+        maxDiskTB:Number(s.max_disk_tb)||undefined,poePorts:s.poe_ports==null?undefined:Number(s.poe_ports),poeBudget:s.poe_budget_w==null?undefined:Number(s.poe_budget_w),poeMaxPortW:s.poe_max_port_w==null?undefined:Number(s.poe_max_port_w),brand:(r.brand&&r.brand.name)||'—',remote:true
       });
       if(type==='switch')switches.push({
         name:r.reference,reference:r.reference,productId:r.id,
@@ -80,6 +80,7 @@
     if(intrusion.length)window.AJAX_LIB=intrusion;
     if(fire.length)window.FIRE_LIB=fire;
     if(nvrs.length)window.NVR_DB=nvrs;
+    if(window.SIGSNvrPoE)window.NVR_DB=SIGSNvrPoE.merge(window.NVR_DB);
     if(switches.length)window.POE_SWITCH_DB=switches;
     window.SIGS_HDD_DB=hdds.sort(function(a,b){return a.capacityTB-b.capacityTB;});
     window.SIGS_INFRA_CATALOG={nvrs:nvrs,switches:switches,hdds:window.SIGS_HDD_DB};
