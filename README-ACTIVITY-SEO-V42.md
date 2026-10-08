@@ -4,10 +4,11 @@
 - A minha conta ao lado do Workspace: alteração da própria palavra-passe com campo atual, nova e confirmação, via Auth PUT /user com o token da sessão. Disponível a Super Admin, Admin e Comercial.
 - Acessos e online, apenas Super Admin: todas as contas paginadas (100), estado ativo/online, última atividade e registo de início de sessão observado na app. Não inclui tentativas falhadas nem histórico anterior à instalação.
 - Presença por sessão e separador, heartbeat de 45 segundos enquanto visível, limite de online de 120 segundos. É presença da app e não prova de atividade humana. Fechar um separador não desliga outro.
-- Visitas: páginas públicas/da app sem parâmetros nem fragmentos, data, identificador aleatório por separador, IP, cidade/região aproximadas. Só após consentimento explícito, revogável pelo botão Privacidade. Sem nomes inferidos e sem freguesia/GPS.
-- Geolocalização no IPWho.is, via HTTPS, com timeout e fallback indisponível. Endpoint gratuito sujeito a limite diário; não bloqueia uma visita em caso de falha. IP observado no cabeçalho encaminhado pela infraestrutura, não uma identidade verificada.
-- Tabelas com RLS e SELECT exclusivo ao Super Admin. Escrita apenas pelo serviço, nunca diretamente pelo navegador. Edge valida Auth e perfil ativo para presença; valida Super Admin para dashboard. A rota visit é pública, exige consentimento/version e página permitida, com limitação básica por IP. O limite não substitui proteção anti-bot na infraestrutura.
-- Limpeza diária: visitas de mais de 30 dias, acessos de mais de 90 dias, presenças de mais de 7 dias. Consulta no cron `sigs-activity-retention`.
+- Visitas ao site dentro de Acessos e utilizadores online, apenas Super Admin: data/hora em Europe/Lisbon, página, totais 24h/7d/30d, filtro de período/página e paginação de 100 linhas.
+- Visualizações públicas sem cookies, armazenamento local, identificador persistente do visitante, referrer, IP gravado ou geolocalização. Apenas início, registo, acesso e privacidade. Sem query strings/fragmentos. O UUID no campo legado `visitor_id` é criado no servidor para cada evento, não representa um visitante identificável nem permite contar pessoas únicas.
+- O script respeita DNT/GPC. Uma página oculta só envia ao ficar visível. Um erro de estatísticas não interrompe a página. Páginas privadas não carregam este script.
+- RLS e SELECT exclusivo ao Super Admin preservados; escrita apenas pela Edge Function. Histórico exige Auth válido e perfil ativo SUPER_ADMIN. Rota pública de escrita limitada a origens/páginas autorizadas e 30 pedidos/minuto por IP em memória, com mapa limitado. Este limite é por instância, não uma defesa global anti-bot.
+- Tabelas e retenção existentes reutilizadas: visitas até 30 dias, acessos até 90 dias, presença até 7 dias, limpeza diária. Não há alterações de esquema ou permissões.
 
 ## SEO
 Domínio canónico: https://www.sigs-studio.pt/.
@@ -19,10 +20,8 @@ Domínio canónico: https://www.sigs-studio.pt/.
 Passo externo restante: verificar a propriedade www.sigs-studio.pt na Google Search Console e submeter https://www.sigs-studio.pt/sitemap.xml. Não foi submetida uma propriedade nem inventado um token de verificação. HTTPS e DNS do domínio devem estar operacionais. A indexação não é imediata nem garantida.
 
 ## Validação
-`node tests/activity-v42.test.cjs`: handlers reais, perfis, confirmação, consentimento/recusa/retirada, exclusão dos tokens, 401/403 do handler Edge, metadados e build.
-Validação RLS no Supabase: fixture em transação com rollback; Admin sem acesso, Super Admin com acesso, INSERT negado a authenticated.
-Endpoint publicado: dashboard anónimo 401; visita sem consentimento 400; página inválida 400.
-Nenhuma palavra-passe real alterada durante testes. Nenhum registo de utilizador real apagado.
+`node tests/activity-v42.test.cjs` e `node tests/pageviews-v57.test.cjs`: alteração da própria password, isolamento de perfis, pesquisa/paginação/ordenação do histórico, resposta atrasada, 401/403, validação de origem/página, exclusão de dados identificadores, limites de escrita, DNT/GPC e metadados SEO.
+Validação Supabase: permissões/RLS e cron de retenção confirmados; rota pública, leitura não autorizada e gravação anónima verificadas após publicação.
 
-## Atualização: recolha pública desativada
-Em 7 de outubro de 2026, a pedido do titular do site, foi retirado o aviso de estatísticas. Nenhuma página carrega o script de visitas, a rota pública devolve 410, e o painel deixa de apresentar Visitas ao site. O histórico já recolhido permanece até à eliminação automática em 30 dias. Permanecem os acessos autenticados e a alteração da própria palavra-passe.
+## Histórico das alterações
+Em 7 de outubro foi retirado o aviso e desativada a recolha pública. Em 9 de outubro o histórico foi reposto no painel de acessos, com visualizações mínimas sem cookies/identificação persistente e sem repor o aviso anterior. Não é possível recuperar visitas não recolhidas durante o período desativado.

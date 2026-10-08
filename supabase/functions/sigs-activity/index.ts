@@ -2,6 +2,20 @@ const URL= Deno.env.get('SUPABASE_URL')!;
 const KEY= Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const origins=new Set(['https://www.sigs-studio.pt','https://sigs-studio.pt','https://flavavisio.github.io','https://sigs-studio.flowy-mouse-8040.chatgpt.site']);
 const pages=new Set(['/app-Sigs.html']);
+const publicPages=new Set(['/','/registo.html','/acesso.html','/privacidade.html']);
+const visitBuckets=new Map<string,{start:number,count:number}>();
+function allowVisit(req:Request,origin:string){
+ const now=Date.now(),key=clientIP(req)||origin;
+ if(visitBuckets.size>2000)for(const [k,v] of visitBuckets)if(now-v.start>=60000)visitBuckets.delete(k);
+ if(visitBuckets.size>=5000&&!visitBuckets.has(key))return false;
+ let bucket=visitBuckets.get(key);if(!bucket||now-bucket.start>=60000){bucket={start:now,count:0};visitBuckets.set(key,bucket);}
+ return ++bucket.count<=30;
+}
+async function countVisits(filter:string){
+ const r=await fetch(URL+'/rest/v1/sigs_visits?select=id&limit=1'+filter,{method:'HEAD',headers:{apikey:KEY,Authorization:'Bearer '+KEY,Prefer:'count=exact'}});
+ if(!r.ok)throw Error('database');const count=Number((r.headers.get('content-range')||'').split('/')[1]);
+ if(!Number.isFinite(count))throw Error('count');return count;
+}
 async function db(path:string,init:RequestInit={}){const r=await fetch(URL+'/rest/v1/'+path,{...init,headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json',Prefer:'return=representation',...init.headers}});if(!r.ok)throw Error('database');return r.status===204?null:await r.json();}
 function clientIP(req:Request){const ip=(req.headers.get('x-forwarded-for')||'').split(',')[0].trim();return /^[\da-f:.]{3,45}$/i.test(ip)?ip:null;}
 Deno.serve(async(req:Request)=>{
@@ -12,12 +26,34 @@ Deno.serve(async(req:Request)=>{
  if(origin&&!origins.has(origin))return reply({error:'Origem não permitida'},403);
  try{
   const raw=await req.text();if(raw.length>4096)return reply({error:'Pedido demasiado grande'},413);const b=JSON.parse(raw);const action=b.action;
-  if(action==='visit')return reply({error:'Estatísticas de visitantes desativadas.'},410);
+  if(action==='visit'){
+   // Public page views only: no browser/session ID, user data, IP or geolocation stored.
+   if(!origins.has(origin))return reply({error:'Origem necessária'},403);
+   const page=b.page==='/index.html'?'/':b.page;
+   if(typeof page!=='string'||!publicPages.has(page))return reply({error:'Página inválida'},400);
+   if(!allowVisit(req,origin))return reply({error:'Demasiados pedidos. Tenta mais tarde.'},429);
+   await db('sigs_visits',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify({visitor_id:crypto.randomUUID(),page,consent_version:'anonymous-pageview-v57'})});
+   return reply({ok:true},201);
+  }
   let user:any=null,profile:any=null;
   {
    const token=req.headers.get('authorization')||'';if(!token.startsWith('Bearer '))return reply({error:'Sessão necessária'},401);
    const auth=await fetch(URL+'/auth/v1/user',{headers:{apikey:KEY,Authorization:token}});if(!auth.ok)return reply({error:'Sessão inválida'},401);user=await auth.json();
    profile=(await db('profiles?id=eq.'+user.id+'&select=id,name,email,role,active'))[0];if(!profile?.active)return reply({error:'Conta inativa'},403);
+  }
+  if(action==='visits'){
+   if(profile.role!=='SUPER_ADMIN')return reply({error:'Acesso reservado ao Super Admin'},403);
+   const offset=Math.min(100000,Math.max(0,Math.floor(Number(b.offset)||0)));
+   const days=[1,7,30].includes(Number(b.days))?Number(b.days):30;
+   const page=typeof b.page==='string'?b.page:'';
+   if(page&&!publicPages.has(page))return reply({error:'Página inválida'},400);
+   const now=new Date(),since=(d:number)=>'&created_at=gte.'+encodeURIComponent(new Date(now.getTime()-d*86400000).toISOString());
+   const pageFilter=page?'&page=eq.'+encodeURIComponent(page):'';
+   const [rows,total,today,week,month]=await Promise.all([
+    db('sigs_visits?select=id,page,created_at&order=created_at.desc,id.desc&limit=101&offset='+offset+since(days)+pageFilter),
+    countVisits(since(days)+pageFilter),countVisits(since(1)),countVisits(since(7)),countVisits(since(30))
+   ]);
+   return reply({rows:rows.slice(0,100),more:rows.length>100,total,summary:{day:today,week,month},now:now.toISOString()});
   }
   if(action==='dashboard'){
    if(profile.role!=='SUPER_ADMIN')return reply({error:'Acesso reservado ao Super Admin'},403);
