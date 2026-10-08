@@ -16,7 +16,7 @@ async function countVisits(filter:string){
  if(!r.ok)throw Error('database');const count=Number((r.headers.get('content-range')||'').split('/')[1]);
  if(!Number.isFinite(count))throw Error('count');return count;
 }
-async function db(path:string,init:RequestInit={}){const r=await fetch(URL+'/rest/v1/'+path,{...init,headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json',Prefer:'return=representation',...init.headers}});if(!r.ok)throw Error('database');return r.status===204?null:await r.json();}
+async function db(path:string,init:RequestInit={}){const r=await fetch(URL+'/rest/v1/'+path,{...init,headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json',Prefer:'return=representation',...init.headers}});if(!r.ok)throw Error('database');const text=await r.text();return text?JSON.parse(text):null;}
 function clientIP(req:Request){const ip=(req.headers.get('x-forwarded-for')||'').split(',')[0].trim();return /^[\da-f:.]{3,45}$/i.test(ip)?ip:null;}
 Deno.serve(async(req:Request)=>{
  const origin=req.headers.get('origin')||'';const headers={'Content-Type':'application/json','Access-Control-Allow-Origin':origins.has(origin)?origin:'https://www.sigs-studio.pt','Access-Control-Allow-Headers':'authorization,apikey,content-type','Access-Control-Allow-Methods':'POST,OPTIONS','Vary':'Origin','Cache-Control':'no-store'};

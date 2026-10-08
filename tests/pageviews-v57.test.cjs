@@ -22,7 +22,7 @@ const root=require('node:path').resolve(__dirname,'..'),read=p=>fs.readFileSync(
  const context={Deno:{env:{get:k=>k==='SUPABASE_URL'?'https://backend.test':'secret-test'},serve:f=>handler=f},Request,Response,Headers,Map,Set,Date,JSON,atob,crypto:globalThis.crypto,fetch:async(url,o)=>{
   queries.push(url);if(url.endsWith('/auth/v1/user'))return Response.json({id:'u'});if(url.includes('/profiles?'))return Response.json([{id:'u',role,active:true}]);
   if(o?.method==='HEAD')return new Response(null,{headers:{'content-range':'0-0/123'}});
-  if(o?.method==='POST'){writes.push(JSON.parse(o.body));return new Response(null,{status:204});}
+  if(o?.method==='POST'){writes.push(JSON.parse(o.body));return new Response(null,{status:201});}
   if(url.includes('/sigs_visits?'))return Response.json(Array.from({length:101},(_,i)=>({id:i,page:'/',created_at:'2026-10-09'})));return Response.json([]);
  }};
  vm.createContext(context);vm.runInContext(stripTypeScriptTypes(read('supabase/functions/sigs-activity/index.ts')),context);
