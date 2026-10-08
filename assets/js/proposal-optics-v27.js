@@ -4,7 +4,7 @@
 const number=v=>Number.isFinite(Number(v))?Number(v):0;
 let clipId=0;
 const cameras=['dome','bullet','turret','ptz','fisheye','thermal_bi'];
-function capture(p,d){if(!cameras.includes(d.type))return {};const lens=number(p.lens)||2.8,base=Math.max(1,Math.min(179,number(d.fov)||90));let fov=2*Math.atan(Math.tan(base*Math.PI/360)*2.8/lens)*180/Math.PI;
+function capture(p,d){if(!cameras.includes(d.type))return {};const lens=root.SIGSLensModel?root.SIGSLensModel.effective(p,d):(number(p.lens)||2.8),reference=root.SIGSLensModel?root.SIGSLensModel.policy(d).base:(number(d.baseLens||d.refLens)||2.8),base=Math.max(1,Math.min(179,number(d.fov)||90));let fov=2*Math.atan(Math.tan(base*Math.PI/360)*reference/lens)*180/Math.PI;
  if(d.type==='thermal_bi')fov=number(p.visibleFov||d.visibleFov||d.fov)||30;
  const out={type:d.type,lens,fov:Math.max(1,Math.min(360,fov)),range:Math.max(0,number(d.type==='thermal_bi'?(p.visibleRange||d.visibleRange||d.range):d.range)),rotation:number(p.rotation),instHeight:number(p.instHeight)||3};
  if(d.type==='thermal_bi'){out.thermalFov=number(p.thermalFov||d.thermalFov)||30;out.thermalRange=number(p.thermalRange||d.thermalRange)||0;}return out;

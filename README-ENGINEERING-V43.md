@@ -25,3 +25,11 @@ Abrir um módulo não abre automaticamente o mapa interativo. Ao carregar um pro
 - `node scripts/build-static.cjs`
 
 Estes testes cobrem cálculos, eventos DOM, serialização, cancelamento, bloqueio de projetos arquivados e restauro assíncrono. A reprodução visual ainda deve ser validada em instalações reais, com dados de equipamento e dimensões verificados.
+
+## Controlo da lente (V45)
+
+Lentes fixas têm o controlo focal desativado e alterações por código também são rejeitadas. Lentes varifocais, motorizadas e PTZ/speed dome permitem ajuste. O catálogo pode indicar `lensType`, `fixedLens`, `focalLength`, `lensMin`, `lensMax` e `baseLens`/`refLens`; nomes com tipo de lente ou intervalo em mm também são reconhecidos. Dados explícitos de lente fixa prevalecem sobre a classificação PTZ.
+
+Quando faltam os limites de uma lente ajustável, o painel identifica o intervalo 2,8–13 mm como simulação e pede confirmação dos limites do modelo. Não equivale à amplitude real de zoom da câmara. A planta, o 3D, DORI e novos documentos usam a mesma geometria ótica. Abrir/selecionar um equipamento não reescreve os valores de projetos antigos; os cálculos aplicam a capacidade da lente do catálogo.
+
+Teste: `node tests/lens-capabilities-v45.test.cjs`.

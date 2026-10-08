@@ -246,7 +246,7 @@ function drawCov(p,dev){
     if(dev.type==='thermal_bi'){
       _drawThermalBiCov(p,dev,s); return;
     }
-    fov=lFOV(dev.fov,p.lens||2.8); range=lRange(dev.range,p.lens||2.8);
+    fov=lFOV(dev.fov,(typeof SIGSLensModel!=='undefined'?SIGSLensModel.effective(p,dev):(p.lens||2.8)),typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).base:undefined); range=lRange(dev.range,(typeof SIGSLensModel!=='undefined'?SIGSLensModel.effective(p,dev):(p.lens||2.8)));
   }
   else{
     // Ajax: only PIR types show a coverage zone; others are point devices
@@ -306,7 +306,7 @@ function drawCov(p,dev){
 
   // Draw DORI rings for CCTV (only when scale is set)
   if(MOD==='cctv' && S.scale.ok && p.visible!==false && range>0){
-    var lens=p.lens||2.8;
+    var lens=(typeof SIGSLensModel!=='undefined'?SIGSLensModel.effective(p,dev):(p.lens||2.8));
     var dr=doriCalc(window.SIGSEngineeringModel&&typeof p!=='undefined'?Object.assign({},dev,{resW:SIGSEngineeringModel.widthPixels(p,dev)}):dev,lens);
     var pairs=[
       [dr.i*S.scale.ppm*S.zoom, 'rgba(240,48,80,0.55)',  'rgba(240,48,80,0.9)'],
@@ -623,9 +623,9 @@ function drawDevLabels(p,dev,s,sz,col){
     ctx.fillStyle='rgba(0,0,0,.78)';ctx.fillRect(s.x+sz+4,s.y-9,tw+8,15);
     ctx.fillStyle='#fff';ctx.fillText(p.label,s.x+sz+8,s.y+3);ctx.restore();
   }
-  if(MOD==='cctv'&&(p.lens||0)>2.9){
+  if(MOD==='cctv'&&(typeof SIGSLensModel!=='undefined'?SIGSLensModel.effective(p,dev):(p.lens||0))>2.9){
     ctx.save();ctx.font='9px monospace';ctx.fillStyle='rgba(240,160,0,.9)';
-    var lb=(p.lens).toFixed(1)+'mm',tw2=ctx.measureText(lb).width;
+    var lb=(typeof SIGSLensModel!=='undefined'?SIGSLensModel.effective(p,dev):p.lens).toFixed(1)+'mm',tw2=ctx.measureText(lb).width;
     ctx.fillText(lb,s.x-sz-tw2-3,s.y+4);ctx.restore();
   }
   if(MOD==='alarm'&&p.zone){
@@ -824,7 +824,7 @@ function placeDevice(x,y){
   var pre=(prefixes[dev.type]||'DEV');
   var n=nextNum(pre);
   S.devN++; // keep for save-format compatibility
-  var pc={id:uid(),libId:dev.id,x:x,y:y,rotation:0,label:pre+(n<10?'0':'')+n,color:dev.color,opacity:0.22,visible:true,lens:2.8,afov:dev.fov,arange:dev.range,zone:1,mp:dev.mp||4,codec:(String(dev.brand||'').toLowerCase().includes('unv')||String(dev.brand||'').toLowerCase().includes('uniview'))?'ultra265b':'h265',days:30,instHeight:dev.height||3,instTilt:30};
+  var pc={id:uid(),libId:dev.id,x:x,y:y,rotation:0,label:pre+(n<10?'0':'')+n,color:dev.color,opacity:0.22,visible:true,lens:typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).initial:2.8,afov:dev.fov,arange:dev.range,zone:1,mp:dev.mp||4,codec:(String(dev.brand||'').toLowerCase().includes('unv')||String(dev.brand||'').toLowerCase().includes('uniview'))?'ultra265b':'h265',days:30,instHeight:dev.height||3,instTilt:30};
   pushUndo();
   S.placed.push(pc);
   S.justPlaced=true; // block next onClick from placing another
@@ -860,7 +860,7 @@ function select(id){
 }
 function syncP(){
   var pc=fP(S.selId); if(!pc)return;
-  var dev=gD(pc.libId), lens=pc.lens||2.8;
+  var dev=gD(pc.libId), lens=typeof SIGSLensModel!=='undefined'?SIGSLensModel.effective(pc,dev):(pc.lens||2.8);
   document.getElementById('plbl').value=pc.label;
   document.getElementById('prot').value=pc.rotation;
   document.getElementById('pcol').value=pc.color||(dev?dev.color:'#3b82f6');
@@ -882,11 +882,12 @@ function syncP(){
       }
     } else {
       if(lensPanel) lensPanel.style.display='';
+      if(typeof SIGSLensModel!=='undefined')SIGSLensModel.sync(document.getElementById('plens'),pc,dev);
       document.getElementById('plens').value=lens;
       document.getElementById('plensv').textContent=lens.toFixed(1)+'mm';
-      var ef=lFOV(dev.fov,lens),er=lRange(dev.range,lens);
+      var ef=lFOV(dev.fov,lens,typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).base:undefined),er=lRange(dev.range,lens);
       document.getElementById('pinfo').textContent='FOV: '+ef.toFixed(0)+'°  Alcance: '+er.toFixed(0)+' m';
-      document.getElementById('plensinfo').textContent='FOV: '+ef.toFixed(0)+'°  |  Alcance: '+er.toFixed(0)+' m\n'+lDesc(lens);
+      document.getElementById('plensinfo').textContent='FOV: '+ef.toFixed(0)+'°  |  Alcance: '+er.toFixed(0)+' m\n'+(typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).label:lDesc(lens));
       updateDoriPanel(dev,lens);
     }
   } else {
@@ -929,7 +930,7 @@ function updInstall(){
 function _calcBlindSpot(h,tilt){
   var bsEl=document.getElementById('bs-ground'),reachEl=document.getElementById('bs-reach'),hintEl=document.getElementById('bs-hint');
   if(!bsEl)return;
-  var p=fP(S.selId),dev=p&&gD(p.libId),hfov=dev?lFOV(dev.fov,p.lens||2.8):60;
+  var p=fP(S.selId),dev=p&&gD(p.libId),hfov=dev?lFOV(dev.fov,(typeof SIGSLensModel!=='undefined'?SIGSLensModel.effective(p,dev):(p.lens||2.8)),typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).base:undefined):60;
   if(dev&&dev.type==='thermal_bi')hfov=p.thermalFov||dev.thermalFov||hfov;
   var ground=sigsGroundGeometry(h,tilt,hfov);
   bsEl.textContent=ground.blind.toFixed(2)+' m';bsEl.style.color='#a855f7';
@@ -1104,7 +1105,7 @@ function updP(key,val){
   else if(key==='color')pc.color=val;
   else if(key==='opacity'){pc.opacity=val;document.getElementById('popav').textContent=Math.round(val*100)+'%';}
   else if(key==='visible')pc.visible=val;
-  else if(key==='lens'&&MOD==='cctv'){pc.lens=val;document.getElementById('plensv').textContent=val.toFixed(1)+'mm';if(dev){var ef=lFOV(dev.fov,val),er=lRange(dev.range,val);document.getElementById('pinfo').textContent='FOV: '+ef.toFixed(0)+'°  Alcance: '+er.toFixed(0)+' m';document.getElementById('plensinfo').textContent='FOV: '+ef.toFixed(0)+'°  |  Alcance: '+er.toFixed(0)+' m\n'+lDesc(val);updateDoriPanel(dev,val);_calcBlindSpot(pc.instHeight||3,pc.instTilt!==undefined?pc.instTilt:30);}}
+  else if(key==='lens'&&MOD==='cctv'){if(!Number.isFinite(val)||val<=0)return;if(typeof SIGSLensModel!=='undefined'){if(!SIGSLensModel.policy(dev).adjustable)return;val=SIGSLensModel.effective({lens:val},dev);}pc.lens=val;document.getElementById('plensv').textContent=val.toFixed(1)+'mm';if(dev){var ef=lFOV(dev.fov,val,typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).base:undefined),er=lRange(dev.range,val);document.getElementById('pinfo').textContent='FOV: '+ef.toFixed(0)+'°  Alcance: '+er.toFixed(0)+' m';document.getElementById('plensinfo').textContent='FOV: '+ef.toFixed(0)+'°  |  Alcance: '+er.toFixed(0)+' m\n'+(typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).label:lDesc(val));updateDoriPanel(dev,val);_calcBlindSpot(pc.instHeight||3,pc.instTilt!==undefined?pc.instTilt:30);}}
   else if(key==='arange'){pc.arange=val;if(dev)document.getElementById('pinfo').textContent=(dev.desc||'')+'  |  Zona '+(pc.zone||1);}
   else if(key==='afov')pc.afov=val;
   else if(key==='zone'){pc.zone=val;if(dev)document.getElementById('pinfo').textContent=(dev.desc||'')+'  |  Zona '+val;}
@@ -1742,7 +1743,7 @@ function doPrint(){
   // ── Device list (simple) ──
   var dl=allPlaced.map(function(p,i){
     var dev=gD(p.libId); var info='';
-    if(MOD==='cctv'&&dev){var ef=lFOV(dev.fov,p.lens||2.8),er=lRange(dev.range,p.lens||2.8);info=' — '+dev.name+' | '+(p.lens||2.8).toFixed(1)+'mm | FOV '+ef.toFixed(0)+'° | '+er.toFixed(0)+'m';}
+    if(MOD==='cctv'&&dev){var ef=lFOV(dev.fov,(typeof SIGSLensModel!=='undefined'?SIGSLensModel.effective(p,dev):(p.lens||2.8)),typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).base:undefined),er=lRange(dev.range,(typeof SIGSLensModel!=='undefined'?SIGSLensModel.effective(p,dev):(p.lens||2.8)));info=' — '+dev.name+' | '+((typeof SIGSLensModel!=='undefined'?SIGSLensModel.effective(p,dev):(p.lens||2.8))).toFixed(1)+'mm | FOV '+ef.toFixed(0)+'° | '+er.toFixed(0)+'m';}
     else if(dev){info=' — '+dev.name+(p.zone?' | Zona '+p.zone:'')+(p.arange?' | '+p.arange+'m':'');}
     return (i+1)+'. '+p.label+info;
   }).join('\n');
@@ -1769,8 +1770,8 @@ function doPrint(){
     var tbody='';
     cams.forEach(function(p,i){
       var dev=gD(p.libId); if(!dev)return;
-      var lens=p.lens||2.8;
-      var fov=lFOV(dev.fov,lens).toFixed(0)+'°';
+      var lens=(typeof SIGSLensModel!=='undefined'?SIGSLensModel.effective(p,dev):(p.lens||2.8));
+      var fov=lFOV(dev.fov,lens,typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).base:undefined).toFixed(0)+'°';
       var range=lRange(dev.range,lens).toFixed(0)+'m';
       var dr=doriCalc(window.SIGSEngineeringModel&&typeof p!=='undefined'?Object.assign({},dev,{resW:SIGSEngineeringModel.widthPixels(p,dev)}):dev,lens);
       var mp=p.mp||dev.mp||8, codec=p.codec||'ultra265b', days=p.days||30;
@@ -2207,7 +2208,7 @@ function autoDori(fov,range,mp){
 
 function doriCalc(dev,lens){
   if(!dev)return {d:0,o:0,r:0,i:0,hfov:0,hpx:0};
-  var baseLens=Number(dev.baseLens||dev.refLens||2.8)||2.8;
+  var baseLens=typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).base:(Number(dev.baseLens||dev.refLens||2.8)||2.8);
   var hfov=lFOV(Number(dev.fov)||90,Number(lens)||baseLens,baseLens);
   var hpx=cameraHorizontalPixels(dev);
   return {
@@ -3704,7 +3705,7 @@ function applyTemplate(idx){
       rotation: d.rot||0,
       label: label,
       color: dev.color, opacity:0.22, visible:true,
-      lens:2.8, afov:dev.fov, arange:dev.range, zone:Math.floor(i/4)+1
+      lens:typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).initial:2.8, afov:dev.fov, arange:dev.range, zone:Math.floor(i/4)+1
     });
   });
   closeM('m-templates');
@@ -3979,11 +3980,11 @@ function _generatePDF(){
     cams.forEach(function(p,i){
       y=checkPage(doc,y,6);
       var dev=gD(p.libId);if(!dev)return;
-      var lens=p.lens||2.8;
+      var lens=(typeof SIGSLensModel!=='undefined'?SIGSLensModel.effective(p,dev):(p.lens||2.8));
       var flName='—';
       FLOORS.forEach(function(fl){if(fl.placed.some(function(q){return q.id===p.id;}))flName=fl.name;});
       var st=calcStorage(p.mp||dev.mp||4,p.codec||'ultra265b',p.days||30,p);
-      y=tableRow(doc,[p.label,(dev.model||dev.name),flName,lens.toFixed(1)+'mm',lFOV(dev.fov,lens).toFixed(0)+'°',lRange(dev.range,lens).toFixed(0)+'m',(p.mp||4)+'MP',fmtGB(st.gb)],cols,y,i%2===0);
+      y=tableRow(doc,[p.label,(dev.model||dev.name),flName,lens.toFixed(1)+'mm',lFOV(dev.fov,lens,typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).base:undefined).toFixed(0)+'°',lRange(dev.range,lens).toFixed(0)+'m',(p.mp||4)+'MP',fmtGB(st.gb)],cols,y,i%2===0);
     });
     y+=6;
   }
