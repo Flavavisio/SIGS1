@@ -1,0 +1,15 @@
+/* Ajax CCTV: references/specifications checked against Visiotech, 2026-10-08.
+   No catalogue prices, credentials or undocumented electrical capacities. */
+(function(root){'use strict';
+const pdf='https://s3-eu-west-1.amazonaws.com/files.visiotech.es/files/pdf/';
+const rows=[
+ {model:'AJ-BULLETCAM-8-W',name:'BulletCam 8 MP · 2.8mm · Branco',type:'bullet',mp:8,focalLength:2.8,fov:100,fovBounds:[100,110],range:50,poeW:7.5,recordFps:20,sourceURL:pdf+'AJ-BULLETCAM-8-W_PT.pdf?ver=66'},
+ {model:'AJ-TURRETCAM-8-W',name:'TurretCam 8 MP · 2.8mm · Branco',type:'turret',mp:8,focalLength:2.8,fov:100,fovBounds:[100,110],range:50,poeW:7.5,recordFps:20,sourceURL:pdf+'AJ-TURRETCAM-8-W_PT.pdf?ver=15'},
+ {model:'AJ-TURRETCAM-5-0400-W',name:'TurretCam 5 MP · 4mm · Branco',type:'turret',mp:5,focalLength:4,fov:75,fovBounds:[75,85],range:50,poeW:7.5,recordFps:25,sourceURL:pdf+'AJ-TURRETCAM-5-0400-W_EN.pdf'},
+ {model:'AJ-BULLETCAM-8-HLVF-W',name:'BulletCam HLVF 8 MP · Motorizada · Branco',type:'bullet',mp:8,lensType:'motorized',lensMin:2.8,lensMax:12,baseLens:2.8,fov:111,fovWide:111,fovTele:31,range:60,whiteRange:40,poeW:7.5,recordFps:25,sourceURL:'https://www.visiotechsecurity.com/pt/produtos/intrusao/ajax-cctv-740/camaras-ip-741/aj-bulletcam-8-hlvf-w-detail'},
+ {model:'AJ-DOMECAM-5-HLVF-W',name:'DomeCam HLVF 5 MP · Motorizada · Branco',type:'dome',mp:5,lensType:'motorized',lensMin:2.8,lensMax:12,baseLens:2.8,fov:111,fovWide:111,fovTele:31,range:40,whiteRange:25,poeW:6.1,recordFps:25,sourceURL:'https://www.visiotechsecurity.com/en/products/intrusion-8/ajax-cctv-740/ip-cameras-741/aj-domecam-5-hlvf-w-detail'},
+ {model:'AJ-TURRETCAM-8-HLVF-S-B',name:'Superior TurretCam HLVF 8 MP · Motorizada · Preto',type:'turret',mp:8,lensType:'motorized',lensMin:2.8,lensMax:12,baseLens:2.8,fov:110,fovWide:110,fovTele:47,range:60,whiteRange:40,recordFps:25,sourceURL:'https://www.visiotechsecurity.com/pt/produtos/ip/camaras-ip-profissionais-11/ajax-789/camaras-turret-790/aj-turretcam-8-hlvf-s-b-detail'}
+].map(d=>({...d,id:'ajax-cctv-'+d.model.toLowerCase(),brand:'ajax',family:'cctv',lensType:d.lensType||'fixed',baseLens:d.baseLens||d.focalLength,resW:d.mp===8?3840:2880,resH:d.mp===8?2160:1620,height:3,icon:d.type==='bullet'?'▬':'◉',color:'#8b5cf6',codec:'h265',networkMbps:100,poeStandard:'802.3at',sourceChecked:'2026-10-08',desc:d.fovBounds?'Lente fixa. A ficha indica FOV '+d.fovBounds.join('–')+'°; usa-se o limite inferior na simulação. Confirmar enquadramento no equipamento.':'Lente motorizada 2.8–12 mm. FOV nos extremos conforme ficha; valores intermédios estimados. Confirmar no equipamento.'}));
+function merge(lib){const out=(lib||[]).slice();rows.forEach(d=>{const i=out.findIndex(x=>String(x.model||'').toUpperCase()===d.model);if(i<0)out.push({...d});else out[i]={...d,...out[i],fov:Number(out[i].fov)>0?out[i].fov:d.fov};});return out;}
+root.SIGSAjaxCCTV={rows,merge};root.CCTV_LIB=merge(root.CCTV_LIB);if(typeof module!=='undefined'&&module.exports)module.exports=root.SIGSAjaxCCTV;
+})(typeof window!=='undefined'?window:globalThis);

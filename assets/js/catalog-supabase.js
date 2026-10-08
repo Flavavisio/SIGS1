@@ -73,7 +73,7 @@
       if(r.image_url)remoteImages[r.reference]=r.image_url;
       if(d.poeW>0)remotePoe[r.reference]=d.poeW;
     });
-    if(cctv.length)window.CCTV_LIB=cctv;
+    if(cctv.length)window.CCTV_LIB=window.SIGSAjaxCCTV?SIGSAjaxCCTV.merge(cctv):cctv;
     if(intrusion.length)window.AJAX_LIB=intrusion;
     if(fire.length)window.FIRE_LIB=fire;
     if(nvrs.length)window.NVR_DB=nvrs;

@@ -98,10 +98,10 @@ function saveProject(mode){
 window.sigsV6SaveProject=saveProject;
 window.cloudSaveCurrent=function(){return saveProject('manual');};
 
-function emptyProjectData(mod){
+function emptyProjectData(mod,profile){
   var key=mod==='INTRUSION'?'alarm':mod==='FIRE'?'fire':'cctv';
   var lib=key==='cctv'?window.CCTV_LIB:key==='fire'?window.FIRE_LIB:window.AJAX_LIB;
-  return {v:9,module:key,lib:JSON.parse(JSON.stringify(lib||[])),placed:[],meas:[],scale:{ok:false,ppm:10,mpp:.1},devN:0,floors:[],floorCur:0};
+  return {v:9,module:key,lib:JSON.parse(JSON.stringify(lib||[])),placed:[],meas:[],scale:{ok:false,ppm:10,mpp:.1},devN:0,floors:[],floorCur:0,commercial:{engineering:{imageProfile:profile==='2014'?'2014':'2025'}}};
 }
 function closeOverlay(id){var x=ge(id);if(x){if(x.__close)x.__close();else x.remove();}}
 function openNewProjectWizard(companyId,module){
@@ -111,11 +111,11 @@ function openNewProjectWizard(companyId,module){
   var o=document.createElement('div');o.id='sigs-v6-new-project';o.className='sigs-v6-overlay';
   o.innerHTML='<div class="sigs-v6-dialog"><div class="sigs-v6-dialog-head"><div><div class="sigs-v6-dialog-title">Novo Projeto</div><div class="sigs-v6-dialog-sub">Crie o projeto primeiro. A partir daí o autosave fica ativo.</div></div><button class="sigs-v6-x">✕</button></div>'+
     (CLOUD.user.role==='SUPER_ADMIN'?'<label style="display:block;margin-bottom:16px">Empresa do projeto<select id="v6-p-owner" required><option value="">Seleciona uma empresa…</option></select></label>':'')+
-    '<div class="sigs-v6-grid2"><label>Nome do projeto<input id="v6-p-name" required autocomplete="off" placeholder="Ex.: Moradia Cascais"></label><label>Módulo<select id="v6-p-module"><option value="CCTV">CCTV</option><option value="INTRUSION">Intrusão</option><option value="FIRE">Incêndio</option></select></label><label>Cliente<input id="v6-p-client" placeholder="Nome do cliente"></label><label>Empresa do cliente<input id="v6-p-company" placeholder="Empresa / condomínio"></label><label>Email<input id="v6-p-email" type="email" placeholder="cliente@empresa.pt"></label><label>Telefone<input id="v6-p-phone" placeholder="Contacto"></label></div>'+
+    '<div class="sigs-v6-grid2"><label>Nome do projeto<input id="v6-p-name" required autocomplete="off" placeholder="Ex.: Moradia Cascais"></label><label>Módulo<select id="v6-p-module"><option value="CCTV">CCTV</option><option value="INTRUSION">Intrusão</option><option value="FIRE">Incêndio</option></select></label><label id="v6-p-profile-field">Perfil de detalhe da imagem<select id="v6-p-image-profile"><option value="2025">IEC 62676-4:2025 · 7 níveis</option><option value="2014">DORI 2014 · 4 níveis</option></select><small>Define as zonas e etiquetas de detalhe na planta.</small></label><label>Cliente<input id="v6-p-client" placeholder="Nome do cliente"></label><label>Empresa do cliente<input id="v6-p-company" placeholder="Empresa / condomínio"></label><label>Email<input id="v6-p-email" type="email" placeholder="cliente@empresa.pt"></label><label>Telefone<input id="v6-p-phone" placeholder="Contacto"></label></div>'+
     '<div class="sigs-v6-dialog-foot"><button class="sag-btn" id="v6-p-cancel">Cancelar</button><button class="sag-btn" id="v6-p-open">Abrir projetos</button><button class="sag-btn primary" id="v6-p-create">Criar projeto</button></div><div id="v6-p-status" class="sigs-v6-status"></div></div>';
   document.body.appendChild(o);
   ge('v6-p-name').focus();
-  var current=String(module||window.MOD||'cctv').toUpperCase();if(current==='ALARM')current='INTRUSION';if(current==='DISK')current='CCTV';var sel=ge('v6-p-module');if(sel)sel.value=current;
+  var current=String(module||window.MOD||'cctv').toUpperCase();if(current==='ALARM')current='INTRUSION';if(current==='DISK')current='CCTV';var sel=ge('v6-p-module');if(sel){sel.value=current;sel.onchange=function(){ge('v6-p-profile-field').hidden=sel.value!=='CCTV';};sel.onchange();}
   ge('v6-p-open').onclick=function(){o.remove();window.openCloud(module);};
   o.querySelector('.sigs-v6-x').onclick=function(){o.remove()};ge('v6-p-cancel').onclick=function(){o.remove()};
   if(CLOUD.user.role==='SUPER_ADMIN')loadLicenseContext().then(function(context){
@@ -132,11 +132,11 @@ function openNewProjectWizard(companyId,module){
       var co=ctx.company||{},lic=ctx.license||{},projects=ctx.projects||[];
       if(projects.some(function(p){return sameName(p.name,name);}))throw new Error('Já existe um projeto com este nome nesta empresa. Escolhe outro nome.');
       if(!co.id)throw new Error('Empresa não encontrada.');if(lic.status!=='ACTIVE')throw new Error('Licença inativa.');if(lic.maxProjects!=null&&projects.length>=lic.maxProjects)throw new Error('Limite de projetos atingido.');
-      var row={company_id:co.id,created_by:CLOUD.user.id,updated_by:CLOUD.user.id,name:name,module:mod,status:'DRAFT',customer_name:(ge('v6-p-client').value||'').trim()||null,customer_company:(ge('v6-p-company').value||'').trim()||null,customer_email:(ge('v6-p-email').value||'').trim()||null,customer_phone:(ge('v6-p-phone').value||'').trim()||null,project_data:emptyProjectData(mod),camera_count:0,detector_count:0,fire_detector_count:0,floor_count:1,last_saved_at:new Date().toISOString()};
+      var row={company_id:co.id,created_by:CLOUD.user.id,updated_by:CLOUD.user.id,name:name,module:mod,status:'DRAFT',customer_name:(ge('v6-p-client').value||'').trim()||null,customer_company:(ge('v6-p-company').value||'').trim()||null,customer_email:(ge('v6-p-email').value||'').trim()||null,customer_phone:(ge('v6-p-phone').value||'').trim()||null,project_data:emptyProjectData(mod,ge('v6-p-image-profile').value),camera_count:0,detector_count:0,fire_detector_count:0,floor_count:1,last_saved_at:new Date().toISOString()};
       var cfg=sb();return api(cfg.url+'/rest/v1/projects',{method:'POST',headers:h({'Prefer':'return=representation'}),body:JSON.stringify(row)});
     }).then(function(rows){
       var p=rows&&rows[0];if(!p)throw new Error('Projeto não criado.');CLOUD.projectId=p.id;CLOUD.projectName=p.name;V6.currentStatus='DRAFT';armAutosave();V6.dirty=false;V6.lastSavedAt=new Date();V6.lastFingerprint=fingerprint();
-      var ui=p.module==='INTRUSION'?'alarm':p.module==='FIRE'?'fire':'cctv';if(document.body.classList.contains('sigs-locked')&&typeof sigsPortalOpenDesigner==='function')sigsPortalOpenDesigner({projectReady:true});V6.suppress=true;try{startModule(ui);if(module==='disk')startModule('disk');}finally{V6.suppress=false;}V6.lastFingerprint=fingerprint();saveChip('clean');setTimeout(function(){if(typeof sigsV5UpdateFlow==='function')sigsV5UpdateFlow();},100);
+      var ui=p.module==='INTRUSION'?'alarm':p.module==='FIRE'?'fire':'cctv';if(document.body.classList.contains('sigs-locked')&&typeof sigsPortalOpenDesigner==='function')sigsPortalOpenDesigner({projectReady:true});V6.suppress=true;try{startModule(ui);if(module==='disk')startModule('disk');if(window.SIGS_COMMERCIAL)SIGS_COMMERCIAL.engineering=Object.assign({},SIGS_COMMERCIAL.engineering||{},p.project_data&&p.project_data.commercial&&p.project_data.commercial.engineering||{});}finally{V6.suppress=false;}V6.lastFingerprint=fingerprint();saveChip('clean');setTimeout(function(){if(typeof sigsV5UpdateFlow==='function')sigsV5UpdateFlow();},100);
       o.remove();if(typeof notify==='function')notify('✓ Projeto criado em Rascunho: '+p.name);if(typeof loadContext==='function')loadContext().catch(function(){});
     }).catch(function(e){st.textContent='Erro: '+e.message;}).finally(function(){create.disabled=false;});
   };

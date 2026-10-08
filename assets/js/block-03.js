@@ -246,7 +246,7 @@ function drawCov(p,dev){
     if(dev.type==='thermal_bi'){
       _drawThermalBiCov(p,dev,s); return;
     }
-    fov=lFOV(dev.fov,(typeof SIGSLensModel!=='undefined'?SIGSLensModel.effective(p,dev):(p.lens||2.8)),typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).base:undefined); range=lRange(dev.range,(typeof SIGSLensModel!=='undefined'?SIGSLensModel.effective(p,dev):(p.lens||2.8)));
+    fov=lFOV(dev.fov,(typeof SIGSLensModel!=='undefined'?SIGSLensModel.effective(p,dev):(p.lens||2.8)),typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).base:undefined,dev); range=lRange(dev.range,(typeof SIGSLensModel!=='undefined'?SIGSLensModel.effective(p,dev):(p.lens||2.8)));
   }
   else{
     // Ajax: only PIR types show a coverage zone; others are point devices
@@ -315,14 +315,19 @@ function drawCov(p,dev){
       [dr.d*S.scale.ppm*S.zoom, 'rgba(0,200,240,0.18)', 'rgba(0,200,240,0.55)']
     ];
     var labels=[['I','#f03050'],['R','#f0a000'],['O','#00e888'],['D','#3b82f6']];
-    if(window.SIGSAdvancedModel&&window.SIGSImageProfile&&SIGSImageProfile()==='2025'&&dev.type!=='fisheye'&&fov<180){
+    var modernProfile=!!(window.SIGSAdvancedModel&&window.SIGSImageProfile&&SIGSImageProfile()==='2025'&&dev.type!=='fisheye'&&fov<180);
+    if(modernProfile){
       var operational=SIGSAdvancedModel.distances(p,dev,'2025');
       pairs=operational.map(function(l){return [l.distance*S.scale.ppm*S.zoom,l.color,l.color];});
       labels=operational.map(function(l){return [l.short,l.color];});
     }
     ctx.setLineDash([4,3]);
     pairs.forEach(function(pp,idx){
-      var r2=pp[0]; if(r2<=0||r2>rPx*3)return;
+      var r2=pp[0]; if(!Number.isFinite(r2)||r2<=0||(!modernProfile&&r2>rPx*3))return;
+      if(modernProfile){
+        var outer=Math.min(r2,rPx),inner=Math.min(idx?pairs[idx-1][0]:0,rPx),saBand=(-hf-90)*Math.PI/180,eaBand=(hf-90)*Math.PI/180;
+        if(outer>inner){ctx.save();ctx.globalAlpha=.1;ctx.fillStyle=pp[2];ctx.beginPath();ctx.moveTo(Math.cos(saBand)*outer,Math.sin(saBand)*outer);ctx.arc(0,0,outer,saBand,eaBand);ctx.lineTo(Math.cos(eaBand)*inner,Math.sin(eaBand)*inner);if(inner>0)ctx.arc(0,0,inner,eaBand,saBand,true);else ctx.lineTo(0,0);ctx.closePath();ctx.fill();ctx.restore();}
+      }
       ctx.strokeStyle=pp[2]; ctx.lineWidth=1.2;
       if(fov>=355){ctx.beginPath();ctx.arc(0,0,r2,0,Math.PI*2);ctx.stroke();}
       else if(fov>0){var sa2=(-hf-90)*Math.PI/180,ea2=(hf-90)*Math.PI/180;ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,r2,sa2,ea2);ctx.closePath();ctx.stroke();}
@@ -885,7 +890,7 @@ function syncP(){
       if(typeof SIGSLensModel!=='undefined')SIGSLensModel.sync(document.getElementById('plens'),pc,dev);
       document.getElementById('plens').value=lens;
       document.getElementById('plensv').textContent=lens.toFixed(1)+'mm';
-      var ef=lFOV(dev.fov,lens,typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).base:undefined),er=lRange(dev.range,lens);
+      var ef=lFOV(dev.fov,lens,typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).base:undefined,dev),er=lRange(dev.range,lens);
       document.getElementById('pinfo').textContent='FOV: '+ef.toFixed(0)+'°  Alcance: '+er.toFixed(0)+' m';
       document.getElementById('plensinfo').textContent='FOV: '+ef.toFixed(0)+'°  |  Alcance: '+er.toFixed(0)+' m\n'+(typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).label:lDesc(lens));
       updateDoriPanel(dev,lens);
@@ -930,7 +935,7 @@ function updInstall(){
 function _calcBlindSpot(h,tilt){
   var bsEl=document.getElementById('bs-ground'),reachEl=document.getElementById('bs-reach'),hintEl=document.getElementById('bs-hint');
   if(!bsEl)return;
-  var p=fP(S.selId),dev=p&&gD(p.libId),hfov=dev?lFOV(dev.fov,(typeof SIGSLensModel!=='undefined'?SIGSLensModel.effective(p,dev):(p.lens||2.8)),typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).base:undefined):60;
+  var p=fP(S.selId),dev=p&&gD(p.libId),hfov=dev?lFOV(dev.fov,(typeof SIGSLensModel!=='undefined'?SIGSLensModel.effective(p,dev):(p.lens||2.8)),typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).base:undefined,dev):60;
   if(dev&&dev.type==='thermal_bi')hfov=p.thermalFov||dev.thermalFov||hfov;
   var ground=sigsGroundGeometry(h,tilt,hfov);
   bsEl.textContent=ground.blind.toFixed(2)+' m';bsEl.style.color='#a855f7';
@@ -1105,7 +1110,7 @@ function updP(key,val){
   else if(key==='color')pc.color=val;
   else if(key==='opacity'){pc.opacity=val;document.getElementById('popav').textContent=Math.round(val*100)+'%';}
   else if(key==='visible')pc.visible=val;
-  else if(key==='lens'&&MOD==='cctv'){if(!Number.isFinite(val)||val<=0)return;if(typeof SIGSLensModel!=='undefined'){if(!SIGSLensModel.policy(dev).adjustable)return;val=SIGSLensModel.effective({lens:val},dev);}pc.lens=val;document.getElementById('plensv').textContent=val.toFixed(1)+'mm';if(dev){var ef=lFOV(dev.fov,val,typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).base:undefined),er=lRange(dev.range,val);document.getElementById('pinfo').textContent='FOV: '+ef.toFixed(0)+'°  Alcance: '+er.toFixed(0)+' m';document.getElementById('plensinfo').textContent='FOV: '+ef.toFixed(0)+'°  |  Alcance: '+er.toFixed(0)+' m\n'+(typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).label:lDesc(val));updateDoriPanel(dev,val);_calcBlindSpot(pc.instHeight||3,pc.instTilt!==undefined?pc.instTilt:30);}}
+  else if(key==='lens'&&MOD==='cctv'){if(!Number.isFinite(val)||val<=0)return;if(typeof SIGSLensModel!=='undefined'){if(!SIGSLensModel.policy(dev).adjustable)return;val=SIGSLensModel.effective({lens:val},dev);}pc.lens=val;document.getElementById('plensv').textContent=val.toFixed(1)+'mm';if(dev){var ef=lFOV(dev.fov,val,typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).base:undefined,dev),er=lRange(dev.range,val);document.getElementById('pinfo').textContent='FOV: '+ef.toFixed(0)+'°  Alcance: '+er.toFixed(0)+' m';document.getElementById('plensinfo').textContent='FOV: '+ef.toFixed(0)+'°  |  Alcance: '+er.toFixed(0)+' m\n'+(typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).label:lDesc(val));updateDoriPanel(dev,val);_calcBlindSpot(pc.instHeight||3,pc.instTilt!==undefined?pc.instTilt:30);}}
   else if(key==='arange'){pc.arange=val;if(dev)document.getElementById('pinfo').textContent=(dev.desc||'')+'  |  Zona '+(pc.zone||1);}
   else if(key==='afov')pc.afov=val;
   else if(key==='zone'){pc.zone=val;if(dev)document.getElementById('pinfo').textContent=(dev.desc||'')+'  |  Zona '+val;}
@@ -1743,7 +1748,7 @@ function doPrint(){
   // ── Device list (simple) ──
   var dl=allPlaced.map(function(p,i){
     var dev=gD(p.libId); var info='';
-    if(MOD==='cctv'&&dev){var ef=lFOV(dev.fov,(typeof SIGSLensModel!=='undefined'?SIGSLensModel.effective(p,dev):(p.lens||2.8)),typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).base:undefined),er=lRange(dev.range,(typeof SIGSLensModel!=='undefined'?SIGSLensModel.effective(p,dev):(p.lens||2.8)));info=' — '+dev.name+' | '+((typeof SIGSLensModel!=='undefined'?SIGSLensModel.effective(p,dev):(p.lens||2.8))).toFixed(1)+'mm | FOV '+ef.toFixed(0)+'° | '+er.toFixed(0)+'m';}
+    if(MOD==='cctv'&&dev){var ef=lFOV(dev.fov,(typeof SIGSLensModel!=='undefined'?SIGSLensModel.effective(p,dev):(p.lens||2.8)),typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).base:undefined,dev),er=lRange(dev.range,(typeof SIGSLensModel!=='undefined'?SIGSLensModel.effective(p,dev):(p.lens||2.8)));info=' — '+dev.name+' | '+((typeof SIGSLensModel!=='undefined'?SIGSLensModel.effective(p,dev):(p.lens||2.8))).toFixed(1)+'mm | FOV '+ef.toFixed(0)+'° | '+er.toFixed(0)+'m';}
     else if(dev){info=' — '+dev.name+(p.zone?' | Zona '+p.zone:'')+(p.arange?' | '+p.arange+'m':'');}
     return (i+1)+'. '+p.label+info;
   }).join('\n');
@@ -1771,7 +1776,7 @@ function doPrint(){
     cams.forEach(function(p,i){
       var dev=gD(p.libId); if(!dev)return;
       var lens=(typeof SIGSLensModel!=='undefined'?SIGSLensModel.effective(p,dev):(p.lens||2.8));
-      var fov=lFOV(dev.fov,lens,typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).base:undefined).toFixed(0)+'°';
+      var fov=lFOV(dev.fov,lens,typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).base:undefined,dev).toFixed(0)+'°';
       var range=lRange(dev.range,lens).toFixed(0)+'m';
       var dr=doriCalc(window.SIGSEngineeringModel&&typeof p!=='undefined'?Object.assign({},dev,{resW:SIGSEngineeringModel.widthPixels(p,dev)}):dev,lens);
       var mp=p.mp||dev.mp||8, codec=p.codec||'ultra265b', days=p.days||30;
@@ -1903,7 +1908,7 @@ function _restoreProjectData(d){
   if(typeof closeMap==='function') closeMap();
   S.floorPlanLoadId=(S.floorPlanLoadId||0)+1;
   if(d.module&&d.module!==MOD) startModule(d.module);
-  if(d.lib)S.lib=d.lib; if(d.placed)S.placed=d.placed; if(d.meas)S.meas=d.meas;
+  if(d.lib)S.lib=d.lib; if(MOD==='cctv'&&typeof SIGSAjaxCCTV!=='undefined')S.lib=SIGSAjaxCCTV.merge(S.lib); if(d.placed)S.placed=d.placed; if(d.meas)S.meas=d.meas;
   if(d.scale)S.scale=d.scale; if(d.devN)S.devN=d.devN;
   if(d.floors&&d.floors.length){ FLOORS=d.floors; FLOOR_CUR=d.floorCur||0; renderFloorBar(); }
   else { FLOORS[0]={id:uid(),name:'Piso 0',placed:d.placed||[],meas:d.meas||[],fp:null,scale:d.scale||S.scale,devN:d.devN||0}; FLOOR_CUR=0; renderFloorBar(); }
@@ -2025,7 +2030,7 @@ function doLoadProj(e){
     try{
       var d=JSON.parse(ev.target.result);
       if(d.module&&d.module!==MOD)startModule(d.module);
-      if(d.lib)S.lib=d.lib; if(d.placed)S.placed=d.placed; if(d.meas)S.meas=d.meas;
+      if(d.lib)S.lib=d.lib; if(MOD==='cctv'&&typeof SIGSAjaxCCTV!=='undefined')S.lib=SIGSAjaxCCTV.merge(S.lib); if(d.placed)S.placed=d.placed; if(d.meas)S.meas=d.meas;
       if(d.scale)S.scale=d.scale; if(d.devN)S.devN=d.devN;
       // Restore floors
       if(d.floors&&d.floors.length){FLOORS=d.floors;FLOOR_CUR=d.floorCur||0;renderFloorBar();}else{FLOORS[0]={id:uid(),name:'Piso 0',placed:d.placed||[],meas:d.meas||[],fp:null,scale:d.scale||S.scale,devN:d.devN||0};FLOOR_CUR=0;renderFloorBar();}
@@ -2150,7 +2155,8 @@ document.addEventListener('keydown',function(e){
 // ════════════════════════════════════════
 // Effective horizontal FOV from the catalogue FOV at the reference focal length.
 // The previous version scaled FOV linearly; optics follow atan geometry.
-function lFOV(baseFov,mm,baseMm){
+function lFOV(baseFov,mm,baseMm,device){
+  if(device&&typeof SIGSLensModel!=='undefined'&&device.fovWide&&device.fovTele)return SIGSLensModel.fov({lens:mm},device);
   if(!baseFov)return 90;
   mm=Number(mm)||2.8;
   baseMm=Number(baseMm)||2.8;
@@ -2209,7 +2215,7 @@ function autoDori(fov,range,mp){
 function doriCalc(dev,lens){
   if(!dev)return {d:0,o:0,r:0,i:0,hfov:0,hpx:0};
   var baseLens=typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).base:(Number(dev.baseLens||dev.refLens||2.8)||2.8);
-  var hfov=lFOV(Number(dev.fov)||90,Number(lens)||baseLens,baseLens);
+  var hfov=lFOV(Number(dev.fov)||90,Number(lens)||baseLens,baseLens,dev);
   var hpx=cameraHorizontalPixels(dev);
   return {
     d:doriDistanceForPpm(hpx,hfov,DORI_PPM.d),
@@ -3984,7 +3990,7 @@ function _generatePDF(){
       var flName='—';
       FLOORS.forEach(function(fl){if(fl.placed.some(function(q){return q.id===p.id;}))flName=fl.name;});
       var st=calcStorage(p.mp||dev.mp||4,p.codec||'ultra265b',p.days||30,p);
-      y=tableRow(doc,[p.label,(dev.model||dev.name),flName,lens.toFixed(1)+'mm',lFOV(dev.fov,lens,typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).base:undefined).toFixed(0)+'°',lRange(dev.range,lens).toFixed(0)+'m',(p.mp||4)+'MP',fmtGB(st.gb)],cols,y,i%2===0);
+      y=tableRow(doc,[p.label,(dev.model||dev.name),flName,lens.toFixed(1)+'mm',lFOV(dev.fov,lens,typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).base:undefined,dev).toFixed(0)+'°',lRange(dev.range,lens).toFixed(0)+'m',(p.mp||4)+'MP',fmtGB(st.gb)],cols,y,i%2===0);
     });
     y+=6;
   }
