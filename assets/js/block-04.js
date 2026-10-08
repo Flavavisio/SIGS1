@@ -143,7 +143,7 @@
           if(!b.modules||b.modules.cloud!==false)modules.push('CLOUD');
           return edge({action:'issue_license',company_id:cid,plan_code:b.planCode||'EXPRESS',billing_interval:b.billingInterval||'MONTH',modules:modules})
             .then(function(y){
-              return edge({action:'create_admin_with_password',company_id:cid,email:b.adminEmail,name:b.adminName,password:b.adminPassword})
+              return edge({action:'invite_user',role:'ADMIN',company_id:cid,email:b.adminEmail,name:b.adminName})
                 .then(function(){return {company:x.company,license:y.license};});
             });
         });
@@ -299,7 +299,7 @@
     '</div>';
     html+='<div id="lic-counter-list" style="display:none;margin-bottom:14px"></div>';
     html+='<div style="display:grid;grid-template-columns:380px 1fr;gap:14px">';
-    html+=card('<div style="font-size:13px;font-weight:800;color:var(--txt);margin-bottom:12px">＋ Emitir nova licença</div>'+field('lic-company','Empresa','text','Segurança XPTO Lda')+'<div style="height:8px"></div>'+field('lic-admin-name','Nome do Admin','text','João Silva')+'<div style="height:8px"></div>'+field('lic-admin-email','Email do Admin','email','admin@empresa.pt')+'<div style="height:8px"></div>'+field('lic-admin-password','Password inicial do Admin','password','Mínimo 8 caracteres')+'<div style="height:8px"></div>'+field('lic-nif','NIF','text','')+'<div style="height:8px"></div>'+field('lic-client-code','Código do cliente','text','Ex.: CLI-001')+
+    html+=card('<div style="font-size:13px;font-weight:800;color:var(--txt);margin-bottom:12px">＋ Emitir nova licença</div>'+field('lic-company','Empresa','text','Segurança XPTO Lda')+'<div style="height:8px"></div>'+field('lic-admin-name','Nome do Admin','text','João Silva')+'<div style="height:8px"></div>'+field('lic-admin-email','Email do Admin','email','admin@empresa.pt')+'<div style="height:8px"></div>'+'<p style="font-size:11px;color:var(--txt2);line-height:1.6">O cliente recebe um email para ativar a conta e definir a sua palavra-passe inicial.</p>'+'<div style="height:8px"></div>'+field('lic-nif','NIF','text','')+'<div style="height:8px"></div>'+field('lic-client-code','Código do cliente','text','Ex.: CLI-001')+
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">'+
         '<div><div style="font-size:10px;color:var(--txt3);font-family:var(--m);text-transform:uppercase;margin-bottom:5px">Plano</div><select id="lic-plan" style="width:100%;background:var(--bg1);border:1px solid var(--bdr2);border-radius:8px;padding:10px;color:var(--txt);font-family:var(--f)"><option value="FREE">Gratuito</option><option value="EXPRESS">Express</option><option value="PRO">PRO</option><option value="SUPREME">Supreme</option></select></div>'+
         '<div><div style="font-size:10px;color:var(--txt3);font-family:var(--m);text-transform:uppercase;margin-bottom:5px">Periodicidade</div><select id="lic-billing" onchange="licUpdateEndPreview()" style="width:100%;background:var(--bg1);border:1px solid var(--bdr2);border-radius:8px;padding:10px;color:var(--txt);font-family:var(--f)"><option value="MONTH">Mensal</option><option value="YEAR">Anual</option></select></div>'+
@@ -342,15 +342,14 @@
 
   window.licCreateLicense=function(){
     var q=function(id){return document.getElementById(id)};
-    var body={companyName:(q('lic-company').value||'').trim(),adminName:(q('lic-admin-name').value||'').trim(),adminEmail:(q('lic-admin-email').value||'').trim(),adminPassword:(q('lic-admin-password').value||''),nif:(q('lic-nif').value||'').trim()||null,clientCode:(q('lic-client-code').value||'').trim()||null,planCode:q('lic-plan').value,billingInterval:q('lic-billing').value,modules:{cctv:q('lic-m-cctv').checked,alarm:q('lic-m-alarm').checked,fire:q('lic-m-fire').checked,cloud:q('lic-m-cloud').checked}};
+    var body={companyName:(q('lic-company').value||'').trim(),adminName:(q('lic-admin-name').value||'').trim(),adminEmail:(q('lic-admin-email').value||'').trim(),nif:(q('lic-nif').value||'').trim()||null,clientCode:(q('lic-client-code').value||'').trim()||null,planCode:q('lic-plan').value,billingInterval:q('lic-billing').value,modules:{cctv:q('lic-m-cctv').checked,alarm:q('lic-m-alarm').checked,fire:q('lic-m-fire').checked,cloud:q('lic-m-cloud').checked}};
     var status=q('lic-emit-status'),button=q('lic-emit-btn');
-    if(body.adminPassword.length<8){if(status){status.style.color='#ef4444';status.textContent='A password deve ter pelo menos 8 caracteres.';}notify('A password deve ter pelo menos 8 caracteres.');return;}
-    if(!body.companyName||!body.adminName||!body.adminEmail||!body.adminPassword){if(status){status.style.color='#ef4444';status.textContent='Preenche Empresa, Nome do Admin, Email e Password.';}notify('Preenche empresa, Admin e email.');return;}
+    if(!body.companyName||!body.adminName||!/^[^\s@,;<>]+@[^\s@,;<>]+\.[^\s@,;<>]+$/.test(body.adminEmail)){if(status){status.style.color='#ef4444';status.textContent='Preenche Empresa, Nome do Admin e Email.';}notify('Preenche empresa, Admin e email.');return;}
     if(status){status.style.color='var(--txt3)';status.textContent='A criar empresa, licença e convite do Admin…';}
     if(button){button.disabled=true;button.style.opacity='.55';button.textContent='A emitir…';}
     licenseApi('/licensing/licenses',{method:'POST',body:JSON.stringify(body)}).then(function(res){
       if(status){status.style.color='#10b981';status.textContent='✓ Licença emitida. Fim: '+licFmtDateLocal(licCalcEndDate(body.billingInterval));}
-      notify('✓ Licença emitida e Admin criado/convidado.');
+      notify('✓ Licença emitida. Email de ativação enviado ao cliente.');
       return loadContext().then(function(){renderSuperAdmin();});
     }).catch(function(e){
       if(status){status.style.color='#ef4444';status.textContent='Erro: '+(e.message||'Não foi possível emitir a licença.');}

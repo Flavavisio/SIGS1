@@ -2,7 +2,7 @@ export const appURL='https://sigs-studio.flowy-mouse-8040.chatgpt.site/app-Sigs.
 export const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export const events={
  recovery:{subject:'SIGS Studio · Recuperar palavra-passe',title:'Recupera o acesso ao SIGS',copy:'Recebemos um pedido para recuperar a palavra-passe da tua conta. Usa o botão abaixo para escolher uma nova.',cta:'Definir nova palavra-passe',auth:true},
- invite:{subject:'SIGS Studio · O teu convite está pronto',title:'Bem-vindo ao SIGS Studio',copy:'Foste convidado para trabalhar no SIGS. Aceita o convite e define a tua palavra-passe para começar.',cta:'Aceitar convite',auth:true},
+ invite:{subject:'SIGS Studio · Ativa a tua conta',title:'Bem-vindo ao SIGS Studio',copy:'A tua conta foi criada. Ativa a conta e define a tua palavra-passe inicial para começares a trabalhar no SIGS Studio.',cta:'Ativar conta e definir palavra-passe',auth:true},
  confirmation:{subject:'SIGS Studio · Confirmar endereço de email',title:'Confirma o teu email',copy:'Confirma este endereço para concluir a ativação da tua conta.',cta:'Ativar conta',auth:true},
  magic_link:{subject:'SIGS Studio · O teu acesso seguro',title:'Entra no teu espaço de trabalho',copy:'Usa este link para entrar na tua conta. O link é pessoal e só pode ser utilizado uma vez.',cta:'Entrar no SIGS',auth:true},
  email_change:{subject:'SIGS Studio · Confirmar alteração de email',title:'Confirma o novo endereço',copy:'Foi pedida uma alteração do endereço de email da tua conta. Confirma a alteração no botão abaixo.',cta:'Confirmar alteração',auth:true},
