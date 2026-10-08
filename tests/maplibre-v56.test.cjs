@@ -16,7 +16,7 @@ w.openMap=()=>fallback++;w.closeMap=()=>{w.S.mapOpen=false;w.document.getElement
 w.notify=t=>messages.push(t);w.sigsSetPlantLocked=b=>{w.S.mapLocked=b;w.S.fp.locked=b;};w.fitView=()=>{};w.updateStats=()=>{};w.requestAnimationFrame=f=>f();w.fetch=()=>new Promise(resolve=>requests.push(resolve));
 vm.runInContext(source,dom.getInternalVMContext());
 (async()=>{
-  w.openMap();const map=w.S.mlmap;assert.equal(map.options.preserveDrawingBuffer,true);assert.equal(map.options.dragRotate,false);assert.equal(fallback,0);
+  w.openMap();const map=w.S.mlmap;assert.equal(map.options.canvasContextAttributes.preserveDrawingBuffer,true);assert.equal(map.options.dragRotate,false);assert.equal(fallback,0);
   const priorSize=map.resizes||0;resizeCallback();assert.equal(map.resizes,priorSize+1,'map resizes when the layout/focus area changes');
   for(const lat of [0,38.87,70])for(const z of [13,17.25,18])assert.ok(Math.abs(w.SIGSMapV56.metersPerPixel(lat,z)/(156543.03392804097*Math.cos(lat*Math.PI/180)/2**(z+1))-1)<1e-12,'MapLibre 512px world scale equals Leaflet at one zoom higher');
   map.ready=false;w.captureMapTiles();assert.equal(images.length,0);map.ready=true;

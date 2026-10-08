@@ -30,11 +30,12 @@
     el('mapbtn').classList.add('on');el('mapbtn').textContent='✕ Fechar Mapa';
     observe();requestAnimationFrame(resize);
   }
-  function reset(){
+  function reset(error){
     if(map){map.remove();map=null;S.mlmap=null;}
     el('leafmap').innerHTML='';marker=null;fallback=true;
     var b=el('sigs-map-names');if(b)b.hidden=true;
-    status('Vista de compatibilidade · satélite');legacy.open();observe();requestAnimationFrame(resize);
+    if(error)console.warn('SIGS MapLibre: '+error.message);
+    status(error?'Este navegador não conseguiu iniciar o mapa gráfico. Vista de satélite de compatibilidade ativa.':'Vista de compatibilidade · satélite');legacy.open();observe();requestAnimationFrame(resize);
   }
   w.openMap=function(){
     if(fallback){show();legacy.open();return;}
@@ -44,7 +45,7 @@
     try{
       map=new maplibregl.Map({container:'leafmap',style:style(),center:[-9.1392,38.7166],zoom:13,
         minZoom:1,maxZoom:18,bearing:0,pitch:0,dragRotate:false,pitchWithRotate:false,
-        touchPitch:false,preserveDrawingBuffer:true,attributionControl:false});
+        touchPitch:false,canvasContextAttributes:{preserveDrawingBuffer:true},attributionControl:false});
       S.mlmap=map;
       map.touchZoomRotate.disableRotation();
       map.addControl(new maplibregl.NavigationControl({showCompass:false}),'top-right');
@@ -57,7 +58,7 @@
         status('Não foi possível carregar uma camada. Verifica a ligação antes de capturar.');
       });
       map.getCanvas().addEventListener('webglcontextlost',function(e){e.preventDefault();sourceFailed=true;status('Mapa indisponível. Fecha e volta a abrir para tentar novamente.');});
-    }catch(e){reset();}
+    }catch(e){reset(e);}
   };
   w.closeMap=function(){
     viewId++;searchId++;S.mapOpen=false;document.body.classList.remove('sigs-map-open');legacy.close();
