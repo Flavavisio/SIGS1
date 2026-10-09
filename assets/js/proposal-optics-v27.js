@@ -4,9 +4,17 @@
 const number=v=>Number.isFinite(Number(v))?Number(v):0;
 let clipId=0;
 const cameras=['dome','bullet','turret','ptz','fisheye','thermal_bi'];
+function visionRange(p,d,fov,profile){
+ if(!['dome','bullet','turret','ptz'].includes(d.type)||!(fov>0&&fov<180))return Math.max(0,number(d.range));
+ profile=profile||(root.SIGSImageProfile?root.SIGSImageProfile():root.SIGS_COMMERCIAL?.engineering?.imageProfile)||'2025';
+ const levels=root.SIGSAdvancedModel?.profiles?.[profile]?.levels,ppm=levels?.at(-1)?.[1]||(profile==='2014'?25:20);
+ const mp=number(p.mp||d.mp)||2,explicit=number(p.recordWidth)||(!p.mp||number(p.mp)===number(d.mp)?number(d.resW||d.resolutionW||d.widthPx):0);
+ const width=root.SIGSEngineeringModel?root.SIGSEngineeringModel.widthPixels(p,d):explicit||({1:1280,2:1920,3:2304,4:2688,5:2880,6:3200,8:3840,12:4000})[mp]||Math.round(Math.sqrt(mp*1e6*16/9));
+ return width/(2*ppm*Math.tan(fov*Math.PI/360));
+}
 function capture(p,d){if(!cameras.includes(d.type))return {};const lens=root.SIGSLensModel?root.SIGSLensModel.effective(p,d):(number(p.lens)||2.8),reference=root.SIGSLensModel?root.SIGSLensModel.policy(d).base:(number(d.baseLens||d.refLens)||2.8),base=Math.max(1,Math.min(179,number(d.fov)||90));let fov=root.SIGSLensModel?root.SIGSLensModel.fov(p,d):2*Math.atan(Math.tan(base*Math.PI/360)*reference/lens)*180/Math.PI;
  if(d.type==='thermal_bi')fov=number(p.visibleFov||d.visibleFov||d.fov)||30;
- const out={type:d.type,lens,fov:Math.max(1,Math.min(360,fov)),range:Math.max(0,number(d.type==='thermal_bi'?(p.visibleRange||d.visibleRange||d.range):d.range)),rotation:number(p.rotation),instTilt:p.instTilt==null?30:number(p.instTilt),instHeight:number(p.instHeight)||3};
+ const out={type:d.type,lens,fov:Math.max(1,Math.min(360,fov)),range:d.type==='thermal_bi'?Math.max(0,number(p.visibleRange||d.visibleRange||d.range)):visionRange(p,d,fov),illuminationRange:Math.max(0,number(d.range)),rotation:number(p.rotation),instTilt:p.instTilt==null?30:number(p.instTilt),instHeight:number(p.instHeight)||3};
  if(d.type==='thermal_bi'){out.thermalFov=number(p.thermalFov||d.thermalFov)||30;out.thermalRange=number(p.thermalRange||d.thermalRange)||0;}return out;
 }
 function sector(p,ppm,obstacles){if(!cameras.includes(p.type)||!(ppm>0)||!(p.fov>0&&p.range>0))return '';const x=number(p.x),y=number(p.y),rotation=number(p.rotation)-90;
@@ -24,5 +32,5 @@ function sector(p,ppm,obstacles){if(!cameras.includes(p.type)||!(ppm>0)||!(p.fov
  return result;
 }
 function label(p){return cameras.includes(p.type)&&p.fov>0?'FOV '+number(p.fov).toLocaleString('pt-PT',{maximumFractionDigits:1})+'°'+(p.thermalFov>0?' · Térmico '+number(p.thermalFov).toLocaleString('pt-PT',{maximumFractionDigits:1})+'°':''):'';}
-root.SIGSProposalOptics={capture,sector,label};if(typeof module!=='undefined'&&module.exports)module.exports=root.SIGSProposalOptics;
+root.SIGSProposalOptics={capture,sector,label,visionRange};if(typeof module!=='undefined'&&module.exports)module.exports=root.SIGSProposalOptics;
 })(typeof window!=='undefined'?window:globalThis);

@@ -263,7 +263,7 @@ function drawCov(p,dev){
     if(dev.type==='thermal_bi'){
       _drawThermalBiCov(p,dev,s); return;
     }
-    fov=lFOV(dev.fov,(typeof SIGSLensModel!=='undefined'?SIGSLensModel.effective(p,dev):(p.lens||2.8)),typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).base:undefined,dev); range=lRange(dev.range,(typeof SIGSLensModel!=='undefined'?SIGSLensModel.effective(p,dev):(p.lens||2.8)));
+    fov=lFOV(dev.fov,(typeof SIGSLensModel!=='undefined'?SIGSLensModel.effective(p,dev):(p.lens||2.8)),typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).base:undefined,dev); range=lRange(dev.range,(typeof SIGSLensModel!=='undefined'?SIGSLensModel.effective(p,dev):(p.lens||2.8)),p,dev);
   }
   else{
     // Ajax: only PIR types show a coverage zone; others are point devices
@@ -821,9 +821,9 @@ function syncP(){
       var zoomUI=typeof SIGSLensModel!=='undefined'&&SIGSLensModel.policy(dev).kind==='ptz';
       if(document.getElementById('plens-title'))document.getElementById('plens-title').textContent=zoomUI?'Zoom óptico':'Lente Focal';
       if(document.getElementById('plens-unit'))document.getElementById('plens-unit').textContent=zoomUI?'Zoom (×)':'Focal (mm)';
-      var ef=lFOV(dev.fov,lens,typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).base:undefined,dev),er=lRange(dev.range,lens);
-      document.getElementById('pinfo').textContent='FOV: '+ef.toFixed(0)+'°  Alcance: '+er.toFixed(0)+' m';
-      document.getElementById('plensinfo').textContent='FOV: '+ef.toFixed(0)+'°  |  Alcance: '+er.toFixed(0)+' m\n'+(typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).label:lDesc(lens));
+      var ef=lFOV(dev.fov,lens,typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).base:undefined,dev),er=lRange(dev.range,lens,pc,dev);
+      document.getElementById('pinfo').textContent='FOV: '+ef.toFixed(0)+'°  Visão estimada: '+er.toFixed(0)+' m · Iluminação: '+(Number(dev.range)||0)+' m';
+      document.getElementById('plensinfo').textContent='FOV: '+ef.toFixed(0)+'°  |  Visão estimada: '+er.toFixed(0)+' m · Iluminação: '+(Number(dev.range)||0)+' m\n'+(typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).label:lDesc(lens));
       updateDoriPanel(dev,lens);
     }
   } else {
@@ -1042,7 +1042,7 @@ function updP(key,val){
   else if(key==='color')pc.color=val;
   else if(key==='opacity'){pc.opacity=val;document.getElementById('popav').textContent=Math.round(val*100)+'%';}
   else if(key==='visible')pc.visible=val;
-  else if(key==='lens'&&MOD==='cctv'){if(!Number.isFinite(val)||val<=0)return;if(typeof SIGSLensModel!=='undefined'){if(!SIGSLensModel.policy(dev).adjustable)return;val=SIGSLensModel.effective({lens:val},dev);}pc.lens=val;document.getElementById('plensv').textContent=typeof SIGSLensModel!=='undefined'?SIGSLensModel.valueLabel(pc,dev):val.toFixed(1)+'mm';if(dev){var ef=lFOV(dev.fov,val,typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).base:undefined,dev),er=lRange(dev.range,val);document.getElementById('pinfo').textContent='FOV: '+ef.toFixed(0)+'°  Alcance: '+er.toFixed(0)+' m';document.getElementById('plensinfo').textContent='FOV: '+ef.toFixed(0)+'°  |  Alcance: '+er.toFixed(0)+' m\n'+(typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).label:lDesc(val));updateDoriPanel(dev,val);_calcBlindSpot(pc.instHeight||3,pc.instTilt!==undefined?pc.instTilt:30);}}
+  else if(key==='lens'&&MOD==='cctv'){if(!Number.isFinite(val)||val<=0)return;if(typeof SIGSLensModel!=='undefined'){if(!SIGSLensModel.policy(dev).adjustable)return;val=SIGSLensModel.effective({lens:val},dev);}pc.lens=val;document.getElementById('plensv').textContent=typeof SIGSLensModel!=='undefined'?SIGSLensModel.valueLabel(pc,dev):val.toFixed(1)+'mm';if(dev){var ef=lFOV(dev.fov,val,typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).base:undefined,dev),er=lRange(dev.range,val,pc,dev);document.getElementById('pinfo').textContent='FOV: '+ef.toFixed(0)+'°  Visão estimada: '+er.toFixed(0)+' m · Iluminação: '+(Number(dev.range)||0)+' m';document.getElementById('plensinfo').textContent='FOV: '+ef.toFixed(0)+'°  |  Visão estimada: '+er.toFixed(0)+' m · Iluminação: '+(Number(dev.range)||0)+' m\n'+(typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).label:lDesc(val));updateDoriPanel(dev,val);_calcBlindSpot(pc.instHeight||3,pc.instTilt!==undefined?pc.instTilt:30);}}
   else if(key==='arange'){pc.arange=val;if(dev)document.getElementById('pinfo').textContent=(dev.desc||'')+'  |  Zona '+(pc.zone||1);}
   else if(key==='afov')pc.afov=val;
   else if(key==='zone'){pc.zone=val;if(dev)document.getElementById('pinfo').textContent=(dev.desc||'')+'  |  Zona '+val;}
@@ -1685,7 +1685,7 @@ function doPrint(){
   // ── Device list (simple) ──
   var dl=allPlaced.map(function(p,i){
     var dev=gD(p.libId); var info='';
-    if(MOD==='cctv'&&dev){var ef=lFOV(dev.fov,(typeof SIGSLensModel!=='undefined'?SIGSLensModel.effective(p,dev):(p.lens||2.8)),typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).base:undefined,dev),er=lRange(dev.range,(typeof SIGSLensModel!=='undefined'?SIGSLensModel.effective(p,dev):(p.lens||2.8)));info=' — '+dev.name+' | '+((typeof SIGSLensModel!=='undefined'?SIGSLensModel.effective(p,dev):(p.lens||2.8))).toFixed(1)+'mm | FOV '+ef.toFixed(0)+'° | '+er.toFixed(0)+'m';}
+    if(MOD==='cctv'&&dev){var ef=lFOV(dev.fov,(typeof SIGSLensModel!=='undefined'?SIGSLensModel.effective(p,dev):(p.lens||2.8)),typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).base:undefined,dev),er=lRange(dev.range,(typeof SIGSLensModel!=='undefined'?SIGSLensModel.effective(p,dev):(p.lens||2.8)),p,dev);info=' — '+dev.name+' | '+((typeof SIGSLensModel!=='undefined'?SIGSLensModel.effective(p,dev):(p.lens||2.8))).toFixed(1)+'mm | FOV '+ef.toFixed(0)+'° | '+er.toFixed(0)+'m';}
     else if(dev){info=' — '+dev.name+(p.zone?' | Zona '+p.zone:'')+(p.arange?' | '+p.arange+'m':'');}
     return (i+1)+'. '+p.label+info;
   }).join('\n');
@@ -1714,7 +1714,7 @@ function doPrint(){
       var dev=gD(p.libId); if(!dev)return;
       var lens=(typeof SIGSLensModel!=='undefined'?SIGSLensModel.effective(p,dev):(p.lens||2.8));
       var fov=lFOV(dev.fov,lens,typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).base:undefined,dev).toFixed(0)+'°';
-      var range=lRange(dev.range,lens).toFixed(0)+'m';
+      var range=lRange(dev.range,lens,p,dev).toFixed(0)+'m';
       var dr=doriCalc(window.SIGSEngineeringModel&&typeof p!=='undefined'?Object.assign({},dev,{resW:SIGSEngineeringModel.widthPixels(p,dev)}):dev,lens);
       var mp=p.mp||dev.mp||8, codec=p.codec||'ultra265b', days=p.days||30;
       var st=calcStorage(mp,codec,days,p);
@@ -2106,9 +2106,9 @@ function lFOV(baseFov,mm,baseMm,device){
   return Math.max(1,Math.min(179,fov));
 }
 
-// Catalogue range is the manufacturer's illumination / practical range.
-// It must not grow artificially when focal length changes.
-function lRange(b,mm){return Number(b)||0;}
+// Vision extent follows the lowest density level of the selected image profile.
+// Catalogue illumination remains a separate specification; ground clipping is applied when drawing.
+function lRange(b,mm,p,dev){if(p&&dev&&typeof SIGSProposalOptics!=='undefined')return SIGSProposalOptics.capture(Object.assign({},p,{lens:mm}),dev).range;return Number(b)||0;}
 
 function lDesc(mm){
   if(mm<=2.9)return'Grande angular — visão ampla';
@@ -3920,7 +3920,7 @@ function _generatePDF(){
   // ── Camera table ──
   if(MOD==='cctv'&&cams.length){
     y=sectionTitle(doc,'📷  Lista de Câmaras',y);
-    var cols=[['ID',13],['Modelo',38],['Piso',18],['Lente',14],['FOV',13],['Alcance',15],['MP',11],['Armazen.',24]];
+    var cols=[['ID',13],['Modelo',38],['Piso',18],['Lente',14],['FOV',13],['Visão estim.',15],['MP',11],['Armazen.',24]];
     y=tableHeader(doc,cols,y);
     cams.forEach(function(p,i){
       y=checkPage(doc,y,6);
@@ -3929,7 +3929,7 @@ function _generatePDF(){
       var flName='—';
       FLOORS.forEach(function(fl){if(fl.placed.some(function(q){return q.id===p.id;}))flName=fl.name;});
       var st=calcStorage(p.mp||dev.mp||4,p.codec||'ultra265b',p.days||30,p);
-      y=tableRow(doc,[p.label,(dev.model||dev.name),flName,lens.toFixed(1)+'mm',lFOV(dev.fov,lens,typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).base:undefined,dev).toFixed(0)+'°',lRange(dev.range,lens).toFixed(0)+'m',(p.mp||4)+'MP',fmtGB(st.gb)],cols,y,i%2===0);
+      y=tableRow(doc,[p.label,(dev.model||dev.name),flName,lens.toFixed(1)+'mm',lFOV(dev.fov,lens,typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).base:undefined,dev).toFixed(0)+'°',lRange(dev.range,lens,p,dev).toFixed(0)+'m',(p.mp||4)+'MP',fmtGB(st.gb)],cols,y,i%2===0);
     });
     y+=6;
   }
