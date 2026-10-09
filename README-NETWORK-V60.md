@@ -27,3 +27,7 @@ Cobre: referência de canal de 100 m; modos de longo alcance exigem alcance, vel
 - Cisco, IEEE 802.3ad / LACP: https://www.cisco.com/c/en/us/td/docs/routers/ios/config/17-x/application-services/m_ce-ieee-link-bndl-xe.html
 
 Validação: network-v60.test.cjs testa distribuição de tráfego, agregação, múltiplos gravadores, PoE, conflitos de portas, caminhos/ciclos, cobre/fibra, traçados entre pisos, limites LACP, candidatos e materiais. network-ui-v60.test.cjs executa a interface real, posicionamento/traçado, guardar/retomar/desfazer, arquivo, escaping, orçamento e relatório. Passaram também 15 suites de regressão de engenharia, documentos, propostas, projetos, cablagem e ótica. Não se testou uma instalação física nem uma sessão autenticada de cliente em produção.
+
+## Acesso por plano
+
+A Engenharia de Rede está disponível apenas com sessão iniciada e licença Supreme ativa, dentro da validade e com CCTV permitido. Administradores e comerciais usam a licença da empresa; não existe exceção por função. Sem licença válida, os botões, diálogo, desenhos, dimensionamento e materiais da rede ficam indisponíveis. A topologia guardada é preservada quando o plano muda.

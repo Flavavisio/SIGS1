@@ -218,9 +218,9 @@
     return Promise.reject(new Error('Operação de licenciamento não suportada.'));
   }
   function loadContext(){
-    if(!CLOUD.user){ LIC.ctx=null; return Promise.resolve(null); }
-    LIC.loading=true; LIC.lastError=null;
-    return licenseApi('/licensing/context').then(function(c){LIC.ctx=c;LIC.loading=false;refreshLicenseButton();return c;}).catch(function(e){LIC.loading=false;LIC.lastError=e;refreshLicenseButton();throw e;});
+    if(!CLOUD.user){ LIC.ctx=null;document.dispatchEvent(new Event('sigs-license-changed')); return Promise.resolve(null); }
+    LIC.loading=true; LIC.lastError=null;document.dispatchEvent(new Event('sigs-license-changed'));
+    return licenseApi('/licensing/context').then(function(c){LIC.ctx=c;LIC.loading=false;refreshLicenseButton();document.dispatchEvent(new Event('sigs-license-changed'));return c;}).catch(function(e){LIC.loading=false;LIC.lastError=e;refreshLicenseButton();document.dispatchEvent(new Event('sigs-license-changed'));throw e;});
   }
   window.loadLicenseContext=loadContext;
 
