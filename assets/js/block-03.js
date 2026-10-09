@@ -1098,7 +1098,7 @@ function _makeDevItem(dev){
   var imgSrc=dev.photoURL||dev.imgUrl||(dev.imgKey&&AX_IMG[dev.imgKey]?AX_IMG[dev.imgKey]:null);
   if(imgSrc){
     iconHtml='<div class="dico sigs-product-photo" style="background:#fff;border:1px solid '+hr(dev.color,.3)+';overflow:hidden;padding:1px">'
-      +'<img src="'+imgSrc+'" style="width:28px;height:28px;object-fit:contain;display:block;margin:auto" onerror="this.parentNode.innerHTML=\'<span style=font-size:16px>'+dev.icon+'</span>\'">'
+      +'<img src="'+imgSrc+'" style="width:80px;height:24px;object-fit:contain;display:block;margin:auto" onerror="this.parentNode.innerHTML=\'<span style=font-size:16px>'+dev.icon+'</span>\'">'
       +'</div>';
   } else if(dev.type==='radar'){
     iconHtml='<div class="dico" style="background:rgba(16,185,129,.13);border:1px solid rgba(16,185,129,.35);display:flex;align-items:center;justify-content:center;font-size:16px">📡</div>';
@@ -4726,60 +4726,60 @@ updateCablePanel = function(){
 // ════════════════════════════════════════
 
 var DC_BRANDS = {
-  hikvision:{name:'Hikvision',icon:'🔴',color:'#e63946',logoURL:null,
+  hikvision:{name:'Hikvision',icon:'🔴',color:'#e63946',logoURL:'assets/brand/manufacturers/hikvision.svg',
     codecs:[
-      {id:'hk_h265pro',  label:'H.265 Pro+',  note:'Estimativa inteligente · confirme bitrate da câmara', factor:0.18},
-      {id:'hk_h265plus', label:'H.265+',       note:'Estimativa inteligente · depende da cena',        factor:0.22},
-      {id:'hk_h265',     label:'H.265',        note:'HEVC · estimativa de projeto',                       factor:0.30},
-      {id:'hk_h264plus', label:'H.264+',       note:'H.264 otimizado · estimativa',      factor:0.38},
-      {id:'hk_h264',     label:'H.264',        note:'Baseline',                            factor:0.50},
+      {id:'hk_h265pro',  label:'H.265 Pro+',  note:'Estimativa inteligente · confirme bitrate da câmara'},
+      {id:'hk_h265plus', label:'H.265+',       note:'Estimativa inteligente · depende da cena'},
+      {id:'hk_h265',     label:'H.265',        note:'HEVC · estimativa de projeto'},
+      {id:'hk_h264plus', label:'H.264+',       note:'H.264 otimizado · estimativa'},
+      {id:'hk_h264',     label:'H.264',        note:'Baseline'},
     ],defaultCodec:'hk_h265plus',
     resolutions:[
-      {id:'2mp',label:'2 MP · 1080p',base:16},{id:'4mp',label:'4 MP · 1440p',base:24},
-      {id:'5mp',label:'5 MP',base:32},{id:'6mp',label:'6 MP',base:38},
-      {id:'8mp',label:'8 MP · 4K',base:48},{id:'12mp',label:'12 MP',base:64},
+      {id:'2mp',label:'2 MP · 1080p'},{id:'4mp',label:'4 MP · 1440p'},
+      {id:'5mp',label:'5 MP'},{id:'6mp',label:'6 MP'},
+      {id:'8mp',label:'8 MP · 4K'},{id:'12mp',label:'12 MP'},
     ]},
-  dahua:{name:'Dahua',icon:'🟡',color:'#f59e0b',logoURL:null,
+  dahua:{name:'Dahua',icon:'🟡',color:'#f59e0b',logoURL:'assets/brand/manufacturers/dahua.svg',
     codecs:[
-      {id:'dh_s265plus', label:'Smart H.265+', note:'Estimativa inteligente · confirme bitrate', factor:0.18},
-      {id:'dh_s265',     label:'Smart H.265',  note:'Estimativa inteligente · depende da cena', factor:0.23},
-      {id:'dh_h265',     label:'H.265',        note:'HEVC · estimativa de projeto', factor:0.30},
-      {id:'dh_s264plus', label:'Smart H.264+', note:'H.264 com AI Dahua',              factor:0.28},
-      {id:'dh_h264',     label:'H.264',        note:'Baseline',                        factor:0.50},
+      {id:'dh_s265plus', label:'Smart H.265+', note:'Estimativa inteligente · confirme bitrate'},
+      {id:'dh_s265',     label:'Smart H.265',  note:'Estimativa inteligente · depende da cena'},
+      {id:'dh_h265',     label:'H.265',        note:'HEVC · estimativa de projeto'},
+      {id:'dh_s264plus', label:'Smart H.264+', note:'H.264 com AI Dahua'},
+      {id:'dh_h264',     label:'H.264',        note:'Baseline'},
     ],defaultCodec:'dh_s265plus',
     resolutions:[
-      {id:'2mp',label:'2 MP · 1080p',base:16},{id:'4mp',label:'4 MP · 1440p',base:24},
-      {id:'5mp',label:'5 MP',base:32},{id:'8mp',label:'8 MP · 4K',base:48},
-      {id:'12mp',label:'12 MP',base:64},
+      {id:'2mp',label:'2 MP · 1080p'},{id:'4mp',label:'4 MP · 1440p'},
+      {id:'5mp',label:'5 MP'},{id:'6mp',label:'6 MP'},{id:'8mp',label:'8 MP · 4K'},
+      {id:'12mp',label:'12 MP'},
     ]},
-  uniview:{name:'Uniview (UNV)',icon:'🔵',color:'#3b82f6',logoURL:null,
+  uniview:{name:'Uniview (UNV)',icon:'🔵',color:'#3b82f6',logoURL:'assets/brand/manufacturers/uniview.svg',
     codecs:[
-      {id:'uv_ultra265max',label:'Ultra 265 · cena muito calma', note:'Cenário até 95% abaixo de H.264; só validar com bitrate medido. Não é um modo oficial',factor:0.025},
-      {id:'uv_ultra265adv',label:'Ultra 265 · cena calma', note:'Hipótese de projeto: 87,5% abaixo de H.264; a atividade e a luz podem aumentar o bitrate',factor:0.0625},
-      {id:'uv_ultra265',   label:'Ultra 265 · cenário de projeto', note:'Hipótese: 75% abaixo de H.264 a 25 fps. Confirma bitrate médio real; não é um modo oficial.',factor:0.125},
-      {id:'uv_h265',       label:'H.265',         note:'HEVC · estimativa de projeto',factor:0.30},
-      {id:'uv_h264',       label:'H.264',         note:'Baseline',                            factor:0.50},
+      {id:'uv_ultra265',label:'Ultra 265 · H.265 + U-Code',note:'Estimativa conservadora sem poupança U-Code adicional. Introduz o bitrate médio medido ou escolhe explicitamente uma hipótese de poupança.'},
+      {id:'uv_h265',label:'H.265',note:'Estimativa de projeto; confirmar bitrate configurado/medido na câmara.'},
+      {id:'uv_h264',label:'H.264',note:'Referência de projeto, não especificação do fabricante.'},
     ],defaultCodec:'uv_ultra265',
     resolutions:[
-      {id:'2mp',label:'2 MP · 1080p',base:16},{id:'4mp',label:'4 MP · 1440p',base:24},
-      {id:'5mp',label:'5 MP',base:32},{id:'8mp',label:'8 MP · 4K',base:48},
-      {id:'12mp',label:'12 MP',base:64},
+      {id:'2mp',label:'2 MP · 1080p'},{id:'4mp',label:'4 MP · 1440p'},
+      {id:'5mp',label:'5 MP'},{id:'6mp',label:'6 MP'},{id:'8mp',label:'8 MP · 4K'},
+      {id:'12mp',label:'12 MP'},
     ]},
-  safire:{name:'Safire Smart',icon:'🟢',color:'#10b981',logoURL:null,
+  safire:{name:'Safire Smart',icon:'🟢',color:'#10b981',logoURL:'assets/brand/manufacturers/safire.svg',
     codecs:[
-      {id:'sf_sfcodec',  label:'SF-Codec',  note:'Estimativa inteligente · confirme bitrate', factor:0.18},
-      {id:'sf_h265pro',  label:'H.265 Pro', note:'H.265 otimizado · estimativa',factor:0.21},
-      {id:'sf_h265plus', label:'H.265+',    note:'Estimativa inteligente · depende da cena',factor:0.24},
-      {id:'sf_h265',     label:'H.265',     note:'HEVC · estimativa de projeto',factor:0.30},
-      {id:'sf_h264plus', label:'H.264+',    note:'H.264 melhorado Safire',              factor:0.35},
-      {id:'sf_h264',     label:'H.264',     note:'Baseline',                            factor:0.50},
+      {id:'sf_sfcodec',  label:'SF-Codec',  note:'Estimativa inteligente · confirme bitrate'},
+      {id:'sf_h265pro',  label:'H.265 Pro', note:'H.265 otimizado · estimativa'},
+      {id:'sf_h265plus', label:'H.265+',    note:'Estimativa inteligente · depende da cena'},
+      {id:'sf_h265',     label:'H.265',     note:'HEVC · estimativa de projeto'},
+      {id:'sf_h264plus', label:'H.264+',    note:'H.264 melhorado Safire'},
+      {id:'sf_h264',     label:'H.264',     note:'Baseline'},
     ],defaultCodec:'sf_sfcodec',
     resolutions:[
-      {id:'2mp',label:'2 MP · 1080p',base:16},{id:'4mp',label:'4 MP · 1440p',base:24},
-      {id:'5mp',label:'5 MP',base:32},{id:'8mp',label:'8 MP · 4K',base:48},
-      {id:'12mp',label:'12 MP',base:64},
+      {id:'2mp',label:'2 MP · 1080p'},{id:'4mp',label:'4 MP · 1440p'},
+      {id:'5mp',label:'5 MP'},{id:'6mp',label:'6 MP'},{id:'8mp',label:'8 MP · 4K'},
+      {id:'12mp',label:'12 MP'},
     ]},
 };
+
+Object.keys(DC_BRANDS).forEach(function(k){var el=document.getElementById('dc-blogo-'+k);if(el)el.innerHTML='<img src="'+DC_BRANDS[k].logoURL+'" alt="'+DC_BRANDS[k].name+'" style="width:100%;height:100%;object-fit:contain">';});
 
 var DC_ENVS = [
   {id:'industry',   icon:'🏭',name:'Indústria',     motionPct:60,motionFactor:2.8},
@@ -4793,23 +4793,15 @@ var DC_HDD_SIZES = [1,2,3,4,6,8,10,12,14,16,18,20];
 var _dcBrand = null, _dcEnv = null, _dcCamId = 0, _dcCams = [], _dcMotionOn = false;
 
 // ── Helpers ──────────────────────────────────────────────
-function dcGetCodecFactor(id){
-  if(!_dcBrand) return 0.5;
-  var c=DC_BRANDS[_dcBrand].codecs.find(function(c){return c.id===id;});
-  return c?c.factor:0.5;
-}
-function dcGetResBase(id){
-  if(!_dcBrand) return 16;
-  var r=DC_BRANDS[_dcBrand].resolutions.find(function(r){return r.id===id;});
-  return r?r.base:16;
-}
 function dcGetCodecNote(id){
   if(!_dcBrand) return '';
   var c=DC_BRANDS[_dcBrand].codecs.find(function(c){return c.id===id;});
   return c?c.note:'';
 }
-function dcFmtGB(gb){if(window.SIGSEngineeringModel)return SIGSEngineeringModel.displayStorage(gb);return gb>=1024?(gb/1024).toFixed(2)+' TB':Math.ceil(gb)+' GB';}
+function dcCamNote(cam){return cam.bitrate?'Bitrate médio medido: não é reduzido pelo codec, FPS ou hipótese U-Code. Preenche o pico de rede se for conhecido.':dcGetCodecNote(cam.codecId)+(cam.codecId==='uv_ultra265'?' Hipótese selecionada: '+(cam.ucodeSaving||0)+'% adicional face a H.265.':'');}
+function dcFmtGB(gib){var bytes=gib*Math.pow(1024,3);return bytes>=1e12?(bytes/1e12).toFixed(2)+' TB':(bytes/1e9).toFixed(1)+' GB';}
 
+function dcEscape(v){return String(v??'').replace(/[&<>\"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c];});}
 var _dcUploadTarget = null;
 function dcUploadBrandLogo(brand){
   _dcUploadTarget = brand;
@@ -4822,7 +4814,7 @@ function dcOnBrandLogoFile(e){
     DC_BRANDS[_dcUploadTarget].logoURL=ev.target.result;
     // Update brand card
     var el=document.getElementById('dc-blogo-'+_dcUploadTarget);
-    if(el) el.innerHTML='<img src="'+ev.target.result+'" style="width:38px;height:38px;object-fit:contain;border-radius:8px">';
+    if(el) el.innerHTML='<img src="'+ev.target.result+'" style="width:100%;height:100%;object-fit:contain;border-radius:8px">';
     // If this is the selected brand, refresh nav too
     if(_dcBrand===_dcUploadTarget) dcRefreshNav();
     notify('Logo da '+DC_BRANDS[_dcUploadTarget].name+' atualizado');
@@ -4848,7 +4840,7 @@ function dcRefreshNav(){
   if(logo){
     logo.style.background=b.color+'22';
     logo.style.borderColor=b.color+'55';
-    logo.innerHTML=b.logoURL?'<img src="'+b.logoURL+'" style="width:28px;height:28px;object-fit:contain;border-radius:6px">':b.icon;
+    logo.innerHTML=b.logoURL?'<img src="'+b.logoURL+'" style="width:80px;height:24px;object-fit:contain;border-radius:6px">':b.icon;
   }
   var t=document.getElementById('dc-nav-title');
   if(t) t.innerHTML=b.name+' <span style="color:var(--acc4)">Calculador</span>';
@@ -4862,7 +4854,7 @@ function dcRefreshBrandCard(){
   var b=DC_BRANDS[_dcBrand];
   var el=document.getElementById('dc-blogo-'+_dcBrand);
   if(!el) return;
-  if(b.logoURL){el.innerHTML='<img src="'+b.logoURL+'" style="width:38px;height:38px;object-fit:contain;border-radius:8px">';}
+  if(b.logoURL){el.innerHTML='<img src="'+b.logoURL+'" style="width:100%;height:100%;object-fit:contain;border-radius:8px">';}
   else{el.innerHTML=b.icon;el.style.fontSize='22px';}
 }
 
@@ -5027,7 +5019,7 @@ function dcRecordingModeChanged(){
   var note=document.getElementById('dc-record-note');
   var eventMode=mode==='event';
   if(pct)pct.disabled=!eventMode;
-  var p=eventMode?Math.min(100,Math.max(1,parseFloat((pct||{value:30}).value)||30)):100;
+  var p=eventMode?Math.min(100,Math.max(0,Number((pct||{value:30}).value))):100;
   if(duty)duty.textContent=p.toFixed(0)+'%';
   if(note)note.innerHTML=eventMode
     ?'<strong>Evento / Movimento:</strong> o armazenamento é calculado apenas para '+p.toFixed(0)+'% do período configurado. Use uma percentagem baseada na atividade real do local.'
@@ -5054,7 +5046,7 @@ function dcAddCam(){
   if(!_dcBrand) return;
   _dcCamId++;
   var id=_dcCamId;
-  _dcCams.push({id:id,name:'Câmara '+id,resId:'2mp',codecId:DC_BRANDS[_dcBrand].defaultCodec,fps:25,bitrate:null,qty:1});
+  _dcCams.push({id:id,name:'Câmara '+id,resId:'2mp',codecId:DC_BRANDS[_dcBrand].defaultCodec,fps:25,bitrate:null,peakMbps:null,ucodeSaving:0,qty:1});
   var list=document.getElementById('dc-cam-list');
   var card=dcMakeCamCard(id);
   list.appendChild(card);
@@ -5077,7 +5069,7 @@ function dcMakeCamCard(id){
   card.innerHTML=
     '<div class="dc-cam-head">'+
       '<div class="dc-cam-idx">'+id+'</div>'+
-      '<input class="dc-cam-name" value="'+cam.name+'" oninput="_dcCamName('+id+',this.value)">'+
+      '<input class="dc-cam-name" value="'+dcEscape(cam.name)+'" oninput="_dcCamName('+id+',this.value)">'+
       '<span class="dc-cam-br" id="dc-cbr-'+id+'">'+brBase.toFixed(2)+' Mbps</span>'+
       '<button class="dc-cam-del-btn" onclick="dcDelCam('+id+')" title="Remover">✕</button>'+
     '</div>'+
@@ -5085,8 +5077,10 @@ function dcMakeCamCard(id){
       '<div class="dc-cf"><label>RESOLUÇÃO</label><select onchange="_dcCamSet('+id+',\'resId\',this.value)">'+dcMakeResOpts(cam.resId)+'</select></div>'+
       '<div class="dc-cf"><label>CODEC</label><select onchange="_dcCamSet('+id+',\'codecId\',this.value)">'+dcMakeCodecOpts(cam.codecId)+'</select></div>'+
       '<div class="dc-cf"><label>FPS</label><select onchange="_dcCamSet('+id+',\'fps\',+this.value)">'+fpsopts+'</select></div>'+
-      '<div class="dc-cf"><label>BITRATE</label><div class="dc-bitrate-wrap"><input type="number" min="0.1" max="100" step="0.1" placeholder="Auto" value="'+(cam.bitrate||'')+'" oninput="_dcCamBitrate('+id+',this.value)"><span class="dc-bitrate-unit">Mbps</span></div></div>'+
-      '<div class="dc-cf"><label>QTD.</label><input type="number" value="'+cam.qty+'" min="1" max="999" oninput="_dcCamSet('+id+',\'qty\',+this.value)"></div>'+
+      '<div class="dc-cf"><label>BITRATE MÉDIO MEDIDO</label><div class="dc-bitrate-wrap"><input type="number" min="0.1" max="100" step="0.1" placeholder="Auto" value="'+(cam.bitrate||'')+'" oninput="_dcCamBitrate('+id+',this.value)"><span class="dc-bitrate-unit">Mbps</span></div></div>'+
+      '<div class="dc-cf"><label>PICO REDE (Mbps)</label><input type="number" min="0.1" step="0.1" placeholder="Auto" value="'+(cam.peakMbps||'')+'" oninput="_dcCamSet('+id+',\'peakMbps\',+this.value)"></div>'+
+    (cam.codecId==='uv_ultra265'?'<div class="dc-cf"><label>HIPÓTESE U-CODE</label><select onchange="_dcCamSet('+id+',\'ucodeSaving\',+this.value)">'+[0,25,50,75,90].map(function(v){return '<option value="'+v+'"'+(Number(cam.ucodeSaving||0)===v?' selected':'')+'>'+(v===0?'Sem poupança adicional':v+'% face a H.265')+'</option>';}).join('')+'</select></div>':'')+
+    '<div class="dc-cf"><label>QTD.</label><input type="number" value="'+cam.qty+'" min="1" max="999" oninput="_dcCamSet('+id+',\'qty\',+this.value)"></div>'+
       '<div class="dc-cam-tot"><div class="l">TOTAL</div><div class="v" id="dc-ctot-'+id+'">—</div></div>'+
     '</div>'+
     '<div class="dc-cam-note"><div class="dc-cam-dot" id="dc-cdot-'+id+'" style="background:'+b.color+'"></div><span id="dc-cnote-'+id+'">'+dcGetCodecNote(cam.codecId)+'</span></div>';
@@ -5109,23 +5103,22 @@ function _dcCamBitrate(id,v){
   var c=_dcCams.find(function(c){return c.id===id;});if(!c)return;
   var n=parseFloat(v);
   c.bitrate=(isFinite(n)&&n>0)?n:null;
+  var note=document.getElementById('dc-cnote-'+id);if(note)note.textContent=dcCamNote(c);
   dcCalc();
 }
-function dcAutoBitrate(cam){
-  if(window.SIGSEngineeringModel)return SIGSEngineeringModel.bitrate(parseFloat(cam.resId)||4,cam.codecId,cam.fps);
-  return dcGetResBase(cam.resId)*dcGetCodecFactor(cam.codecId)*Math.min(Math.max(cam.fps,1)/25,1.2);
-}
+function dcAutoBitrate(cam){return SIGSDiskModel.automatic(cam);}
 function dcEffectiveBitrate(cam){
   return (cam.bitrate&&cam.bitrate>0)?cam.bitrate:dcAutoBitrate(cam);
 }
 function _dcCamSet(id,k,v){
   var c=_dcCams.find(function(c){return c.id===id;}); if(!c) return;
-  c[k]=v;
+  c[k]=k==='qty'?Math.max(1,Math.min(999,Math.round(Number(v)||1))):k==='fps'?Math.max(1,Math.min(60,Number(v)||25)):v;
+  if(k==='codecId')dcRebuildCams();
   var br=dcEffectiveBitrate(c);
   var brel=document.getElementById('dc-cbr-'+id);
   if(brel) brel.textContent=br.toFixed(2)+' Mbps';
   var note=document.getElementById('dc-cnote-'+id);
-  if(note) note.textContent=dcGetCodecNote(c.codecId);
+  if(note) note.textContent=dcCamNote(c);
   dcCalc();
 }
 function dcDelCam(id){
@@ -5145,7 +5138,7 @@ function dcCalc(){
   var overheadPct=parseInt((document.getElementById('dc-overhead')||{value:5}).value)||0;
   var recordDuty=dcRecordingModeChanged();
   var recordMode=(document.getElementById('dc-record-mode')||{value:'continuous'}).value;
-  var motPct   = _dcMotionOn?(parseFloat((document.getElementById('dc-motion-pct')||{value:30}).value)||30)/100:0;
+  var motPct   = _dcMotionOn?Math.max(0,Math.min(100,Number((document.getElementById('dc-motion-pct')||{value:30}).value)))/100:0;
   var motFac   = _dcMotionOn?(parseFloat((document.getElementById('dc-motion-factor')||{value:2}).value)||2):1;
 
   var totalCams=0,totalPeakBW=0,totalRecordedBW=0,totalRaw=0,groups=[];
@@ -5153,16 +5146,12 @@ function dcCalc(){
   var mbpsToGB=seconds/8*1e6/(1024*1024*1024);
 
   _dcCams.forEach(function(cam){
-    var baseBr=dcEffectiveBitrate(cam);
-    // Scene-complexity simulation affects the bitrate while a stream is being recorded.
-    var motMix=_dcMotionOn&&!cam.bitrate?((1-motPct)*1+motPct*motFac):1;
-    var streamBr=baseBr*motMix;
-    var recordedBr=streamBr*recordDuty;
-    var gbCam=recordedBr*mbpsToGB;
-    var gbGrp=gbCam*cam.qty;
+    var metric=SIGSDiskModel.group(cam,{motion:_dcMotionOn,motionPercent:motPct*100,motionFactor:motFac,mode:recordMode,eventPercent:recordDuty*100,days:days,hours:hours});
+    var baseBr=metric.base,motMix=metric.mean/baseBr,streamBr=metric.mean,recordedBr=metric.recorded,gbGrp=metric.gib;
+    cam.qty=metric.qty;
 
     totalCams+=cam.qty;
-    totalPeakBW+=streamBr*cam.qty;
+    totalPeakBW+=metric.peak*cam.qty;
     totalRecordedBW+=recordedBr*cam.qty;
     totalRaw+=gbGrp;
 
@@ -5217,11 +5206,13 @@ function dcCalc(){
   var hero=document.getElementById('dc-hero');
   if(hero)hero.style.setProperty('--hero-glow',col+'20');
 
+  var installedTB=Math.max(0,Number((document.getElementById('dc-installed-tb')||{value:0}).value)||0),retention=document.getElementById('dc-installed-result');
+  if(retention)retention.textContent=installedTB>0?(tbFinal>0?'Com '+installedTB+' TB disponíveis: '+(installedTB/tbFinal*days).toFixed(1)+' dias estimados '+(installedTB>=tbFinal?'· capacidade suficiente':'· abaixo da retenção pedida'):'Sem gravação no cenário escolhido.'):'Introduz a capacidade disponível para verificar a retenção.';
   dcDrawGauge(tbFinal,col);
 
   function setStat(id,v){var el=document.getElementById(id);if(el)el.textContent=v;}
   setStat('dc-s-cams',totalCams+(totalCams===1?' câmara':' câmaras'));
-  setStat('dc-s-bw',totalPeakBW>=1000?(totalPeakBW/1000).toFixed(2)+' Gbps':totalPeakBW.toFixed(1)+' Mbps');
+  setStat('dc-s-bw',(totalPeakBW>=1000?(totalPeakBW/1000).toFixed(2)+' Gbps':totalPeakBW.toFixed(1)+' Mbps')+(_dcCams.some(function(c){return c.bitrate&&!c.peakMbps;})?' · confirmar picos':''));
   setStat('dc-s-rec-bw',totalRecordedBW>=1000?(totalRecordedBW/1000).toFixed(2)+' Gbps':totalRecordedBW.toFixed(1)+' Mbps');
   setStat('dc-s-raw',dcFmtGB(totalRaw));
   setStat('dc-s-raid',dcFmtGB(gbRaid)+(raidPct?' + reserva '+raidPct+'%':''));
@@ -5270,7 +5261,7 @@ function dcCalc(){
     groups.forEach(function(g){
       var pct=maxGB>0?(g.gb/maxGB*100):0;
       gb2.innerHTML+='<div class="dc-bar">'+
-        '<span class="dc-bar-lbl" title="'+g.name+(g.qty>1?' ×'+g.qty:'')+'">'+g.name+(g.qty>1?' ×'+g.qty:'')+'</span>'+
+        '<span class="dc-bar-lbl" title="'+dcEscape(g.name)+(g.qty>1?' ×'+g.qty:'')+'">'+dcEscape(g.name)+(g.qty>1?' ×'+g.qty:'')+'</span>'+
         '<div class="dc-bar-track"><div class="dc-bar-fill" style="width:'+pct.toFixed(0)+'%;background:'+b.color+'"></div></div>'+
         '<span class="dc-bar-val">'+dcFmtGB(g.gb)+'</span>'+
       '</div>';
@@ -5313,7 +5304,7 @@ function dcDrawGauge(tbVal,col){
   ctx2.fillStyle=col;
   ctx2.font='bold 18px monospace';
   ctx2.textAlign='center';ctx2.textBaseline='bottom';
-  ctx2.fillText(tbVal>=1?tbVal.toFixed(1)+' TB':Math.ceil(tbVal*1024)+' GB',cx,cy-4);
+  ctx2.fillText(tbVal>=1?tbVal.toFixed(1)+' TB':Math.ceil(tbVal*1000)+' GB',cx,cy-4);
 
   // Scale labels
   ctx2.fillStyle='rgba(255,255,255,.2)';ctx2.font='8px monospace';ctx2.textBaseline='top';
@@ -5350,7 +5341,7 @@ function dcExportTxt(){
     'Retenção:    '+days+' dias · '+hours+'h/dia',
     'Gravação:    '+(mode==='event'?'Evento / Movimento · '+duty+'% do tempo':'Contínua · 100% do tempo'),
     'Overhead:    +'+overhead+'%',
-    'Redundância: +'+raid+'%',
+    'Reserva de capacidade: +'+raid+'% (não simula RAID)',
     'Margem:      +'+margin+'%',
     _dcMotionOn?'Complexidade de cena: simulação ativa':'Complexidade de cena: simulação desativada',
     '',
@@ -5360,10 +5351,10 @@ function dcExportTxt(){
   _dcCams.forEach(function(cam){
     var r=DC_BRANDS[_dcBrand].resolutions.find(function(r){return r.id===cam.resId;})||{label:'?'};
     var codec=DC_BRANDS[_dcBrand].codecs.find(function(c){return c.id===cam.codecId;})||{label:'?'};
-    var br=dcEffectiveBitrate(cam);
+    var metric=SIGSDiskModel.group(cam,{motion:_dcMotionOn,motionPercent:Number((document.getElementById('dc-motion-pct')||{value:30}).value),motionFactor:Number((document.getElementById('dc-motion-factor')||{value:2}).value),mode:mode,eventPercent:Number(duty),days:Number(days),hours:Number(hours)}),br=metric.mean;
     lines.push(
       '  '+cam.name+' ×'+cam.qty+': '+r.label+' · '+codec.label+' · '+cam.fps+'fps · '+
-      br.toFixed(2)+' Mbps '+(cam.bitrate?'(manual)':'(auto)')
+      br.toFixed(2)+' Mbps médios · pico '+metric.peak.toFixed(2)+' Mbps '+(cam.bitrate?'(medido; não alterado por FPS/codec/cena)':'(estimativa)')+(cam.codecId==='uv_ultra265'&&!cam.bitrate?' · hipótese U-Code '+(cam.ucodeSaving||0)+'% face a H.265':'')
     );
   });
 
@@ -5374,7 +5365,10 @@ function dcExportTxt(){
     '  Rede estimada:          '+(bwEl?bwEl.textContent:'—'),
     '  Bitrate gravado médio:  '+(recBwEl?recBwEl.textContent:'—'),
     '',
-    'Nota: cálculo de projeto. Para dimensionamento final, usar o bitrate configurado/medido em cada câmara sempre que disponível.',
+    'Nota: cálculo de projeto. Estimativa base H.264: MP × 2 Mbps a 25 fps; H.265 assume 50% dessa referência. Ultra 265 não assume poupança adicional por defeito. As hipóteses não são bitrates oficiais.',
+    'Fonte Uniview: https://www.uniview.com/Support/Download_Center/Tool/202404/990130_168459_0.htm',
+    'Capacidade disponível: '+((document.getElementById('dc-installed-tb')||{}).value||'não indicada')+' TB',
+    'Retenção com capacidade disponível: '+((document.getElementById('dc-installed-result')||{}).textContent||'não indicada'),
     '═══════════════════════════════════════════'
   ]);
 

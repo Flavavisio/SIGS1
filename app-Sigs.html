@@ -19,7 +19,7 @@
 <link rel="stylesheet" href="assets/css/workflow-v12.css?v=20261007-0700">
 <link rel="stylesheet" href="assets/css/sidebar-v13.css?v=20261008-0700">
 <link rel="stylesheet" href="assets/css/brand-v23.css?v=20261007-0700"><link rel="icon" type="image/svg+xml" href="assets/brand/sigs-favicon.svg"><link rel="stylesheet" href="assets/css/recommendations-v24.css?v=20261007-0700"><link rel="stylesheet" href="assets/css/activity-v42.css?v=20261009-0200">
-</head>
+<style>.dc-brand-tile .dbt-logo{width:100%;max-width:140px;height:48px;background:#fff!important;padding:7px;border-radius:8px}.dc-brand-tile .dbt-logo img{width:100%;height:100%;object-fit:contain}.dc-nav-logo{background:white!important;width:96px;padding:5px}.dc-cam-body{grid-template-columns:repeat(3,minmax(0,1fr))}@media(max-width:650px){.dc-cam-body{grid-template-columns:repeat(2,minmax(0,1fr))}}.dc-cam-note{line-height:1.5}</style></head>
 <body class="sigs-locked sigs-premium">
 
 
@@ -137,7 +137,7 @@
             <div class="dc-brand-tile" data-brand="uniview" onclick="dcSelectBrand('uniview')" style="--bc:#3b82f6">
               <div class="dbt-logo" id="dc-blogo-uniview" style="background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.25)">🔵</div>
               <div class="dbt-name">Uniview</div>
-              <div class="dbt-codec">Ultra 265 · U-Code<br>Cenários por atividade</div>
+              <div class="dbt-codec">Ultra 265 · U-Code<br>Bitrate medido / estimado</div>
               <div class="dbt-logo-upload" onclick="event.stopPropagation();dcUploadBrandLogo('uniview')" title="Carregar logo">📁</div>
             </div>
             <div class="dc-brand-tile" data-brand="safire" onclick="dcSelectBrand('safire')" style="--bc:#10b981">
@@ -151,6 +151,7 @@
         </div>
       </div>
 
+      <div class="dc-panel" style="padding:14px;font-size:11px;line-height:1.6"><b>Como é calculado</b><p>Introduz o bitrate médio medido no NVR/câmara para um cálculo fiel. Sem esse valor, a calculadora usa uma hipótese de projeto, dependente de resolução, FPS, codec e cena.</p><p>Ultra 265 = H.265 + U-Code. Por defeito não assumimos poupança U-Code adicional. As opções de poupança são hipóteses; não são modos oficiais nem garantias do fabricante. O bitrate medido já inclui compressão e atividade.</p><a href="https://www.uniview.com/Support/Download_Center/Tool/202404/990130_168459_0.htm" target="_blank" rel="noopener">Fonte: Uniview · cálculo de capacidade no EZTools</a><p>Referência automática H.264: MP × 2 Mbps a 25 fps; H.265: 50% da referência. Reserva e margem não simulam a capacidade útil de um RAID.</p></div>
       <!-- STEP 2 ENV -->
       <div class="dc-panel" id="dc-env-panel" style="display:none;opacity:0;transform:translateY(6px);transition:opacity .22s,transform .22s">
         <div class="dc-step-head">
@@ -221,13 +222,13 @@
               </select>
             </div>
             <div class="dc-rf"><label>% TEMPO GRAVADO</label>
-              <input class="dc-small" type="number" id="dc-event-pct" value="30" min="1" max="100" oninput="dcCalc()" disabled>
+              <input class="dc-small" type="number" id="dc-event-pct" value="30" min="0" max="100" oninput="dcCalc()" disabled>
             </div>
-            <div class="dc-rf"><label>RAID / REDUNDÂNCIA</label>
+            <div class="dc-rf"><label>RESERVA DE CAPACIDADE</label>
               <select class="dc-rs" id="dc-raid" onchange="dcCalc()">
-                <option value="0">Sem RAID</option>
+                <option value="0" selected>Sem reserva adicional</option>
                 <option value="15">Reserva +15%</option>
-                <option value="25" selected>Reserva +25%</option>
+                <option value="25">Reserva +25%</option>
                 <option value="100">Espelho +100%</option>
               </select>
             </div>
@@ -238,7 +239,7 @@
                 <option value="30">+30%</option>
               </select>
             </div>
-            <div class="dc-rf"><label>OVERHEAD REDE/NVR</label>
+            <div class="dc-rf"><label>OVERHEAD DE ARMAZENAMENTO</label>
               <select class="dc-rs" id="dc-overhead" onchange="dcCalc()">
                 <option value="0">0%</option>
                 <option value="5" selected>+5%</option>
@@ -274,10 +275,10 @@
         <div id="dc-gauge-label" style="font-size:8.5px;color:var(--txt3);text-align:center;margin-top:-4px"></div>
         <div class="dc-stats">
           <div class="dc-stat"><div class="dc-sl">Câmaras</div><div class="dc-sv" id="dc-s-cams">—</div></div>
-          <div class="dc-stat"><div class="dc-sl">Rede estimada</div><div class="dc-sv" id="dc-s-bw">—</div></div>
+          <div class="dc-stat"><div class="dc-sl">Pico de rede estimado</div><div class="dc-sv" id="dc-s-bw">—</div></div>
           <div class="dc-stat"><div class="dc-sl">Bitrate Gravado Médio</div><div class="dc-sv" id="dc-s-rec-bw">—</div></div>
           <div class="dc-stat"><div class="dc-sl">Bruto</div><div class="dc-sv" id="dc-s-raw">—</div></div>
-          <div class="dc-stat"><div class="dc-sl">Com RAID</div><div class="dc-sv" id="dc-s-raid">—</div></div>
+          <div class="dc-stat"><div class="dc-sl">Com reserva</div><div class="dc-sv" id="dc-s-raid">—</div></div>
           <div class="dc-stat"><div class="dc-sl">Com Margem</div><div class="dc-sv" id="dc-s-margin">—</div></div>
           <div class="dc-stat"><div class="dc-sl">Retenção</div><div class="dc-sv" id="dc-s-days">—</div></div>
         </div>
@@ -295,6 +296,7 @@
           <div class="dc-subhead">📊 Por grupo</div>
           <div id="dc-group-bars"></div>
         </div>
+        <label style="display:block;font-size:11px">Capacidade disponível (TB)<input id="dc-installed-tb" type="number" min="0" step="0.1" placeholder="Ex.: 4" oninput="dcCalc()" class="dc-rn"></label><p id="dc-installed-result" style="font-size:11px;line-height:1.5">Introduz a capacidade disponível para verificar a retenção.</p>
         <button class="dc-export-btn" onclick="dcExportTxt()">📋 Copiar relatório</button>
       </div>
     </div>
@@ -1224,7 +1226,8 @@
 <script src="assets/js/optics-v13.js?v=20261007-0700"></script>
 <script src="assets/js/engineering-model-v39.js?v=20261007-0700"></script>
 <script src="assets/js/engineering-advanced-model-v43.js?v=20261008-2335"></script>
-<script src="assets/js/block-03.js?v=20261009-vision63"></script>
+<script src="assets/js/disk-model-v64.js?v=20261009-disk64"></script>
+<script src="assets/js/block-03.js?v=20261009-disk64"></script>
 
 <!-- ══ PRESENTATION MODE OVERLAY ══ -->
 <div id="pres-overlay">
