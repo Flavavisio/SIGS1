@@ -26,14 +26,10 @@ function renderLibrary(){if(!$('dlist')||!window.S)return;const lib=window.sigsV
  const quick=$('quick-sel-panel');if(quick&&quick.style.display&&quick.style.display!=='none'&&typeof buildQsTypeBtns==='function')buildQsTypeBtns();
  const title=$('ph-title');if(title)title.textContent=MOD==='alarm'?'Biblioteca · Intrusão':MOD==='fire'?'Biblioteca · Incêndio':'Biblioteca · CCTV';
 }
-async function loadCurrentProject(){
+function loadCurrentProject(){
  setView('menu',true);
- const current=window.CLOUD&&CLOUD.projectId,name=window.CLOUD&&CLOUD.projectName;
- if(!current){if(typeof notify==='function')notify('Guarda o projeto atual primeiro para o poderes carregar.');return;}
- const state=window.SIGS_V6||{};
- if(state.saving||state.restoring||state.deleting){if(typeof notify==='function')notify('Aguarda a operação em curso antes de carregar o projeto.');return;}
- if(state.dirty&&!confirm('Carregar a última versão guardada deste projeto? As alterações por guardar serão descartadas.'))return;
- await window.cloudOpenProject(current,name);
+ if(!window.CLOUD||!CLOUD.projectId){if(typeof notify==='function')notify('Guarda o projeto atual primeiro para consultar as suas gravações.');return;}
+ window.sigsV6OpenVersions();
 }
 function install(){rail=document.querySelector('.studio-rail');const library=$('lp');if(!rail||!library){setTimeout(install,100);return;}
  const head=document.createElement('div');head.className='s13-head';head.innerHTML='<b>Ferramentas do projeto</b><button id="s13-collapse" type="button" aria-controls="lp" class="studio-button"></button>';rail.prepend(head);
@@ -49,7 +45,7 @@ function install(){rail=document.querySelector('.studio-rail');const library=$('
   document.querySelectorAll('[data-studio-panel="inspector"]').forEach(b=>b.addEventListener('click',()=>{folded=false;paint();}));paint();
  }
  const projectActions=document.createElement('div');projectActions.className='s13-project-actions';projectActions.setAttribute('role','group');projectActions.setAttribute('aria-label','Projeto');
- [['s13-save-project','Guardar projeto','▣',()=>window.sigsV6SaveProject('manual')],['s13-load-project','Carregar projeto','▱',loadCurrentProject]].forEach(([id,label,icon,action])=>{const b=document.createElement('button');b.id=id;b.type='button';b.className='studio-button';b.title=label;b.setAttribute('aria-label',label);b.innerHTML='<span aria-hidden="true">'+icon+'</span><span class="s13-action-label">'+label+'</span>';b.onclick=()=>{if(b.disabled)return;b.disabled=true;Promise.resolve().then(action).catch(e=>{if(typeof notify==='function')notify(e.message||'Não foi possível concluir a operação.');}).finally(()=>{b.disabled=false;});};if(id==='s13-load-project')b.title='Carregar a última versão guardada do projeto atual';projectActions.appendChild(b);});const report=$('sigs-v5-report-menu');if(report)report.after(projectActions);else (rail.querySelector('.sigs-v5-nav')||rail).appendChild(projectActions);
+ [['s13-save-project','Guardar projeto','▣',()=>window.sigsV6SaveProject('manual')],['s13-load-project','Carregar projeto','▱',loadCurrentProject]].forEach(([id,label,icon,action])=>{const b=document.createElement('button');b.id=id;b.type='button';b.className='studio-button';b.title=label;b.setAttribute('aria-label',label);b.innerHTML='<span aria-hidden="true">'+icon+'</span><span class="s13-action-label">'+label+'</span>';b.onclick=()=>{if(b.disabled)return;b.disabled=true;Promise.resolve().then(action).catch(e=>{if(typeof notify==='function')notify(e.message||'Não foi possível concluir a operação.');}).finally(()=>{b.disabled=false;});};if(id==='s13-load-project')b.title='Escolher uma gravação do projeto atual';projectActions.appendChild(b);});const report=$('sigs-v5-report-menu');if(report)report.after(projectActions);else (rail.querySelector('.sigs-v5-nav')||rail).appendChild(projectActions);
  rail.insertBefore(library,rail.querySelector('.studio-rail-foot'));const filters=document.createElement('div');filters.className='s13-filters';filters.innerHTML='<div class="s13-selects"><label>Marca<select id="s13-brand"></select></label><label>Tipo<select id="s13-type"></select></label></div><div id="s13-optic-wrap" class="s13-selects"><label>Ótica<select id="s13-optic"></select></label><label>Lente / Zoom<select id="s13-lens"></select></label></div><div id="s13-count" role="status"></div><small>Seleciona um modelo e usa «Colocar na planta».</small>';const search=$('lib-search-wrap');search.style.display='block';search.after(filters);$('lib-search').placeholder='Pesquisar referência, marca ou modelo…';
  $('s13-brand').onchange=function(){brand=this.value;limit=60;renderLibrary();};$('s13-type').onchange=function(){type=this.value;limit=60;renderLibrary();};$('s13-optic').onchange=function(){optic=this.value;lens='';limit=60;renderLibrary();};$('s13-lens').onchange=function(){lens=this.value;limit=60;renderLibrary();};window.renderDevList=renderLibrary;window.filterLib=function(){limit=60;renderLibrary();};$('s13-collapse').onclick=()=>{collapsed=!collapsed;paintShell();};try{collapsed=localStorage.getItem('sigs-sidebar-collapsed-v13')==='true';}catch(e){}
  document.querySelectorAll('[data-studio-panel]').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.studioPanel==='nav')setView('menu',true);if(b.dataset.studioPanel==='library')setView('library',true);}));
