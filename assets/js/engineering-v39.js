@@ -30,5 +30,8 @@ window.render=function(){renderOriginal();if(MOD!=='cctv'||!FLOORS[FLOOR_CUR])re
 for(const name of ['switchFloor','startModule','_restoreProjectData','setTool']){const old=window[name];window[name]=function(){cancel();close();return old.apply(this,arguments);};}
 document.addEventListener('keydown',e=>{if(placing&&e.key==='Escape'){e.stopImmediatePropagation();cancel();}},true);
 window.SIGSEngineering={open,snapshot,cancel};
-setTimeout(()=>{const host=document.querySelector('.studio-header-actions');if(host&&!$('eng-open')){const b=document.createElement('button');b.id='eng-open';b.className='studio-button';b.textContent='Engenharia';b.onclick=open;host.prepend(b);}},1100);
+setTimeout(()=>{const host=document.querySelector('.studio-header-actions');if(host&&!$('eng-open')){const b=document.createElement('button');b.id='eng-open';b.className='studio-button';b.textContent='Engenharia';b.onclick=open;host.prepend(b);
+ const menu=document.createElement('button');menu.id='sigs-project-menu';menu.type='button';menu.className='studio-button';menu.textContent='← Voltar ao menu';menu.title='Voltar à lista de projetos';menu.setAttribute('aria-label','Voltar ao menu e à lista de projetos');
+ menu.onclick=()=>{close();cancel();document.body.classList.remove('studio-panel-nav','studio-panel-library','studio-panel-inspector');window.sigsPortalOpenProjects();if(window.CLOUD?.user?.role==='SUPER_ADMIN'&&typeof window.openCloud==='function')window.openCloud();};
+ b.insertAdjacentElement('afterend',menu);}},1100);
 })();
