@@ -33,5 +33,5 @@ window.SIGSEngineering={open,snapshot,cancel};
 setTimeout(()=>{const host=document.querySelector('.studio-header-actions');if(host&&!$('eng-open')){const b=document.createElement('button');b.id='eng-open';b.className='studio-button';b.textContent='Engenharia';b.onclick=open;host.prepend(b);
  const menu=document.createElement('button');menu.id='sigs-project-menu';menu.type='button';menu.className='studio-button';menu.textContent='← Voltar ao menu';menu.title='Voltar à lista de projetos';menu.setAttribute('aria-label','Voltar ao menu e à lista de projetos');
  menu.onclick=()=>{close();cancel();document.body.classList.remove('studio-panel-nav','studio-panel-library','studio-panel-inspector');window.sigsPortalOpenProjects();if(window.CLOUD?.user?.role==='SUPER_ADMIN'&&typeof window.openCloud==='function')window.openCloud();};
- b.insertAdjacentElement('afterend',menu);}},1100);
+ b.insertAdjacentElement('beforebegin',menu);}},1100);
 })();
