@@ -1848,7 +1848,7 @@ function _restoreProjectData(d){
   S.floorPlanLoadId=(S.floorPlanLoadId||0)+1;
   if(d.module&&d.module!==MOD) startModule(d.module);
   if(d.lib)S.lib=d.lib; if(MOD==='cctv'&&typeof SIGSAjaxCCTV!=='undefined')S.lib=SIGSAjaxCCTV.merge(S.lib); if(MOD==='cctv'&&typeof SIGSCCTVExpansion!=='undefined')S.lib=SIGSCCTVExpansion.merge(S.lib); if(MOD==='cctv'&&typeof SIGSCCTVVisiotech!=='undefined')S.lib=SIGSCCTVVisiotech.merge(S.lib);
-if(MOD==='cctv'&&typeof SIGSCCTVVisiotech100!=='undefined')S.lib=SIGSCCTVVisiotech100.merge(S.lib); if(d.placed)S.placed=d.placed; if(d.meas)S.meas=d.meas;
+if(MOD==='cctv'&&typeof SIGSCCTVVisiotech100!=='undefined')S.lib=SIGSCCTVVisiotech100.merge(S.lib); if(MOD==='cctv'&&typeof SIGSThermalCatalog!=='undefined')S.lib=SIGSThermalCatalog.merge(S.lib); if(d.placed)S.placed=d.placed; if(d.meas)S.meas=d.meas;
   if(d.scale)S.scale=d.scale; if(d.devN)S.devN=d.devN;
   if(d.floors&&d.floors.length){ FLOORS=d.floors; FLOOR_CUR=d.floorCur||0; renderFloorBar(); }
   else { FLOORS[0]={id:uid(),name:'Piso 0',placed:d.placed||[],meas:d.meas||[],fp:null,scale:d.scale||S.scale,devN:d.devN||0}; FLOOR_CUR=0; renderFloorBar(); }
@@ -1971,7 +1971,7 @@ function doLoadProj(e){
       var d=JSON.parse(ev.target.result);
       if(d.module&&d.module!==MOD)startModule(d.module);
       if(d.lib)S.lib=d.lib; if(MOD==='cctv'&&typeof SIGSAjaxCCTV!=='undefined')S.lib=SIGSAjaxCCTV.merge(S.lib); if(MOD==='cctv'&&typeof SIGSCCTVExpansion!=='undefined')S.lib=SIGSCCTVExpansion.merge(S.lib); if(MOD==='cctv'&&typeof SIGSCCTVVisiotech!=='undefined')S.lib=SIGSCCTVVisiotech.merge(S.lib);
-if(MOD==='cctv'&&typeof SIGSCCTVVisiotech100!=='undefined')S.lib=SIGSCCTVVisiotech100.merge(S.lib); if(d.placed)S.placed=d.placed; if(d.meas)S.meas=d.meas;
+if(MOD==='cctv'&&typeof SIGSCCTVVisiotech100!=='undefined')S.lib=SIGSCCTVVisiotech100.merge(S.lib); if(MOD==='cctv'&&typeof SIGSThermalCatalog!=='undefined')S.lib=SIGSThermalCatalog.merge(S.lib); if(d.placed)S.placed=d.placed; if(d.meas)S.meas=d.meas;
       if(d.scale)S.scale=d.scale; if(d.devN)S.devN=d.devN;
       // Restore floors
       if(d.floors&&d.floors.length){FLOORS=d.floors;FLOOR_CUR=d.floorCur||0;renderFloorBar();}else{FLOORS[0]={id:uid(),name:'Piso 0',placed:d.placed||[],meas:d.meas||[],fp:null,scale:d.scale||S.scale,devN:d.devN||0};FLOOR_CUR=0;renderFloorBar();}

@@ -35,7 +35,7 @@ function sync(input,p,d){if(!input)return;const q=policy(d);input.min=q.min;inpu
 function valueLabel(p,d){const q=policy(d);return q.kind==='ptz'?(q.zoomDocumented?mm(Math.round(effective(p,d)/q.min*10)/10)+'×':'—'):mm(effective(p,d))+' mm';}
 function syncControl(input,p,d){const q=sync(input,p,d);if(q&&q.kind==='ptz'){input.min=1;input.max=q.zoom||1;input.value=effective(p,d)/q.min;}return q;}
 function fromControl(value,d){const q=policy(d);return q.kind==='ptz'?Number(value)*q.min:Number(value);}
-function filterKey(d){if(!['dome','bullet','turret','ptz','fisheye'].includes(d.type))return '';const q=policy(d);if(q.kind==='ptz')return q.zoomDocumented?'zoom:'+q.zoom:'unknown';if(!q.documented)return 'unknown';return q.kind==='fixed'?'fixed:'+q.min:'range:'+q.min+':'+q.max;}
+function filterKey(d){if(!['dome','bullet','turret','ptz','fisheye','thermal_bi'].includes(d.type))return '';const q=policy(d);if(q.kind==='ptz')return q.zoomDocumented?'zoom:'+q.zoom:'unknown';if(!q.documented)return 'unknown';return q.kind==='fixed'?'fixed:'+q.min:'range:'+q.min+':'+q.max;}
 function filterLabel(key){const v=key.split(':');return v[0]==='zoom'?'Zoom óptico '+mm(v[1])+'×':v[0]==='fixed'?'Fixa '+mm(v[1])+' mm':v[0]==='range'?'Varifocal '+mm(v[1])+'–'+mm(v[2])+' mm':'Ótica por confirmar';}
 function matches(d,kind,key){const k=filterKey(d);if(!k)return !kind&&!key;const q=policy(d);return (!kind||(kind==='unknown'?k==='unknown':q.kind===kind))&&(!key||key===k);}
 root.SIGSLensModel={policy,effective,sync,syncControl,fromControl,valueLabel,fov,filterKey,filterLabel,matches};if(typeof module!=='undefined'&&module.exports)module.exports=root.SIGSLensModel;
