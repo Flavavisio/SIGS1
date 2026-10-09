@@ -2,7 +2,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('nod
 const geometry=require('../assets/js/site-geometry-model-v28.js');global.SIGSSiteGeometry=geometry;
 global.SIGSProposalOptics=require('../assets/js/proposal-optics-v27.js');const scene=require('../assets/js/scene-model-v29.js');
 // Execute the real canvas renderer, rather than duplicate its angle calculation.
-const source=fs.readFileSync('assets/js/block-03.js','utf8'),start=source.indexOf('function drawCov('),end=source.indexOf('function drawIcon(',start);let rotation=0,arcs=[],stack=[];
+const source=fs.readFileSync('assets/js/block-03.js','utf8'),start=source.indexOf('function sigsClipBlind('),end=source.indexOf('function drawIcon(',start);let rotation=0,arcs=[],stack=[];
 const ctx={save(){stack.push(rotation)},restore(){rotation=stack.pop()},translate(){},rotate(a){rotation+=a},beginPath(){},moveTo(){},arc(x,y,r,a,b){if(b-a<6)arcs.push((a+b)/2+rotation)},closePath(){},fill(){},stroke(){},setLineDash(){},fillText(){}};
 const env={ctx,MOD:'cctv',S:{scale:{ok:false,ppm:10},zoom:1},w2s:(x,y)=>({x,y}),lFOV:b=>b,lRange:b=>b,hr:()=>'',sigsGroundGeometry:()=>({blind:0}),doriCalc:()=>({i:0,r:0,o:0,d:0})};vm.createContext(env);vm.runInContext(source.slice(start,end),env);
 for(const angle of [0,45,90,180,270])for(const type of ['bullet','thermal_bi']){rotation=0;arcs=[];const p={x:0,y:0,rotation:angle,lens:2.8},d={type,fov:60,range:30,thermalFov:60,thermalRange:30,visibleFov:60,visibleRange:30};env.drawCov(p,d);assert(arcs.length);for(const a of arcs){assert(Math.abs(Math.atan2(Math.sin(a-(angle-90)*Math.PI/180),Math.cos(a-(angle-90)*Math.PI/180)))<1e-9,'Canvas FOV, wall rays and 3D must face the same direction');}}

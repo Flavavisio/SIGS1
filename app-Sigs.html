@@ -553,11 +553,11 @@
           </div>
           <!-- CCTV lens panel -->
           <div id="cctv-lens" class="ps">
-            <div class="stl">Lente Focal</div>
+            <div class="stl" id="plens-title">Lente Focal</div>
             <div class="fr">
-              <span class="fl">Focal (mm)</span>
-              <input class="fi" id="plens" type="range" min="2.8" max="13" step="0.1" value="2.8" oninput="updP('lens',+this.value)">
-              <span id="plensv" style="font-family:var(--m);font-size:11px;color:var(--acc4);width:38px;text-align:right;flex-shrink:0">2.8mm</span>
+              <span class="fl" id="plens-unit">Focal (mm)</span>
+              <input class="fi" id="plens" type="range" min="2.8" max="13" step="0.1" value="2.8" oninput="updOptics(+this.value)">
+              <span id="plensv" style="font-family:var(--m);font-size:11px;color:var(--acc4);width:62px;text-align:right;flex-shrink:0">2.8mm</span>
             </div>
             <div id="plensinfo" style="font-size:10px;color:var(--txt2);line-height:1.6;margin-top:3px;padding:5px 7px;background:rgba(0,0,0,.25);border-radius:4px;border-left:2px solid var(--acc4);white-space:pre-line"></div>
           </div>
@@ -1217,14 +1217,14 @@
 <script src="assets/data/poe-network-catalog.js?v=20261007-0700"></script>
 <script src="assets/data/ajax-cctv-v47.js?v=20261008-0700"></script>
 <script src="assets/data/product-images.js?v=20261007-0700"></script>
-<script src="assets/js/lens-model-v45.js?v=20261008-2230"></script>
+<script src="assets/js/lens-model-v45.js?v=20261009-optics59"></script>
 <script src="assets/data/cctv-expansion-v52.js?v=20261008-2230"></script>
 <script src="assets/data/visiotech-cctv-v53.js?v=20261008-2250"></script>
 <script src="assets/data/visiotech-cctv-v54.js?v=20261008-2320"></script>
 <script src="assets/js/optics-v13.js?v=20261007-0700"></script>
 <script src="assets/js/engineering-model-v39.js?v=20261007-0700"></script>
 <script src="assets/js/engineering-advanced-model-v43.js?v=20261008-2335"></script>
-<script src="assets/js/block-03.js?v=20261008-2320"></script>
+<script src="assets/js/block-03.js?v=20261009-optics59"></script>
 
 <!-- ══ PRESENTATION MODE OVERLAY ══ -->
 <div id="pres-overlay">
@@ -1262,7 +1262,7 @@
 <script src="assets/js/premium-v9.js?v=20261007-0700"></script>
 <script src="assets/js/accessory-model-v10.js?v=20261007-0700"></script>
 <script src="assets/js/site-geometry-model-v28.js?v=20261007-0700"></script>
-<script src="assets/js/proposal-optics-v27.js?v=20261008-0700"></script>
+<script src="assets/js/proposal-optics-v27.js?v=20261009-optics59"></script>
 <script src="assets/js/proposal-v10.js?v=20261007-0700"></script>
 
 <script src="assets/js/workflow-model-v12.js?v=20261007-0700"></script>
@@ -1270,9 +1270,9 @@
 <script src="assets/js/pending-model-v25.js?v=20261007-0700"></script>
 <script src="assets/js/alternatives-model-v26.js?v=20261007-0700"></script>
 <script src="assets/js/workflow-v12.js?v=20261008-0640"></script>
-<script src="assets/js/sidebar-v13.js?v=20261008-2230"></script>
+<script src="assets/js/sidebar-v13.js?v=20261009-optics59"></script>
 <script src="assets/js/brand-v23.js?v=20261007-0700"></script>
-<script src="assets/js/technical-report-v22.js?v=20261008-0340"></script>
+<script src="assets/js/technical-report-v22.js?v=20261009-optics59"></script>
 <script src="assets/data/nvr-poe-v55.js?v=20261008-2340"></script>
 <script src="assets/js/recommendation-model-v24.js?v=20261008-2335"></script>
 <script src="assets/js/recommendations-v24.js?v=20261008-2335"></script>

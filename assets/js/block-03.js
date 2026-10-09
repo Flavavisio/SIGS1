@@ -235,6 +235,17 @@ function drawFP(){
   ctx.strokeStyle='rgba(0,200,240,0.2)'; ctx.lineWidth=1; ctx.setLineDash([5,4]);
   ctx.strokeRect(s.x,s.y,sw,sh); ctx.setLineDash([]); ctx.restore();
 }
+function sigsClipBlind(context,p,fov){
+  if(!S.scale.ok)return;
+  var tilt=p.instTilt!==undefined?p.instTilt:30;if(tilt<0)return;
+  var radius=sigsGroundGeometry(p.instHeight||3,tilt,fov).blind*S.scale.ppm*S.zoom;
+  if(!(radius>0)||!Number.isFinite(radius))return;
+  // Coordinates are local to this camera. Clip only its overlay, preserving underlying pixels.
+  var origin=w2s(p.x,p.y);
+  var outer=Math.max(radius+1,(cv.width+cv.height+Math.abs(origin.x)+Math.abs(origin.y))*2);
+  context.beginPath();context.rect(-outer,-outer,outer*2,outer*2);
+  context.moveTo(radius,0);context.arc(0,0,radius,0,Math.PI*2);context.closePath();context.clip('evenodd');
+}
 function drawCov(p,dev){
   var s=w2s(p.x,p.y);
   var fov,range;
@@ -261,40 +272,7 @@ function drawCov(p,dev){
   ctx.save(); ctx.translate(s.x,s.y); ctx.rotate(rot);
   var fill=hr(col,opa), stk=hr(col,Math.min(opa*2.8,0.75));
 
-  // ── Draw blind spot (zona cega) on map ──
-  if(MOD==='cctv' && S.scale.ok){
-    var instH=p.instHeight||3;
-    var instTilt=p.instTilt!==undefined?p.instTilt:30;
-    if(instTilt>=0){
-      var ground=sigsGroundGeometry(instH,instTilt,fov);
-      var blindM = ground.blind;
-      var blindPx2 = blindM * S.scale.ppm * S.zoom;
-      if(blindM>0 && blindPx2>2 && blindPx2<rPx*2){
-        // Zona cega (ângulo morto) — ROXO, bem nítido
-        if(fov>=355){
-          ctx.beginPath();ctx.arc(0,0,blindPx2,0,Math.PI*2);
-          ctx.fillStyle='rgba(168,85,247,0.28)';ctx.fill();
-          ctx.strokeStyle='rgba(168,85,247,0.95)';ctx.lineWidth=2;ctx.stroke();
-        } else if(fov>0){
-          var sa3=(-hf-90)*Math.PI/180,ea3=(hf-90)*Math.PI/180;
-          ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,blindPx2,sa3,ea3);ctx.closePath();
-          ctx.fillStyle='rgba(168,85,247,0.28)';ctx.fill();
-          ctx.strokeStyle='rgba(168,85,247,0.95)';ctx.lineWidth=2;ctx.stroke();
-        }
-        // Label blind distance if scale ok and big enough
-        if(blindPx2>18){
-          ctx.save();
-          ctx.rotate(-rot+(p.rotation-90)*Math.PI/180);
-          ctx.font='bold 8px sans-serif';
-          ctx.fillStyle='rgba(196,141,253,.95)';
-          ctx.textAlign='center';
-          var ang2=(-90)*Math.PI/180;
-          ctx.fillText(blindM.toFixed(1)+'m', Math.cos(ang2)*blindPx2*0.65, Math.sin(ang2)*blindPx2*0.65-2);
-          ctx.restore();
-        }
-      }
-    }
-  }
+  if(MOD==='cctv')sigsClipBlind(ctx,p,fov);
 
   // Draw main coverage zone
   function drawSector(r,fc,sc,lw){
@@ -376,6 +354,8 @@ function _drawRadarCov(p,dev,s){
 
   ctx.save(); ctx.translate(s.x,s.y); ctx.rotate(rot);
 
+  sigsClipBlind(ctx,p,fov);
+
   // Main sector
   _drawSector(ctx,rPx,fov,'rgba('+rRgb+','+opa+')','rgba('+rRgb+',0.75)',2);
 
@@ -401,35 +381,6 @@ function _drawRadarCov(p,dev,s){
     });
     ctx.setLineDash([]);
 
-    // ── Blind spot ──
-    var instH=p.instHeight||3;
-    var instTilt=p.instTilt!==undefined?p.instTilt:30;
-    if(instTilt>=0){
-      var blindM=sigsGroundGeometry(instH,instTilt,fov).blind;
-      var blindPxR=blindM*S.scale.ppm*S.zoom;
-      if(blindM>0 && blindPxR>2){
-        var hfR=fov/2;
-        if(fov>=355){
-          ctx.beginPath();ctx.arc(0,0,blindPxR,0,Math.PI*2);
-          ctx.fillStyle='rgba(168,85,247,0.28)';ctx.fill();
-          ctx.strokeStyle='rgba(168,85,247,0.95)';ctx.lineWidth=2;ctx.stroke();
-        } else if(fov>0){
-          var saR=(-hfR-90)*Math.PI/180,eaR=(hfR-90)*Math.PI/180;
-          ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,blindPxR,saR,eaR);ctx.closePath();
-          ctx.fillStyle='rgba(168,85,247,0.28)';ctx.fill();
-          ctx.strokeStyle='rgba(168,85,247,0.95)';ctx.lineWidth=2;ctx.stroke();
-        }
-        if(blindPxR>18){
-          ctx.save();
-          ctx.rotate(-rot+(p.rotation-90)*Math.PI/180);
-          ctx.font='bold 8px sans-serif'; ctx.fillStyle='rgba(196,141,253,.95)';
-          ctx.textAlign='center';
-          var angR2=(-90)*Math.PI/180;
-          ctx.fillText(blindM.toFixed(1)+'m',Math.cos(angR2)*blindPxR*0.65,Math.sin(angR2)*blindPxR*0.65-2);
-          ctx.restore();
-        }
-      }
-    }
   }
   ctx.restore();
 }
@@ -460,44 +411,14 @@ function _drawThermalBiCov(p,dev,s){
   ctx.save(); ctx.translate(s.x,s.y); ctx.rotate(rot);
 
   // ── Visible (blue) drawn first, behind ──
-  _drawSector(ctx,vRpx,visibleFov,'rgba('+vRgb+','+opa+')','rgba('+vRgb+',0.75)',1.5);
+  ctx.save();sigsClipBlind(ctx,p,visibleFov);
+  _drawSector(ctx,vRpx,visibleFov,'rgba('+vRgb+','+opa+')','rgba('+vRgb+',0.75)',1.5);ctx.restore();
 
   // ── Thermal cone (user colour) on top ──
+  sigsClipBlind(ctx,p,thermalFov);
   _drawSector(ctx,tRpx,thermalFov,'rgba('+tRgb+','+(opa*1.2)+')','rgba('+tRgb+',0.88)',2);
 
-  // ── Blind spot (zona cega) on map — same as standard cameras ──
-  if(S.scale.ok){
-    var instH=p.instHeight||3;
-    var instTilt=p.instTilt!==undefined?p.instTilt:30;
-    if(instTilt>=0){
-      var blindM = sigsGroundGeometry(instH,instTilt,thermalFov).blind;
-      var blindPxT = blindM * S.scale.ppm * S.zoom;
-      if(blindPxT>2){
-        var hfT=thermalFov/2;
-        if(thermalFov>=355){
-          ctx.beginPath();ctx.arc(0,0,blindPxT,0,Math.PI*2);
-          ctx.fillStyle='rgba(150,155,165,0.15)';ctx.fill();
-          ctx.strokeStyle='rgba(150,155,165,0.55)';ctx.lineWidth=1.2;ctx.setLineDash([3,3]);ctx.stroke();ctx.setLineDash([]);
-        } else if(thermalFov>0){
-          var saB=(-hfT-90)*Math.PI/180, eaB=(hfT-90)*Math.PI/180;
-          ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,blindPxT,saB,eaB);ctx.closePath();
-          ctx.fillStyle='rgba(150,155,165,0.15)';ctx.fill();
-          ctx.strokeStyle='rgba(150,155,165,0.45)';ctx.lineWidth=1.2;ctx.setLineDash([3,3]);ctx.stroke();ctx.setLineDash([]);
-        }
-        // Distance label
-        if(blindPxT>18){
-          ctx.save();
-          ctx.rotate(-rot+(p.rotation-90)*Math.PI/180);
-          ctx.font='bold 8px sans-serif';
-          ctx.fillStyle='rgba(160,165,175,.85)';
-          ctx.textAlign='center';
-          var angB=(-90)*Math.PI/180;
-          ctx.fillText(blindM.toFixed(1)+'m', Math.cos(angB)*blindPxT*0.65, Math.sin(angB)*blindPxT*0.65-2);
-          ctx.restore();
-        }
-      }
-    }
-  }
+
 
   // ── Distance labels ──
   if(S.scale.ok && tRpx>14){
@@ -630,7 +551,7 @@ function drawDevLabels(p,dev,s,sz,col){
   }
   if(MOD==='cctv'&&(typeof SIGSLensModel!=='undefined'?SIGSLensModel.effective(p,dev):(p.lens||0))>2.9){
     ctx.save();ctx.font='9px monospace';ctx.fillStyle='rgba(240,160,0,.9)';
-    var lb=(typeof SIGSLensModel!=='undefined'?SIGSLensModel.effective(p,dev):p.lens).toFixed(1)+'mm',tw2=ctx.measureText(lb).width;
+    var lb=typeof SIGSLensModel!=='undefined'?SIGSLensModel.valueLabel(p,dev):p.lens.toFixed(1)+'mm',tw2=ctx.measureText(lb).width;
     ctx.fillText(lb,s.x-sz-tw2-3,s.y+4);ctx.restore();
   }
   if(MOD==='alarm'&&p.zone){
@@ -888,9 +809,12 @@ function syncP(){
       }
     } else {
       if(lensPanel) lensPanel.style.display='';
-      if(typeof SIGSLensModel!=='undefined')SIGSLensModel.sync(document.getElementById('plens'),pc,dev);
-      document.getElementById('plens').value=lens;
-      document.getElementById('plensv').textContent=lens.toFixed(1)+'mm';
+      if(typeof SIGSLensModel!=='undefined')SIGSLensModel.syncControl(document.getElementById('plens'),pc,dev);
+      if(typeof SIGSLensModel==='undefined')document.getElementById('plens').value=lens;
+      document.getElementById('plensv').textContent=typeof SIGSLensModel!=='undefined'?SIGSLensModel.valueLabel(pc,dev):lens.toFixed(1)+'mm';
+      var zoomUI=typeof SIGSLensModel!=='undefined'&&SIGSLensModel.policy(dev).kind==='ptz';
+      if(document.getElementById('plens-title'))document.getElementById('plens-title').textContent=zoomUI?'Zoom óptico':'Lente Focal';
+      if(document.getElementById('plens-unit'))document.getElementById('plens-unit').textContent=zoomUI?'Zoom (×)':'Focal (mm)';
       var ef=lFOV(dev.fov,lens,typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).base:undefined,dev),er=lRange(dev.range,lens);
       document.getElementById('pinfo').textContent='FOV: '+ef.toFixed(0)+'°  Alcance: '+er.toFixed(0)+' m';
       document.getElementById('plensinfo').textContent='FOV: '+ef.toFixed(0)+'°  |  Alcance: '+er.toFixed(0)+' m\n'+(typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).label:lDesc(lens));
@@ -994,10 +918,7 @@ function _drawBlindSpotDiagram(h, tilt, blindDist, verticalHalf){
 
   // ── Blind zone fill ──
   var blindPx = Math.min(blindDist*scaleX, areaW);
-  var blindGrad=ctx2.createLinearGradient(wallX,0,wallX+blindPx,0);
-  blindGrad.addColorStop(0,'rgba(168,85,247,.38)'); blindGrad.addColorStop(1,'rgba(168,85,247,.06)');
-  ctx2.fillStyle=blindGrad;
-  ctx2.fillRect(wallX, groundY-5, blindPx, 5);
+  // Blind zone stays unfilled; retain the distance marker below.
 
   // ── Reach zone fill (green) ──
   if(reach){
@@ -1104,6 +1025,10 @@ function _drawBlindSpotDiagram(h, tilt, blindDist, verticalHalf){
     ctx2.fillText(gx2+'m', gxPx2, groundY+4);
   }
 }
+function updOptics(value){
+  var p=fP(S.selId),d=p&&gD(p.libId);if(!d)return;
+  updP('lens',typeof SIGSLensModel!=='undefined'?SIGSLensModel.fromControl(value,d):value);
+}
 function updP(key,val){
   var pc=fP(S.selId); if(!pc)return; var dev=gD(pc.libId);
   if(key==='label')pc.label=val;
@@ -1111,7 +1036,7 @@ function updP(key,val){
   else if(key==='color')pc.color=val;
   else if(key==='opacity'){pc.opacity=val;document.getElementById('popav').textContent=Math.round(val*100)+'%';}
   else if(key==='visible')pc.visible=val;
-  else if(key==='lens'&&MOD==='cctv'){if(!Number.isFinite(val)||val<=0)return;if(typeof SIGSLensModel!=='undefined'){if(!SIGSLensModel.policy(dev).adjustable)return;val=SIGSLensModel.effective({lens:val},dev);}pc.lens=val;document.getElementById('plensv').textContent=val.toFixed(1)+'mm';if(dev){var ef=lFOV(dev.fov,val,typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).base:undefined,dev),er=lRange(dev.range,val);document.getElementById('pinfo').textContent='FOV: '+ef.toFixed(0)+'°  Alcance: '+er.toFixed(0)+' m';document.getElementById('plensinfo').textContent='FOV: '+ef.toFixed(0)+'°  |  Alcance: '+er.toFixed(0)+' m\n'+(typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).label:lDesc(val));updateDoriPanel(dev,val);_calcBlindSpot(pc.instHeight||3,pc.instTilt!==undefined?pc.instTilt:30);}}
+  else if(key==='lens'&&MOD==='cctv'){if(!Number.isFinite(val)||val<=0)return;if(typeof SIGSLensModel!=='undefined'){if(!SIGSLensModel.policy(dev).adjustable)return;val=SIGSLensModel.effective({lens:val},dev);}pc.lens=val;document.getElementById('plensv').textContent=typeof SIGSLensModel!=='undefined'?SIGSLensModel.valueLabel(pc,dev):val.toFixed(1)+'mm';if(dev){var ef=lFOV(dev.fov,val,typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).base:undefined,dev),er=lRange(dev.range,val);document.getElementById('pinfo').textContent='FOV: '+ef.toFixed(0)+'°  Alcance: '+er.toFixed(0)+' m';document.getElementById('plensinfo').textContent='FOV: '+ef.toFixed(0)+'°  |  Alcance: '+er.toFixed(0)+' m\n'+(typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).label:lDesc(val));updateDoriPanel(dev,val);_calcBlindSpot(pc.instHeight||3,pc.instTilt!==undefined?pc.instTilt:30);}}
   else if(key==='arange'){pc.arange=val;if(dev)document.getElementById('pinfo').textContent=(dev.desc||'')+'  |  Zona '+(pc.zone||1);}
   else if(key==='afov')pc.afov=val;
   else if(key==='zone'){pc.zone=val;if(dev)document.getElementById('pinfo').textContent=(dev.desc||'')+'  |  Zona '+val;}
