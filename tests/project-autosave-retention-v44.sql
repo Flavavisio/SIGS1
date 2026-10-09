@@ -6,7 +6,7 @@ begin
  select * into p from public.projects order by created_at limit 1;
  if not found then raise exception 'Sem projeto para testar'; end if;
  select coalesce(max(version_no),0)+10 into base from public.project_versions where project_id=p.id;
- select array_agg(id) into protected_ids from public.project_versions where project_id<>p.id or reason<>'AUTO';
+ select array_agg(id) into protected_ids from public.project_versions where project_id<>p.id or reason not in ('AUTO','MANUAL');
  insert into public.project_versions(project_id,company_id,version_no,reason,module,project_data)
  values(p.id,p.company_id,base,'AUTO',p.module,'{"test":1}') returning id into a1;
  insert into public.project_versions(project_id,company_id,version_no,reason,module,project_data)
