@@ -6,7 +6,13 @@ function e(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return 
 function money(n){return Number(n).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';}
 function url(s){return typeof s==='string'&&(/^(https?:\/\/)/i.test(s)||/^data:image\/(png|jpeg|webp|gif);base64,/i.test(s))?s:'';}
 function devices(){var out=[];(window.FLOORS||[]).forEach(function(f){(f.placed||[]).forEach(function(p){var d=gD(p.libId);if(d)out.push(d);});});return out;}
-function suggestions(){return SIGSAccessoryModel.suggest(devices());}
+function suggestions(){
+ var ds=devices(),options={};
+ if(ds.some(function(d){return ['dome','bullet','turret','ptz','fisheye','thermal_bi'].includes(d.type);})&&window.SIGSEngineering){
+  var data=SIGSEngineering.snapshot();if(data){options.ups=data.ups;var nodes=data.network&&data.network.nodes;options.rackUnits=nodes?nodes.reduce(function(n,x){return n+(x.kind==='nvr'?2:x.kind==='switch'?1:0);},0)+6:9;}
+ }
+ return SIGSAccessoryModel.suggest(ds,options);
+}
 window.sigsV10SyncAccessories=function(){if(!window.SIGS_COMMERCIAL)return;SIGSAccessoryModel.sync(SIGS_COMMERCIAL.extras,suggestions());};
 function dirty(){if(typeof sigsV6MarkDirty==='function')sigsV6MarkDirty();}
 function enhance(){
@@ -17,7 +23,7 @@ function enhance(){
  totals.parentNode.insertBefore(section,totals);
  var list=el('v10-suggestions'),items=suggestions();
  if(!items.length)list.innerHTML='<p>Sem sugestões automáticas para esta especialidade. Podes acrescentar os acessórios necessários nos materiais adicionais.</p>';
- items.forEach(function(item){var row=document.createElement('div');row.className='v10-suggestion';var accepted=c.extras.find(function(r){return r.suggestionKey===item.key;});row.innerHTML='<div><b>'+e(item.name)+'</b><small>'+e(item.ref)+' · '+item.qty+' '+e(item.unit)+'</small><p>'+e(item.reason)+'</p></div>';var b=document.createElement('button');b.type='button';b.className='studio-button';b.textContent=accepted?'Adicionado':'Adicionar';b.disabled=locked||!!accepted;b.onclick=function(){SIGSAccessoryModel.accept(c.extras,item);dirty();openBOM();};row.appendChild(b);list.appendChild(row);});
+ items.forEach(function(item){var row=document.createElement('div');row.className='v10-suggestion';var accepted=c.extras.find(function(r){return r.suggestionKey===item.key;});row.innerHTML='<div><b>'+e(item.name)+'</b><small>'+e(item.ref)+' · '+item.qty+' '+e(item.unit)+'</small><p>'+e(item.reason)+'</p></div>';var b=document.createElement('button');b.type='button';b.className='studio-button';b.textContent=accepted?'Adicionado':'Adicionar';b.disabled=locked||!!accepted;b.onclick=function(){SIGSAccessoryModel.accept(c.extras,item);dirty();openBOM();};if(item.sourceUrl&&/^https:\/\/www\.visiotechsecurity\.com\//.test(item.sourceUrl)){var link=document.createElement('a');link.href=item.sourceUrl;link.target='_blank';link.rel='noopener noreferrer';link.textContent='Ver na Visiotech';row.firstChild.appendChild(link);}row.appendChild(b);list.appendChild(row);});
  [['paymentTerms','Condições de pagamento'],['executionTerms','Prazo e condições de execução']].forEach(function(pair){
  var label=document.createElement('label');label.className='v8-terms';label.textContent=pair[1];
  var input=document.createElement('textarea');input.rows=2;input.value=c[pair[0]]||'';input.disabled=locked;
