@@ -1,0 +1,26 @@
+/* Calculator: keep section contents at their natural height inside the scroll. */
+#disk-calc-app .dc-layout{grid-template-columns:minmax(0,1fr) 320px;gap:20px;padding:20px;min-height:0}
+#disk-calc-app .dc-scroll{min-width:0;min-height:0;padding:0 3px 24px 0;gap:16px;scrollbar-gutter:stable}
+#disk-calc-app .dc-panel{flex:0 0 auto;margin:0}
+#disk-calc-app .dc-results{min-height:0;min-width:0}
+#disk-calc-app .dc-brand-row{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+#disk-calc-app .dc-brand-tile{min-width:0;padding:16px 12px;text-align:center;border:1px solid var(--bdr2);background:var(--bg2);border-radius:12px}
+#disk-calc-app .dc-brand-tile.sel{border-color:var(--bc);background:var(--bg3)}
+#disk-calc-app .dbt-logo{width:100%;max-width:160px;height:58px;padding:10px;background:#fff!important;box-sizing:border-box;border:0;border-radius:8px}
+#disk-calc-app .dbt-logo img{width:100%;height:100%;object-fit:contain;border-radius:0}
+#disk-calc-app #dc-blogo-uniview,#disk-calc-app .dc-nav-logo[data-brand="uniview"]{background:#123b62!important}
+#disk-calc-app .dbt-name{font-family:var(--f);font-size:13px;margin-top:10px}
+#disk-calc-app .dbt-codec{font-size:10px;line-height:1.5}
+#disk-calc-app .dc-nav-logo{width:116px;height:40px;padding:7px;background:#fff!important;box-sizing:border-box}
+#disk-calc-app .dc-nav-logo img{width:100%!important;height:100%!important;object-fit:contain;border-radius:0!important}
+#disk-calc-app .dc-cam-body{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:14px}
+#disk-calc-app .dc-cam-tot{grid-column:1/-1;text-align:right;padding:8px 12px}
+#disk-calc-app .dc-cam-note{line-height:1.5;font-size:11px;padding:10px 14px}
+#disk-calc-app .dc-help{padding:14px 18px;font-size:12px;line-height:1.6;color:var(--txt2)}
+#disk-calc-app .dc-help summary{cursor:pointer;font-weight:600;color:var(--txt)}
+#disk-calc-app .dc-help p{margin:10px 0}
+#disk-calc-app .dc-help a{color:var(--acc);text-decoration:underline}
+#disk-calc-app #dc-installed-result{margin:0}
+@media(min-width:1600px){#disk-calc-app .dc-layout{max-width:1600px;width:100%;align-self:center}}
+@media(max-width:1000px){#disk-calc-app .dc-layout{grid-template-columns:minmax(0,1fr) 280px;gap:12px;padding:12px}#disk-calc-app .dc-brand-row{grid-template-columns:repeat(2,minmax(0,1fr))}#disk-calc-app .dc-cam-body{grid-template-columns:repeat(2,minmax(0,1fr))}#disk-calc-app #dc-scene-bar{display:none!important}}
+@media(max-width:700px){#disk-calc-app .dc-layout{display:block;overflow-y:auto}#disk-calc-app .dc-scroll{overflow:visible;padding:0 0 16px}#disk-calc-app .dc-results{overflow:visible}#disk-calc-app .dc-nav{padding:0 12px;gap:8px}#disk-calc-app .dc-nav-title{font-size:13px}#disk-calc-app .dc-nav-sub{max-width:160px}#disk-calc-app .dc-nav-logo{width:86px}#disk-calc-app .dc-env-strip{flex-wrap:wrap}#disk-calc-app .dc-env-card{flex:1 1 28%;min-width:90px}#disk-calc-app .dc-ret-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}

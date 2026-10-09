@@ -19,7 +19,7 @@
 <link rel="stylesheet" href="assets/css/workflow-v12.css?v=20261007-0700">
 <link rel="stylesheet" href="assets/css/sidebar-v13.css?v=20261008-0700">
 <link rel="stylesheet" href="assets/css/brand-v23.css?v=20261007-0700"><link rel="icon" type="image/svg+xml" href="assets/brand/sigs-favicon.svg"><link rel="stylesheet" href="assets/css/recommendations-v24.css?v=20261007-0700"><link rel="stylesheet" href="assets/css/activity-v42.css?v=20261009-0200">
-<style>.dc-brand-tile .dbt-logo{width:100%;max-width:140px;height:48px;background:#fff!important;padding:7px;border-radius:8px}.dc-brand-tile .dbt-logo img{width:100%;height:100%;object-fit:contain}.dc-nav-logo{background:white!important;width:96px;padding:5px}.dc-cam-body{grid-template-columns:repeat(3,minmax(0,1fr))}@media(max-width:650px){.dc-cam-body{grid-template-columns:repeat(2,minmax(0,1fr))}}.dc-cam-note{line-height:1.5}</style></head>
+<link rel="stylesheet" href="assets/css/disk-layout-v65.css?v=20261009-layout65"></head>
 <body class="sigs-locked sigs-premium">
 
 
@@ -151,7 +151,7 @@
         </div>
       </div>
 
-      <div class="dc-panel" style="padding:14px;font-size:11px;line-height:1.6"><b>Como é calculado</b><p>Introduz o bitrate médio medido no NVR/câmara para um cálculo fiel. Sem esse valor, a calculadora usa uma hipótese de projeto, dependente de resolução, FPS, codec e cena.</p><p>Ultra 265 = H.265 + U-Code. Por defeito não assumimos poupança U-Code adicional. As opções de poupança são hipóteses; não são modos oficiais nem garantias do fabricante. O bitrate medido já inclui compressão e atividade.</p><a href="https://www.uniview.com/Support/Download_Center/Tool/202404/990130_168459_0.htm" target="_blank" rel="noopener">Fonte: Uniview · cálculo de capacidade no EZTools</a><p>Referência automática H.264: MP × 2 Mbps a 25 fps; H.265: 50% da referência. Reserva e margem não simulam a capacidade útil de um RAID.</p></div>
+      <details class="dc-panel dc-help"><summary>Como é calculado · pressupostos e fonte</summary><p>Introduz o bitrate médio medido no NVR/câmara para um cálculo fiel. Sem esse valor, a calculadora usa uma hipótese de projeto, dependente de resolução, FPS, codec e cena.</p><p>Ultra 265 = H.265 + U-Code. Por defeito não assumimos poupança U-Code adicional. As opções de poupança são hipóteses; não são modos oficiais nem garantias do fabricante. O bitrate medido já inclui compressão e atividade.</p><a href="https://www.uniview.com/Support/Download_Center/Tool/202404/990130_168459_0.htm" target="_blank" rel="noopener">Fonte: Uniview · cálculo de capacidade no EZTools</a><p>Referência automática H.264: MP × 2 Mbps a 25 fps; H.265: 50% da referência. Reserva e margem não simulam a capacidade útil de um RAID.</p></details>
       <!-- STEP 2 ENV -->
       <div class="dc-panel" id="dc-env-panel" style="display:none;opacity:0;transform:translateY(6px);transition:opacity .22s,transform .22s">
         <div class="dc-step-head">
@@ -1227,7 +1227,7 @@
 <script src="assets/js/engineering-model-v39.js?v=20261007-0700"></script>
 <script src="assets/js/engineering-advanced-model-v43.js?v=20261008-2335"></script>
 <script src="assets/js/disk-model-v64.js?v=20261009-disk64"></script>
-<script src="assets/js/block-03.js?v=20261009-disk64"></script>
+<script src="assets/js/block-03.js?v=20261009-layout65"></script>
 
 <!-- ══ PRESENTATION MODE OVERLAY ══ -->
 <div id="pres-overlay">

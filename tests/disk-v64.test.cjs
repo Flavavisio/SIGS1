@@ -28,7 +28,7 @@ e._dcBrand='uniview';e._dcCams=[{...cam}];const doc=e.document;
 for(const [id,value] of Object.entries({'dc-days':1,'dc-hours':24,'dc-margin':0,'dc-overhead':0,'dc-raid':0,'dc-record-mode':'continuous','dc-installed-tb':.0432}))doc.getElementById(id).value=value;
 e.dcRebuildCams();e.dcCalc();assert(doc.getElementById('dc-s-raw').textContent.includes('21.6 GB'));assert(doc.getElementById('dc-installed-result').textContent.includes('2.0 dias'));
 assert.equal(e.DC_BRANDS.uniview.codecs.length,3);assert(!e.dcMakeCodecOpts().includes('uv_ultra265max'));assert(e.dcMakeResOpts().includes('6mp'));
-for(const brand of Object.keys(e.DC_BRANDS)){const img=doc.querySelector('#dc-blogo-'+brand+' img');assert(img);assert(fs.existsSync(require('node:path').join(__dirname,'..',img.getAttribute('src'))));}
+for(const brand of Object.keys(e.DC_BRANDS)){const img=doc.querySelector('#dc-blogo-'+brand+' img');assert(img);assert(fs.existsSync(require('node:path').join(__dirname,'..',img.getAttribute('src').split('?')[0])));}
 e._dcMotionOn=true;doc.getElementById('dc-motion-pct').value=25;doc.getElementById('dc-motion-factor').value=4;e.dcCalc();assert(doc.getElementById('dc-s-bw').textContent.startsWith('8.0 Mbps'));assert(doc.getElementById('dc-s-raw').textContent.includes('37.8 GB'));
 e.dcExportTxt();assert(copied.includes('3.50 Mbps médios · pico 8.00 Mbps'));
 e._dcCamBitrate(1,'1');e._dcCamSet(1,'ucodeSaving',90);assert(doc.getElementById('dc-s-raw').textContent.includes('10.8 GB'));assert(doc.getElementById('dc-s-bw').textContent.includes('confirmar picos'));

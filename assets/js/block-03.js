@@ -4752,7 +4752,7 @@ var DC_BRANDS = {
       {id:'5mp',label:'5 MP'},{id:'6mp',label:'6 MP'},{id:'8mp',label:'8 MP · 4K'},
       {id:'12mp',label:'12 MP'},
     ]},
-  uniview:{name:'Uniview (UNV)',icon:'🔵',color:'#3b82f6',logoURL:'assets/brand/manufacturers/uniview.svg',
+  uniview:{name:'Uniview (UNV)',icon:'🔵',color:'#3b82f6',logoURL:'assets/brand/manufacturers/uniview.svg?v=20261009-layout65',
     codecs:[
       {id:'uv_ultra265',label:'Ultra 265 · H.265 + U-Code',note:'Estimativa conservadora sem poupança U-Code adicional. Introduz o bitrate médio medido ou escolhe explicitamente uma hipótese de poupança.'},
       {id:'uv_h265',label:'H.265',note:'Estimativa de projeto; confirmar bitrate configurado/medido na câmara.'},
@@ -4763,7 +4763,7 @@ var DC_BRANDS = {
       {id:'5mp',label:'5 MP'},{id:'6mp',label:'6 MP'},{id:'8mp',label:'8 MP · 4K'},
       {id:'12mp',label:'12 MP'},
     ]},
-  safire:{name:'Safire Smart',icon:'🟢',color:'#10b981',logoURL:'assets/brand/manufacturers/safire.svg',
+  safire:{name:'Safire Smart',icon:'🟢',color:'#10b981',logoURL:'assets/brand/manufacturers/safire.svg?v=20261009-layout65',
     codecs:[
       {id:'sf_sfcodec',  label:'SF-Codec',  note:'Estimativa inteligente · confirme bitrate'},
       {id:'sf_h265pro',  label:'H.265 Pro', note:'H.265 otimizado · estimativa'},
@@ -4838,6 +4838,7 @@ function dcRefreshNav(){
   var b=DC_BRANDS[_dcBrand];
   var logo=document.getElementById('dc-nav-logo');
   if(logo){
+    logo.dataset.brand=_dcBrand;
     logo.style.background=b.color+'22';
     logo.style.borderColor=b.color+'55';
     logo.innerHTML=b.logoURL?'<img src="'+b.logoURL+'" style="width:80px;height:24px;object-fit:contain;border-radius:6px">':b.icon;
