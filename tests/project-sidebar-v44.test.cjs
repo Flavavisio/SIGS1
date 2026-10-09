@@ -5,14 +5,21 @@ Object.defineProperty(w.document,'readyState',{value:'complete'});w.setTimeout=f
 vm.runInContext(fs.readFileSync('assets/js/sidebar-v13.js','utf8'),dom.getInternalVMContext());
 const flush=()=>new Promise(r=>setImmediate(r));
 (async()=>{
- const save=w.document.getElementById('s13-save-project'),load=w.document.getElementById('s13-load-project'),actions=save.parentElement;assert(save&&load);assert.equal(w.document.getElementById('sigs-v5-report-menu').nextElementSibling,actions);assert.equal(w.getComputedStyle(actions).display,'none','Actions only belong to Tools');
- w.document.querySelector('[data-sidebar-view="menu"]').click();assert.notEqual(w.getComputedStyle(actions).display,'none');assert.equal(save.getAttribute('aria-label'),'Guardar projeto');
+ const save=w.document.getElementById('s13-save-project'),load=w.document.getElementById('s13-load-project'),actions=save.parentElement;
+ assert(save&&load);assert.equal(w.document.getElementById('sigs-v5-report-menu').nextElementSibling,actions);assert.equal(w.getComputedStyle(actions).display,'none');
+ w.document.querySelector('[data-sidebar-view="menu"]').click();assert.notEqual(w.getComputedStyle(actions).display,'none');
  save.click();save.click();await Promise.resolve();assert.deepEqual(saves,['manual']);assert(save.disabled);resolveSave({id:'p'});await flush();assert(!save.disabled);
- load.click();await flush();assert.equal(loads,1);let panel=w.document.getElementById('s13-saved-projects');assert(panel);assert.equal(load.getAttribute('aria-expanded'),'true');assert.equal(panel.querySelectorAll('.s13-saved-project').length,2);assert(!panel.querySelector('script'));assert.equal(panel.querySelector('time').dateTime,'2026-10-08T05:47:00.000Z');assert(panel.querySelector('time').textContent.includes('06:47'));
- const search=panel.querySelector('input');search.value='Armaz';search.dispatchEvent(new w.Event('input'));assert.equal(panel.querySelectorAll('.s13-saved-project').length,1);panel.querySelector('.s13-saved-project').click();await flush();assert.deepEqual(opened,['b']);assert(!w.document.getElementById('s13-saved-projects'));
- w.document.getElementById('s13-collapse').click();load.click();await flush();assert.equal(w.document.querySelector('.studio-rail').dataset.collapsed,'false','Loading expands Tools to show projects');assert(w.document.getElementById('s13-saved-projects'));load.click();await flush();assert(!w.document.getElementById('s13-saved-projects'));
- w.sigsV6SaveProject=()=>Promise.reject(Error('Falha de rede'));save.click();await flush();assert.deepEqual(notices,['Falha de rede']);assert(!save.disabled);
- load.click();await flush();panel=w.document.getElementById('s13-saved-projects');w.SIGS_V6.dirty=true;w.confirm=()=>false;panel.querySelector('.s13-saved-project').click();await flush();assert.deepEqual(opened,['b']);assert(panel.isConnected);w.SIGS_V6.dirty=false;w.cloudOpenProject=async()=>null;panel.querySelector('.s13-saved-project').click();await flush();assert(panel.isConnected,'Failed load keeps the saved-project list open');
- panel.querySelector('button[aria-label]').click();assert(!w.document.getElementById('s13-saved-projects'));
- dom.window.close();console.log('PASS: Tools-only actions after report; inline saved list/search/load; no portal redirect; collapsed expansion; save failure recovery; dirty-load cancellation and failed-open preservation.');
+ // Loading never queries other projects and requires a saved current identity.
+ w.sigsV6ListProjects=()=>{throw Error('Must not list other projects');};
+ load.click();await flush();assert.deepEqual(opened,[]);assert(notices.pop().includes('Guarda o projeto atual'));assert(!load.disabled);
+ w.CLOUD.projectId='current-1';w.CLOUD.projectName='Projeto atual';let calls=[];
+ w.cloudOpenProject=async(id,name)=>{calls.push([id,name]);return {id};};
+ load.click();load.click();await flush();assert.deepEqual(calls,[['current-1','Projeto atual']]);assert.equal(loads,0);assert(!w.document.getElementById('s13-saved-projects'));
+ w.SIGS_V6.dirty=true;w.confirm=()=>false;load.click();await flush();assert.equal(calls.length,1,'Cancel preserves unsaved work');
+ w.confirm=()=>true;load.click();await flush();assert.equal(calls.length,2);
+ w.SIGS_V6.dirty=false;w.SIGS_V6.saving=true;load.click();await flush();assert.equal(calls.length,2);assert(notices.pop().includes('Aguarda'));w.SIGS_V6.saving=false;
+ w.CLOUD.projectId='current-2';w.CLOUD.projectName='Outro atual';load.click();await flush();assert.deepEqual(calls.at(-1),['current-2','Outro atual'],'Uses the current project at click time');
+ w.cloudOpenProject=()=>Promise.reject(Error('Falha de rede'));load.click();await flush();assert.equal(notices.pop(),'Falha de rede');assert(!load.disabled);
+ w.sigsV6SaveProject=()=>Promise.reject(Error('Falha ao guardar'));save.click();await flush();assert.equal(notices.pop(),'Falha ao guardar');assert(!save.disabled);
+ dom.window.close();console.log('PASS: Tools-only actions, current project reload, no other-project list, double-click guard, unsaved cancellation, save-in-progress guard and failure recovery');
 })().catch(e=>{console.error(e);process.exitCode=1;dom.window.close();});
