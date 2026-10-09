@@ -29,7 +29,11 @@ function rows(){
   add({ref:d.model||d.name,name:d.name,type:d.type,qty:1,unit:'un.',system:false},p.libId);
   if(['dome','bullet','ptz','fisheye','turret','thermal_bi'].indexOf(d.type)>=0)cams.push({p:p,fl:fl});
  });});
- if(cams.length){
+ if(window.SIGSNetwork&&SIGSNetwork.enabled()){
+  var networkMaterials=SIGSNetwork.materials();
+  networkMaterials.rows.forEach(function(r){add(r,r.type==='cabo'?'cable':r.type==='hdd'?'hdd':'__'+r.type+'__');});
+  warnings=warnings.concat(networkMaterials.warnings);
+ }else if(cams.length){
   var bw=0,mp=0,gb=0,cable=0,estimated=0;
   cams.forEach(function(x){var p=x.p,cod=p.codec||'ultra265b',res=p.mp||4;
    bw+=typeof cameraNetworkMbps==='function'?cameraNetworkMbps(p):((BITRATE_TABLE[cod]||BITRATE_TABLE.h265)[res]||4);mp=Math.max(mp,res);gb+=calcStorage(res,cod,p.days||30,p).gb;

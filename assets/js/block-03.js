@@ -4637,6 +4637,7 @@ render = function(){
 
   // Draw saved manual routes (green dashed, replaces straight line)
   S.placed.forEach(function(p){
+    if(window.SIGSNetwork&&SIGSNetwork.enabled()&&SIGS_COMMERCIAL.network.assignments[p.id])return;
     if(!p.cableRoute || p.cableRoute.length < 2) return;
     var isSel = p.id === S.selId;
     ctx.save();
