@@ -11,8 +11,10 @@ function capture(p,d){if(!cameras.includes(d.type))return {};const lens=root.SIG
 }
 function sector(p,ppm,obstacles){if(!cameras.includes(p.type)||!(ppm>0)||!(p.fov>0&&p.range>0))return '';const x=number(p.x),y=number(p.y),rotation=number(p.rotation)-90;
  function shape(fov,range,color){
- const tilt=p.instTilt==null?30:number(p.instTilt),half=Math.atan(Math.tan(Math.min(179,fov)*Math.PI/360)*9/16)*180/Math.PI;
+ const tilt=p.instTilt==null?(p.tilt==null?30:number(p.tilt)):number(p.instTilt),half=Math.atan(Math.tan(Math.min(179,fov)*Math.PI/360)*9/16)*180/Math.PI;
  const blind=tilt<0||tilt+half>=90?0:(number(p.instHeight)||3)/Math.tan((tilt+half)*Math.PI/180)*ppm;
+ const far=tilt-half,reach=fov<180&&tilt>=0&&far>0?(number(p.instHeight)||3)/Math.tan(far*Math.PI/180):Infinity;
+ range=Math.min(range,reach);
  function hollow(svg){if(!(blind>0)||!Number.isFinite(blind))return svg;const id='sigs-blind-'+(++clipId),outer=Math.max(range*ppm+1,blind+1),disk='M'+(x+blind)+' '+y+'a'+blind+' '+blind+' 0 1 0 '+(-2*blind)+' 0a'+blind+' '+blind+' 0 1 0 '+(2*blind)+' 0Z';return '<defs><clipPath id="'+id+'"><path clip-rule="evenodd" d="M'+(x-outer)+' '+(y-outer)+'h'+(outer*2)+'v'+(outer*2)+'h'+(-outer*2)+'Z '+disk+'"/></clipPath></defs><g clip-path="url(#'+id+')">'+svg+'</g>';}
  const r=Math.max(0,number(range))*ppm,a=Math.max(0,Math.min(360,number(fov)))*Math.PI/360;if(!r||!a)return '';if(fov>=355)return hollow('<circle data-fov="'+number(fov)+'" cx="'+x+'" cy="'+y+'" r="'+r+'" fill="'+color+'" fill-opacity=".16" stroke="'+color+'" stroke-width="'+r/150+'"/>');
  return hollow('<path data-fov="'+number(fov)+'" d="M0 0 L'+r*Math.cos(a)+' '+(-r*Math.sin(a))+' A'+r+' '+r+' 0 '+(fov>180?1:0)+' 1 '+r*Math.cos(a)+' '+r*Math.sin(a)+' Z" transform="translate('+x+' '+y+') rotate('+rotation+')" fill="'+color+'" fill-opacity=".16" stroke="'+color+'" stroke-width="'+r/150+'"/>');}

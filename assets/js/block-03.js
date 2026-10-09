@@ -238,7 +238,13 @@ function drawFP(){
 function sigsClipBlind(context,p,fov){
   if(!S.scale.ok)return;
   var tilt=p.instTilt!==undefined?p.instTilt:30;if(tilt<0)return;
-  var radius=sigsGroundGeometry(p.instHeight||3,tilt,fov).blind*S.scale.ppm*S.zoom;
+  var ground=sigsGroundGeometry(p.instHeight||3,tilt,fov),factor=S.scale.ppm*S.zoom;
+  // Apply the far ground limit before removing the near blind zone; both clips affect only this overlay.
+  if(fov<180&&Number.isFinite(ground.reach)){
+    var reach=Math.max(0,ground.reach*factor);
+    context.beginPath();context.arc(0,0,reach,0,Math.PI*2);context.clip();
+  }
+  var radius=ground.blind*factor;
   if(!(radius>0)||!Number.isFinite(radius))return;
   // Coordinates are local to this camera. Clip only its overlay, preserving underlying pixels.
   var origin=w2s(p.x,p.y);
@@ -850,7 +856,7 @@ function deselect(){S.selId=null;S.multiSel=[];document.getElementById('nosel').
 function updInstall(){
   var pc=fP(S.selId); if(!pc) return;
   var h=parseFloat(document.getElementById('p-instH').value)||3;
-  var tilt=parseFloat(document.getElementById('p-tilt').value)||30;
+  var tilt=parseFloat(document.getElementById('p-tilt').value);if(!Number.isFinite(tilt))tilt=30;
   document.getElementById('p-tiltv').textContent=tilt+'°';
   pc.instHeight=h; pc.instTilt=tilt;
   _calcBlindSpot(h,tilt);
@@ -865,7 +871,7 @@ function _calcBlindSpot(h,tilt){
   var ground=sigsGroundGeometry(h,tilt,hfov);
   bsEl.textContent=ground.blind.toFixed(2)+' m';bsEl.style.color='#a855f7';
   reachEl.textContent=Number.isFinite(ground.reach)?ground.reach.toFixed(1)+' m':'sem limite geométrico';
-  hintEl.textContent='Estimativa 16:9 · FOV vertical '+ground.verticalFov.toFixed(1)+'° · zona cega = '+h+' m ÷ tan('+tilt+'° + '+ground.verticalHalf.toFixed(1)+'°).';
+  hintEl.textContent='Estimativa 16:9 · FOV vertical '+ground.verticalFov.toFixed(1)+'° · zona cega = '+h+' m ÷ tan('+tilt+'° + '+ground.verticalHalf.toFixed(1)+'°). A cobertura na planta é recortada entre a zona cega e o limite no chão, até ao alcance indicado.';
   _drawBlindSpotDiagram(h,tilt,ground.blind,ground.verticalHalf);
 }
 

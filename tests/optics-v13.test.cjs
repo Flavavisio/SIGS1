@@ -10,4 +10,5 @@ ctx.updP('lens',2.8);const wideBlind=parseFloat(nodes['bs-ground'].textContent),
 ctx.updP('lens',12);const teleBlind=parseFloat(nodes['bs-ground'].textContent);assert.ok(teleBlind>wideBlind);assert.ok(diagram[3]<wideHalf);assert.equal(pc.lens,12);assert.equal(nodes['bs-ground'].textContent,ground(3,30,ctx.lFOV(90,12)).blind.toFixed(2)+' m');assert.ok(nodes['bs-hint'].textContent.includes('16:9'));
 assert.equal(ctx.lRange(30,12),30);assert.equal(ctx.lFOV(90,2.8),90);
 const g=ground(3,30,90);assert.ok(Math.abs(ground(6,30,90).blind-g.blind*2)<1e-9);assert.ok(ground(3,45,90).blind<g.blind);assert.equal(ground(3,90,90).blind,0);assert.equal(ground(3,0,90).reach,Infinity);assert.ok(Number.isFinite(ground(3,0,90).blind));assert.equal(ground(3,10,90).reach,Infinity);assert.ok(Number.isFinite(ground(3,45,90).reach));
+nodes['p-instH']={value:'3'};nodes['p-tilt']={value:'0'};nodes['p-tiltv']={};vm.runInContext(fn('updInstall'),ctx);ctx.updInstall();assert.equal(pc.instTilt,0,'Zero tilt must remain horizontal');
 console.log('PASS: live focal updates panel and diagram; lens, height, tilt and horizon geometry; catalogue range unchanged.');

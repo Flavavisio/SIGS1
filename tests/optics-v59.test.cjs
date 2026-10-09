@@ -22,4 +22,16 @@ ctx.clearRect(0,0,500,500);ctx.fillStyle='#f2eedd';ctx.fillRect(0,0,500,500);con
 ctx.fillStyle='rgba(230,20,30,.6)';ctx.fillRect(230,225,40,40);const overlap=pixel(250,240);env.drawCov(p,ptz);assert.deepEqual(pixel(250,240),overlap,'Earlier camera coverage preserved');
 for(const type of ['radar','thermal_bi']){ctx.clearRect(0,0,500,500);env.drawCov(p,{...ptz,type,radarFov:60,radarRange:8,thermalFov:60,thermalRange:8,visibleFov:60,visibleRange:8});assert.equal(pixel(250,240)[3],0,type+' blind zone');}
 const O=require('../assets/js/proposal-optics-v27.js');assert.equal(O.capture({...p,instTilt:45},ptz).instTilt,45);assert(O.sector({...p,type:'ptz',fov:60,range:8},20,[]).includes('clip-rule="evenodd"'));
+// Far-ground clipping reacts to height and tilt and clips DORI without erasing other layers.
+const down={...p,instTilt:60};
+ctx.clearRect(0,0,500,500);env.drawCov(down,ptz);
+assert(pixel(250,210)[3]>0,'Ground within the near/far limits is covered');
+assert.equal(pixel(250,150)[3],0,'Ground beyond the far limit is transparent, including DORI');
+ctx.fillStyle='#f2eedd';ctx.fillRect(0,0,500,500);const farBackground=pixel(250,150);env.drawCov(down,ptz);assert.deepEqual(pixel(250,150),farBackground);
+ctx.clearRect(0,0,500,500);env.drawCov({...down,instHeight:6},ptz);assert(pixel(250,150)[3]>0,'Higher installation increases ground reach');
+ctx.clearRect(0,0,500,500);env.drawCov({...p,instTilt:10},ptz);assert(pixel(250,110)[3]>0,'Horizon-crossing view retains catalogue range');
+for(const type of ['thermal_bi']){ctx.clearRect(0,0,500,500);env.drawCov(down,{...ptz,type,thermalFov:60,thermalRange:8,visibleFov:60,visibleRange:8});assert.equal(pixel(250,150)[3],0,'Thermal and visible far limits');}
+const svg=O.sector({...down,type:'ptz',fov:60,range:8},20,[]),match=svg.match(/data-fov="60" d="M0 0 L([^ ]+) ([^ ]+)/);assert(match);assert(Math.abs(Math.hypot(Number(match[1]),Number(match[2]))-ground(3,60,60).reach*20)<1e-8,'Export uses the same far radius');
+const noTilt=O.sector({...p,instTilt:0,type:'ptz',fov:60,range:30},20,[]);assert(noTilt.includes('data-fov="60"'));
+console.log('PASS: far ground clipping / height and tilt changes / DORI / preserved background / thermal / export radius.');
 console.log('PASS: PTZ 33×, real focal filters / DOM switching, fixed Ajax 4mm, actual canvas pixel transparency, DORI, map / camera overlap preservation, radar / thermal and proposal blind clipping.');
