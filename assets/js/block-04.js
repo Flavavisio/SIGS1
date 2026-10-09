@@ -138,7 +138,7 @@
       if(!b.modules||b.modules.alarm!==false)modules.push('INTRUSION');
       if(!b.modules||b.modules.fire!==false)modules.push('FIRE');
       if(!b.modules||b.modules.cloud!==false)modules.push('CLOUD');
-      return edge({action:'provision_customer',company_name:b.companyName,nif:b.nif||null,client_code:b.clientCode||null,email:b.adminEmail,name:b.adminName,plan_code:b.planCode||'EXPRESS',billing_interval:b.billingInterval||'MONTH',modules:modules});
+      return edge({action:'provision_customer',company_name:b.companyName,nif:b.nif||null,client_code:b.clientCode||null,email:b.adminEmail,name:b.adminName,plan_code:b.planCode||'EXPRESS',billing_interval:b.billingInterval||'MONTH',demo_days:b.demoDays,modules:modules});
     }
 
     var approval=path.match(/^\/licensing\/approve\/([^/]+)$/);
@@ -207,7 +207,7 @@
 
     if(path==='/licensing/change' && opts.method==='PATCH'){
       var ch=JSON.parse(opts.body||'{}');
-      return edge({action:'change_license',license_id:ch.licenseId,plan_code:ch.planCode,billing_interval:ch.billingInterval});
+      return edge({action:'change_license',license_id:ch.licenseId,plan_code:ch.planCode,billing_interval:ch.billingInterval,demo_days:ch.demoDays});
     }
 
     if(path==='/licensing/company-delete' && opts.method==='DELETE'){
@@ -275,7 +275,9 @@
   window.licUpdateEndPreview=function(){
     var s=document.getElementById('lic-billing'),el=document.getElementById('lic-end-preview');
     if(!s||!el)return;
-    el.textContent=licFmtDateLocal(licCalcEndDate(s.value));
+    var demo=document.getElementById('lic-plan').value==='DEMO',options=document.getElementById('lic-demo-options'),days=Number(document.getElementById('lic-demo-days').value);
+    options.hidden=!demo;s.disabled=demo;
+    el.textContent=licFmtDateLocal(demo?new Date(Date.now()+days*86400000):licCalcEndDate(s.value));
   };
   function licCounterCard(label,value,color,filter){
     return '<div onclick="licShowCounter(\''+filter+'\')" title="Clique para ver a lista" style="cursor:pointer;transition:.16s ease" onmouseenter="this.style.transform=\'translateY(-2px)\';this.style.borderColor=\'var(--acc)\'" onmouseleave="this.style.transform=\'none\';this.style.borderColor=\'var(--bdr)\'">'+
@@ -293,9 +295,10 @@
     html+='<div style="display:grid;grid-template-columns:380px 1fr;gap:14px">';
     html+=card('<div style="font-size:13px;font-weight:800;color:var(--txt);margin-bottom:12px">＋ Emitir nova licença</div>'+field('lic-company','Empresa','text','Segurança XPTO Lda')+'<div style="height:8px"></div>'+field('lic-admin-name','Nome do Admin','text','João Silva')+'<div style="height:8px"></div>'+field('lic-admin-email','Email do Admin','email','admin@empresa.pt')+'<div style="height:8px"></div>'+'<p style="font-size:11px;color:var(--txt2);line-height:1.6">O cliente recebe um email para ativar a conta e definir a sua palavra-passe inicial.</p>'+'<div style="height:8px"></div>'+field('lic-nif','NIF','text','')+'<div style="height:8px"></div>'+field('lic-client-code','Código do cliente','text','Ex.: CLI-001')+
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">'+
-        '<div><div style="font-size:10px;color:var(--txt3);font-family:var(--m);text-transform:uppercase;margin-bottom:5px">Plano</div><select id="lic-plan" style="width:100%;background:var(--bg1);border:1px solid var(--bdr2);border-radius:8px;padding:10px;color:var(--txt);font-family:var(--f)"><option value="FREE">Gratuito</option><option value="EXPRESS">Express</option><option value="PRO">PRO</option><option value="SUPREME">Supreme</option></select></div>'+
+        '<div><div style="font-size:10px;color:var(--txt3);font-family:var(--m);text-transform:uppercase;margin-bottom:5px">Plano</div><select id="lic-plan" onchange="licUpdateEndPreview()" style="width:100%;background:var(--bg1);border:1px solid var(--bdr2);border-radius:8px;padding:10px;color:var(--txt);font-family:var(--f)"><option value="FREE">Gratuito</option><option value="DEMO">Demo Express · gratuita · 10 projetos</option><option value="EXPRESS">Express</option><option value="PRO">PRO</option><option value="SUPREME">Supreme</option></select></div>'+
         '<div><div style="font-size:10px;color:var(--txt3);font-family:var(--m);text-transform:uppercase;margin-bottom:5px">Periodicidade</div><select id="lic-billing" onchange="licUpdateEndPreview()" style="width:100%;background:var(--bg1);border:1px solid var(--bdr2);border-radius:8px;padding:10px;color:var(--txt);font-family:var(--f)"><option value="MONTH">Mensal</option><option value="YEAR">Anual</option></select></div>'+
       '</div>'+
+      '<div id="lic-demo-options" hidden style="margin-top:10px"><label for="lic-demo-days">Duração da demo (dias)</label><input id="lic-demo-days" type="number" min="1" max="365" value="30" oninput="licUpdateEndPreview()" style="width:100%;padding:10px;box-sizing:border-box"><p style="font-size:11px">10 projetos e 50 equipamentos por projeto, com os módulos do Express. Valor: 0,00 €. Sem cobrança nem conversão automática.</p></div>'+
       '<div style="margin-top:10px;padding:10px;border:1px solid var(--bdr2);background:var(--bg1);border-radius:8px"><div style="font-size:9px;color:var(--txt3);font-family:var(--m);text-transform:uppercase">Fim da licença</div><div id="lic-end-preview" style="font-size:15px;font-weight:900;color:var(--txt);margin-top:3px">—</div><div style="font-size:9px;color:var(--txt3);margin-top:3px">Calculado automaticamente a partir da data de emissão.</div></div>'+
       '<div style="margin-top:11px;font-size:10px;color:var(--txt3);font-family:var(--m);text-transform:uppercase">Módulos</div><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin:7px 0 12px"><label><input id="lic-m-cctv" type="checkbox" checked> CCTV</label><label><input id="lic-m-alarm" type="checkbox" checked> Intrusão</label><label><input id="lic-m-fire" type="checkbox" checked> Incêndio</label><label><input id="lic-m-cloud" type="checkbox" checked> Cloud</label></div>'+
       '<button id="lic-emit-btn" type="button" onclick="licCreateLicense()" style="padding:10px 14px;border:0;border-radius:8px;background:var(--acc);color:#fff;font-family:var(--f);font-size:11px;font-weight:800;cursor:pointer">Emitir licença</button><div id="lic-emit-status" style="font-size:10px;color:var(--txt3);margin-top:8px;min-height:14px"></div>');
@@ -334,13 +337,14 @@
 
   window.licCreateLicense=function(){
     var q=function(id){return document.getElementById(id)};
-    var body={companyName:(q('lic-company').value||'').trim(),adminName:(q('lic-admin-name').value||'').trim(),adminEmail:(q('lic-admin-email').value||'').trim(),nif:(q('lic-nif').value||'').trim()||null,clientCode:(q('lic-client-code').value||'').trim()||null,planCode:q('lic-plan').value,billingInterval:q('lic-billing').value,modules:{cctv:q('lic-m-cctv').checked,alarm:q('lic-m-alarm').checked,fire:q('lic-m-fire').checked,cloud:q('lic-m-cloud').checked}};
+    var body={companyName:(q('lic-company').value||'').trim(),adminName:(q('lic-admin-name').value||'').trim(),adminEmail:(q('lic-admin-email').value||'').trim(),nif:(q('lic-nif').value||'').trim()||null,clientCode:(q('lic-client-code').value||'').trim()||null,planCode:q('lic-plan').value,demoDays:Number(q('lic-demo-days').value),billingInterval:q('lic-billing').value,modules:{cctv:q('lic-m-cctv').checked,alarm:q('lic-m-alarm').checked,fire:q('lic-m-fire').checked,cloud:q('lic-m-cloud').checked}};
     var status=q('lic-emit-status'),button=q('lic-emit-btn');
     if(!body.companyName||!body.adminName||!/^[^\s@,;<>]+@[^\s@,;<>]+\.[^\s@,;<>]+$/.test(body.adminEmail)){if(status){status.style.color='#ef4444';status.textContent='Preenche Empresa, Nome do Admin e Email.';}notify('Preenche empresa, Admin e email.');return;}
+    if(body.planCode==='DEMO'&&(!Number.isInteger(body.demoDays)||body.demoDays<1||body.demoDays>365)){notify('A demo deve durar entre 1 e 365 dias.');return;}
     if(status){status.style.color='var(--txt3)';status.textContent='A criar empresa, licença e convite do Admin…';}
     if(button){button.disabled=true;button.style.opacity='.55';button.textContent='A emitir…';}
     licenseApi('/licensing/licenses',{method:'POST',body:JSON.stringify(body)}).then(function(res){
-      if(status){status.style.color='#10b981';status.textContent='✓ Licença emitida. Fim: '+licFmtDateLocal(licCalcEndDate(body.billingInterval));}
+      if(status){status.style.color='#10b981';status.textContent='✓ Licença emitida. Fim: '+fmtDate(res.license&&res.license.expires_at);}
       notify('✓ Licença emitida. Email de ativação enviado ao cliente.');
       return loadContext().then(function(){renderSuperAdmin();});
     }).catch(function(e){
@@ -382,7 +386,7 @@
           '<div>'+
             '<div style="font-size:10px;color:var(--txt3);font-family:var(--m);text-transform:uppercase;margin-bottom:5px">Plano</div>'+
             '<select id="lic-change-plan" style="width:100%;background:var(--bg2);border:1px solid var(--bdr2);border-radius:8px;padding:10px;color:var(--txt)">'+
-              '<option value="FREE">Gratuito</option><option value="EXPRESS">Express</option>'+
+              '<option value="FREE">Gratuito</option><option value="DEMO">Demo Express · gratuita · 10 projetos</option><option value="EXPRESS">Express</option>'+
               '<option value="PRO">PRO</option><option value="SUPREME">Supreme</option>'+
             '</select>'+
           '</div>'+
@@ -394,6 +398,7 @@
             '</select>'+
           '</div>'+
         '</div>'+
+        '<div id="lic-change-demo-options" hidden style="margin-top:12px"><label for="lic-change-demo-days">Duração da demo (dias)</label><input id="lic-change-demo-days" type="number" min="1" max="365" value="30"><p>0,00 € · 10 projetos · 50 equipamentos por projeto · sem cobrança automática.</p></div>'+
         '<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:18px">'+
           '<button id="lic-change-cancel" type="button" style="padding:9px 13px;border-radius:8px;border:1px solid var(--bdr2);background:transparent;color:var(--txt2);cursor:pointer">Cancelar</button>'+
           '<button id="lic-change-save" type="button" style="padding:9px 13px;border-radius:8px;border:0;background:var(--acc);color:#fff;font-weight:800;cursor:pointer">Guardar alteração</button>'+
@@ -403,9 +408,11 @@
 
     document.body.appendChild(wrap);
 
-    document.getElementById('lic-change-plan').value=(['FREE','EXPRESS','PRO','SUPREME'].includes(plan)?plan:'EXPRESS');
+    document.getElementById('lic-change-plan').value=(['FREE','DEMO','EXPRESS','PRO','SUPREME'].includes(plan)?plan:'EXPRESS');
     document.getElementById('lic-change-billing').value=(billing==='YEAR'?'YEAR':'MONTH');
 
+    function changeDemo(){var demo=document.getElementById('lic-change-plan').value==='DEMO';document.getElementById('lic-change-demo-options').hidden=!demo;document.getElementById('lic-change-billing').disabled=demo;}
+    document.getElementById('lic-change-plan').onchange=changeDemo;changeDemo();
     function closeChangeLicense(){
       var ov=document.getElementById('lic-change-overlay');
       if(ov)ov.remove();
@@ -421,9 +428,11 @@
   window.licSubmitChangeLicense=function(id){
     var plan=document.getElementById('lic-change-plan').value;
     var billing=document.getElementById('lic-change-billing').value;
+    var demoDays=Number(document.getElementById('lic-change-demo-days').value);
+    if(plan==='DEMO'&&(!Number.isInteger(demoDays)||demoDays<1||demoDays>365)){notify('A demo deve durar entre 1 e 365 dias.');return;}
     var st=document.getElementById('lic-change-status');
     if(st)st.textContent='A guardar...';
-    licenseApi('/licensing/change',{method:'PATCH',body:JSON.stringify({licenseId:id,planCode:plan,billingInterval:billing})})
+    licenseApi('/licensing/change',{method:'PATCH',body:JSON.stringify({licenseId:id,planCode:plan,billingInterval:billing,demoDays:demoDays})})
       .then(function(res){
         var end=res&&res.license&&res.license.expires_at?fmtDate(res.license.expires_at):'';
         var ov=document.getElementById('lic-change-overlay'); if(ov)ov.remove();

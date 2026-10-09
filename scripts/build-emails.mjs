@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import {events,renderEmail} from '../supabase/functions/_shared/email-model.mjs';
 const config={};let gallery='';
 for(const [kind,event] of Object.entries(events)){
- const email=renderEmail(kind,event.auth||event.security?{}:{company:'Empresa Exemplo',plan:'Pro',billing:'Mensal',expires:'31/12/2026',maxProjects:50,maxItems:100},{authTemplate:!!(event.auth||event.security)});
+ const email=renderEmail(kind,event.auth||event.security?{}:{company:'Empresa Exemplo',plan:'Pro',billing:'Mensal',expires:'31/12/2026',maxProjects:50,maxItems:100,reference:'SIGS-EXEMPLO',starts:'01/12/2026 09:00',duration:'31 dias',amount:'9,99 €',vat:'Não incluído'},{authTemplate:!!(event.auth||event.security)});
  fs.writeFileSync(`supabase/email-templates/${kind}.html`,email.html);
  if(event.auth||event.security){config[`mailer_subjects_${kind}`]=email.subject;config[`mailer_templates_${kind}_content`]=email.html;}
  gallery+=`<article><h2>${event.subject}</h2><iframe title="${event.subject}" sandbox="" srcdoc="${email.html.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}"></iframe></article>`;

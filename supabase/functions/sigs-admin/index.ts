@@ -8,6 +8,8 @@ const cors = {
 };
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { ...cors, "Content-Type": "application/json" } });
 
+function validDemoDays(value:unknown){const n=Number(value??30);return Number.isInteger(n)&&n>=1&&n<=365;}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
@@ -41,6 +43,7 @@ Deno.serve(async (req) => {
   try {
     if (action === "provision_customer") {
       if (!isSuper) return json({ error: "SUPER_ADMIN required" }, 403);
+      if(String(body.plan_code).toUpperCase()==="DEMO"&&!validDemoDays(body.demo_days))return json({error:"A demo deve durar entre 1 e 365 dias."},400);
       const email=String(body.email||"").trim().toLowerCase(), name=String(body.name||"").trim();
       if (!name || !String(body.company_name||"").trim()) return json({error:"Empresa e nome do cliente são obrigatórios."},400);
       const {error: checkError}=await admin.rpc("sigs_admin_customer",{p_caller:callerId,p_action:"check_email",p_data:{email}});
@@ -78,13 +81,16 @@ Deno.serve(async (req) => {
       const billingInterval = String(body.billing_interval || "MONTH").toUpperCase() === "YEAR" ? "YEAR" : "MONTH";
       const { data: plan } = await admin.from("plans").select("id,code").eq("code", planCode).maybeSingle();
       if (!plan) return json({ error: "Invalid plan" }, 400);
+      if(planCode==="DEMO"&&!validDemoDays(body.demo_days))return json({error:"A demo deve durar entre 1 e 365 dias."},400);
       const startsAt = body.starts_at ? new Date(body.starts_at) : new Date();
       let expiresAt = body.expires_at ? new Date(body.expires_at) : new Date(startsAt);
       if (!body.expires_at) {
         if (billingInterval === "YEAR") expiresAt.setFullYear(expiresAt.getFullYear() + 1);
         else expiresAt.setMonth(expiresAt.getMonth() + 1);
       }
-      const { data: lic, error } = await admin.from("licenses").insert({ company_id: companyId, plan_id: plan.id, license_key: licenseKey, status: body.status || "ACTIVE", max_sales_users: null, billing_interval: billingInterval, starts_at: startsAt.toISOString(), expires_at: expiresAt.toISOString(), notes: body.notes || null, created_by: callerId }).select().single();
+      if(planCode==="DEMO")expiresAt=new Date(startsAt.getTime()+Number(body.demo_days??30)*86400000);
+      if(!Number.isFinite(startsAt.getTime())||!Number.isFinite(expiresAt.getTime())||expiresAt<=startsAt)return json({error:"Validade inválida"},400);
+      const { data: lic, error } = await admin.from("licenses").insert({ company_id: companyId, plan_id: plan.id, license_key: licenseKey, status: body.status || "ACTIVE", max_sales_users: null, billing_interval: billingInterval, starts_at: startsAt.toISOString(), expires_at: expiresAt.toISOString(), trial_until: planCode==="DEMO"?expiresAt.toISOString():null, auto_renew:false, notes: body.notes || null, created_by: callerId }).select().single();
       if (error) throw error;
       if (modules.length) {
         const { error: me } = await admin.from("license_modules").insert(modules.map((m: string) => ({ license_id: lic.id, module_code: m, enabled: true })));
@@ -245,14 +251,16 @@ Deno.serve(async (req) => {
       if (!licenseId) return json({ error: "license_id required" }, 400);
 
       const { data: lic, error: le } = await admin.from("licenses")
-        .select("id,company_id,billing_interval,expires_at")
+        .select("id,company_id,plan_id,billing_interval,starts_at,expires_at,trial_until")
         .eq("id", licenseId).single();
       if (le || !lic) return json({ error: "License not found" }, 404);
 
       const now = new Date();
       const currentEnd = lic.expires_at ? new Date(lic.expires_at) : null;
       const end = currentEnd && currentEnd > now ? new Date(currentEnd) : new Date(now);
-      if (lic.billing_interval === "YEAR") end.setFullYear(end.getFullYear() + 1);
+      const {data: currentPlan}=await admin.from("plans").select("code").eq("id",lic.plan_id).maybeSingle();
+      if(currentPlan?.code==="DEMO"){const days=Math.max(1,Math.min(365,Math.round((Date.parse(lic.trial_until||lic.expires_at)-Date.parse(lic.starts_at))/86400000)||30));end.setTime(end.getTime()+days*86400000);}
+      else if (lic.billing_interval === "YEAR") end.setFullYear(end.getFullYear() + 1);
       else end.setMonth(end.getMonth() + 1);
 
       const { data: updated, error: ue } = await admin.from("licenses")
@@ -281,17 +289,21 @@ Deno.serve(async (req) => {
       const { data: plan } = await admin.from("plans").select("id").eq("code", planCode).maybeSingle();
       if (!plan) return json({ error: "Invalid plan" }, 400);
 
+      if(planCode==="DEMO"&&!validDemoDays(body.demo_days))return json({error:"A demo deve durar entre 1 e 365 dias."},400);
       const startsAt = new Date();
       const expiresAt = new Date(startsAt);
       if (billingInterval === "YEAR") expiresAt.setFullYear(expiresAt.getFullYear() + 1);
       else expiresAt.setMonth(expiresAt.getMonth() + 1);
 
+      if(planCode==="DEMO")expiresAt.setTime(startsAt.getTime()+Number(body.demo_days??30)*86400000);
       const { data: updated, error: ue } = await admin.from("licenses")
         .update({
           plan_id: plan.id,
           billing_interval: billingInterval,
           starts_at: startsAt.toISOString(),
           expires_at: expiresAt.toISOString(),
+          trial_until: planCode==="DEMO"?expiresAt.toISOString():null,
+          auto_renew:false,
           status: "ACTIVE"
         })
         .eq("id", licenseId).select().single();

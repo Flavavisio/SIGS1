@@ -19,15 +19,18 @@ const root=require('node:path').resolve(__dirname,'..'),read=p=>fs.readFileSync(
  dialog.querySelector('[data-section=access]').click();assert.equal(pending.at(-1).body.action,'dashboard');assert.equal(pending.at(-1).body.offset,0);assert(dialog.querySelector('[data-filters]').hidden);dom.window.close();
  // Real Edge handler: public writes cannot carry identity fields and only a validated Super Admin can read.
  let handler,role='ADMIN';const writes=[],queries=[];
- const context={Deno:{env:{get:k=>k==='SUPABASE_URL'?'https://backend.test':'secret-test'},serve:f=>handler=f},Request,Response,Headers,Map,Set,Date,JSON,atob,crypto:globalThis.crypto,fetch:async(url,o)=>{
-  queries.push(url);if(url.endsWith('/auth/v1/user'))return Response.json({id:'u'});if(url.includes('/profiles?'))return Response.json([{id:'u',role,active:true}]);
+ const context={Deno:{env:{get:k=>k==='SUPABASE_URL'?'https://backend.test':'secret-test'},serve:f=>handler=f},Request,Response,Headers,Map,Set,Date,JSON,atob,crypto:globalThis.crypto,AbortSignal,fetch:async(url,o)=>{
+  queries.push(url);if(url==='https://api.ipapi.is/')return Response.json({city:'Lisboa',region:'Lisboa',country:'Portugal'});if(url.endsWith('/auth/v1/user'))return Response.json({id:'u'});if(url.includes('/profiles?'))return Response.json([{id:'u',role,active:true}]);
   if(o?.method==='HEAD')return new Response(null,{headers:{'content-range':'0-0/123'}});
   if(o?.method==='POST'){writes.push(JSON.parse(o.body));return new Response(null,{status:201});}
+  if(url.includes('select=city,region,country'))return Response.json([]);
   if(url.includes('/sigs_visits?'))return Response.json(Array.from({length:101},(_,i)=>({id:i,page:'/',created_at:'2026-10-09'})));return Response.json([]);
  }};
  vm.createContext(context);vm.runInContext(stripTypeScriptTypes(read('supabase/functions/sigs-activity/index.ts')),context);
  const req=(body,headers={})=>handler(new Request('https://backend.test',{method:'POST',headers:{origin:'https://www.sigs-studio.pt','content-type':'application/json',...headers},body:JSON.stringify(body)}));
- assert.equal((await req({action:'visit',page:'/',ip:'1.2.3.4',visitor_id:'visitor',email:'secret',created_at:'2000-01-01'})).status,201);assert.deepEqual(Object.keys(writes[0]).sort(),['consent_version','page','visitor_id']);assert.notEqual(writes[0].visitor_id,'visitor');
+ assert.equal((await req({action:'visit',page:'/',ip:'1.2.3.4',visitor_id:'visitor',email:'secret',created_at:'2000-01-01'})).status,201);assert.deepEqual(Object.keys(writes[0]).sort(),['city','consent_version','country','ip','page','region','visitor_id']);assert.notEqual(writes[0].visitor_id,'visitor');assert.equal(writes[0].ip,null);
+ const liveIP=await req({action:'visit',page:'/',ip:'1.2.3.4',city:'Fake'},{'x-forwarded-for':'8.8.8.8'});assert.equal(liveIP.status,201);assert.equal(writes.at(-1).ip,'8.8.8.8');assert.equal(writes.at(-1).city,'Lisboa');
+ const privateIP=await req({action:'visit',page:'/'},{'x-forwarded-for':'10.0.0.1'});assert.equal(privateIP.status,201);assert.equal(writes.at(-1).country,null);
  for(const page of ['/app-Sigs.html','/proposta.html','/?token=secret','/unknown'])assert.equal((await req({action:'visit',page})).status,400);
  assert.equal((await req({action:'visit',page:'/'},{origin:'https://attacker.test'})).status,403);assert.equal((await req({action:'visit',page:'/'},{origin:''})).status,403);
  assert.equal((await req({action:'visits'})).status,401);assert.equal((await req({action:'visits'},{authorization:'Bearer token'})).status,403);
