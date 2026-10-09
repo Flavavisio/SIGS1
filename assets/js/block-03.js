@@ -4839,7 +4839,7 @@ function dcRefreshNav(){
   var logo=document.getElementById('dc-nav-logo');
   if(logo){
     logo.dataset.brand=_dcBrand;
-    logo.style.background=b.color+'22';
+    logo.style.setProperty('background',_dcBrand==='uniview'?'#123b62':'#fff','important');
     logo.style.borderColor=b.color+'55';
     logo.innerHTML=b.logoURL?'<img src="'+b.logoURL+'" style="width:80px;height:24px;object-fit:contain;border-radius:6px">':b.icon;
   }
