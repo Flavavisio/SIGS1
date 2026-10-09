@@ -4754,7 +4754,7 @@ var DC_BRANDS = {
     ]},
   uniview:{name:'Uniview (UNV)',icon:'🔵',color:'#3b82f6',logoURL:'assets/brand/manufacturers/uniview.svg?v=20261009-layout65',
     codecs:[
-      {id:'uv_ultra265',label:'Ultra 265 · H.265 + U-Code',note:'Estimativa conservadora sem poupança U-Code adicional. Introduz o bitrate médio medido ou escolhe explicitamente uma hipótese de poupança.'},
+      {id:'uv_ultra265',label:'Ultra 265 · H.265 + U-Code',note:'Estimativa conservadora · introduz o bitrate médio medido se disponível.'},
       {id:'uv_h265',label:'H.265',note:'Estimativa de projeto; confirmar bitrate configurado/medido na câmara.'},
       {id:'uv_h264',label:'H.264',note:'Referência de projeto, não especificação do fabricante.'},
     ],defaultCodec:'uv_ultra265',
@@ -4798,7 +4798,8 @@ function dcGetCodecNote(id){
   var c=DC_BRANDS[_dcBrand].codecs.find(function(c){return c.id===id;});
   return c?c.note:'';
 }
-function dcCamNote(cam){return cam.bitrate?'A capacidade usa o bitrate médio que introduziste. Codec, FPS, cena e poupança U-Code não voltam a reduzir esse valor.':cam.codecId==='uv_ultra265'?'Ultra 265 combina H.265 com U-Code. A poupança real depende da cena; escolhe 0% quando não tens medições.':dcGetCodecNote(cam.codecId);}
+function dcCamNote(cam){return cam.bitrate?'A capacidade usa o bitrate médio que introduziste. Codec, FPS, cena e poupança U-Code não voltam a reduzir esse valor.':cam.codecId==='uv_ultra265'?(cam.ucodeSimulation?'Simulação avançada ativa: poupança de '+(cam.ucodeSaving||0)+'% face a H.265. É uma hipótese para comparação.':'Estimativa conservadora Ultra 265: não desconta uma poupança U-Code desconhecida. Para maior precisão, introduz o bitrate médio medido.'):dcGetCodecNote(cam.codecId);}
+function dcToggleUcode(id,enabled){var c=_dcCams.find(function(c){return c.id===id;});if(!c||c.bitrate)return;c.ucodeSimulation=!!enabled;if(!enabled)c.ucodeSaving=0;dcRebuildCams();dcCalc();}
 function dcUcodeHelp(cam){
   if(cam.bitrate)return 'Não aplicada: o bitrate médio medido já inclui a compressão U-Code. Apaga o bitrate medido para voltar à estimativa automática.';
   var saving=Number(cam.ucodeSaving)||0,reference=SIGSDiskModel.automatic(Object.assign({},cam,{ucodeSaving:0})),result=SIGSDiskModel.automatic(cam);
@@ -5052,7 +5053,7 @@ function dcAddCam(){
   if(!_dcBrand) return;
   _dcCamId++;
   var id=_dcCamId;
-  _dcCams.push({id:id,name:'Câmara '+id,resId:'2mp',codecId:DC_BRANDS[_dcBrand].defaultCodec,fps:25,bitrate:null,peakMbps:null,ucodeSaving:0,qty:1});
+  _dcCams.push({id:id,name:'Câmara '+id,resId:'2mp',codecId:DC_BRANDS[_dcBrand].defaultCodec,fps:25,bitrate:null,peakMbps:null,ucodeSaving:0,ucodeSimulation:false,qty:1});
   var list=document.getElementById('dc-cam-list');
   var card=dcMakeCamCard(id);
   list.appendChild(card);
@@ -5062,6 +5063,7 @@ function dcAddCam(){
 function dcMakeCamCard(id){
   var cam=_dcCams.find(function(c){return c.id===id;}); if(!cam||!_dcBrand) return document.createElement('div');
   var b=DC_BRANDS[_dcBrand];
+  if(!cam.ucodeSimulation)cam.ucodeSaving=0;
   var brBase=dcEffectiveBitrate(cam);
 
   var card=document.createElement('div');
@@ -5085,10 +5087,10 @@ function dcMakeCamCard(id){
       '<div class="dc-cf"><label>FPS</label><select onchange="_dcCamSet('+id+',\'fps\',+this.value)">'+fpsopts+'</select></div>'+
       '<div class="dc-cf"><label>BITRATE MÉDIO MEDIDO (Mbps)</label><div class="dc-bitrate-wrap"><input type="number" min="0.1" max="100" step="0.1" placeholder="Automático" value="'+(cam.bitrate||'')+'" oninput="_dcCamBitrate('+id+',this.value)"><span class="dc-bitrate-unit">Mbps</span></div><small class="dc-field-help">Valor médio observado na câmara/NVR. Usado para calcular o disco. Deixa vazio se não o conheces.</small></div>'+
       '<div class="dc-cf"><label>PICO DE BITRATE (Mbps)</label><input type="number" min="0.1" step="0.1" placeholder="Automático" value="'+(cam.peakMbps||'')+'" oninput="_dcCamSet('+id+',\'peakMbps\',+this.value)"><small class="dc-field-help">Maior bitrate esperado por câmara. Usado para dimensionar a rede; não aumenta o armazenamento calculado.</small></div>'+
-    (cam.codecId==='uv_ultra265'?'<div class="dc-cf"><label>POUPANÇA ESTIMADA COM U-CODE</label><select id="dc-ucode-'+id+'" aria-describedby="dc-uhelp-'+id+'"'+(cam.bitrate?' disabled':'')+' onchange="_dcCamSet('+id+',\'ucodeSaving\',+this.value)">'+[0,25,50,75,90].map(function(v){return '<option value="'+v+'"'+(Number(cam.ucodeSaving||0)===v?' selected':'')+'>'+(v===0?'0% · Sem poupança extra (recomendado)':v+'% menos bitrate que H.265')+'</option>';}).join('')+'</select><small class="dc-field-help" id="dc-uhelp-'+id+'">'+dcUcodeHelp(cam)+'</small></div>':'')+
     '<div class="dc-cf"><label>QTD.</label><input type="number" value="'+cam.qty+'" min="1" max="999" oninput="_dcCamSet('+id+',\'qty\',+this.value)"></div>'+
       '<div class="dc-cam-tot"><div class="l">TOTAL</div><div class="v" id="dc-ctot-'+id+'">—</div></div>'+
     '</div>'+
+    (cam.codecId==='uv_ultra265'?'<details class="dc-ucode-advanced" id="dc-advanced-'+id+'"'+(cam.ucodeSimulation?' open':'')+'><summary>Avançado · Simular poupança U-Code</summary><p>Opcional. Serve para comparar cenários; não é necessário para calcular o disco. A percentagem não é definida automaticamente pela marca.</p><label class="dc-simulation-toggle"><input type="checkbox" id="dc-usim-'+id+'"'+(cam.ucodeSimulation?' checked':'')+(cam.bitrate?' disabled':'')+' onchange="dcToggleUcode('+id+',this.checked)"> Ativar simulação de poupança</label><div class="dc-cf"><label for="dc-ucode-'+id+'">POUPANÇA A SIMULAR FACE A H.265</label><select id="dc-ucode-'+id+'" aria-describedby="dc-uhelp-'+id+'"'+(cam.bitrate||!cam.ucodeSimulation?' disabled':'')+' onchange="_dcCamSet('+id+',\'ucodeSaving\',+this.value)">'+[0,25,50,75,90].map(function(v){return '<option value="'+v+'"'+(Number(cam.ucodeSaving||0)===v?' selected':'')+'>'+(v===0?'0% · Sem poupança extra':v+'% menos bitrate que H.265')+'</option>';}).join('')+'</select><small class="dc-field-help" id="dc-uhelp-'+id+'">'+dcUcodeHelp(cam)+'</small></div></details>':'')+
     '<div class="dc-cam-note"><div class="dc-cam-dot" id="dc-cdot-'+id+'" style="background:'+b.color+'"></div><span id="dc-cnote-'+id+'">'+dcCamNote(cam)+'</span></div>';
   return card;
 }
@@ -5118,6 +5120,8 @@ function dcEffectiveBitrate(cam){
 }
 function _dcCamSet(id,k,v){
   var c=_dcCams.find(function(c){return c.id===id;}); if(!c) return;
+  if(k==='ucodeSaving'&&!c.ucodeSimulation)return;
+  if(k==='codecId'){c.ucodeSimulation=false;c.ucodeSaving=0;}
   c[k]=k==='qty'?Math.max(1,Math.min(999,Math.round(Number(v)||1))):k==='fps'?Math.max(1,Math.min(60,Number(v)||25)):v;
   if(k==='codecId')dcRebuildCams();
   var br=dcEffectiveBitrate(c);
@@ -5156,7 +5160,9 @@ function dcCalc(){
     var baseBr=metric.base,motMix=metric.mean/baseBr,streamBr=metric.mean,recordedBr=metric.recorded,gbGrp=metric.gib;
     cam.qty=metric.qty;
     var uSelect=document.getElementById('dc-ucode-'+cam.id),uHelp=document.getElementById('dc-uhelp-'+cam.id);
-    if(uSelect)uSelect.disabled=metric.manual;
+    if(uSelect)uSelect.disabled=metric.manual||!cam.ucodeSimulation;
+    var uToggle=document.getElementById('dc-usim-'+cam.id);if(uToggle)uToggle.disabled=metric.manual;
+    var camNote=document.getElementById('dc-cnote-'+cam.id);if(camNote)camNote.textContent=dcCamNote(cam);
     if(uHelp)uHelp.textContent=dcUcodeHelp(cam);
 
     totalCams+=cam.qty;
@@ -5363,7 +5369,7 @@ function dcExportTxt(){
     var metric=SIGSDiskModel.group(cam,{motion:_dcMotionOn,motionPercent:Number((document.getElementById('dc-motion-pct')||{value:30}).value),motionFactor:Number((document.getElementById('dc-motion-factor')||{value:2}).value),mode:mode,eventPercent:Number(duty),days:Number(days),hours:Number(hours)}),br=metric.mean;
     lines.push(
       '  '+cam.name+' ×'+cam.qty+': '+r.label+' · '+codec.label+' · '+cam.fps+'fps · '+
-      br.toFixed(2)+' Mbps médios · pico '+metric.peak.toFixed(2)+' Mbps '+(cam.bitrate?'(medido; não alterado por FPS/codec/cena)':'(estimativa)')+(cam.codecId==='uv_ultra265'&&!cam.bitrate?' · poupança U-Code estimada: '+(cam.ucodeSaving||0)+'% menos bitrate que H.265':'')
+      br.toFixed(2)+' Mbps médios · pico '+metric.peak.toFixed(2)+' Mbps '+(cam.bitrate?'(medido; não alterado por FPS/codec/cena)':'(estimativa)')+(cam.codecId==='uv_ultra265'&&!cam.bitrate?(cam.ucodeSimulation?' · SIMULAÇÃO: '+(cam.ucodeSaving||0)+'% menos bitrate que H.265':' · estimativa conservadora, sem desconto U-Code adicional'):'')
     );
   });
 
