@@ -751,6 +751,7 @@ function nextNum(pre){
   return used.size+1;
 }
 function placeDevice(x,y){
+  if(S.activeLib&&!sigsCatalogDeviceAllowed(S.activeLib))return;
   var dev=S.activeLib; if(!dev)return;
   var prefixes={dome:'CAM',bullet:'CAM',ptz:'CAM',fisheye:'CAM',radar:'RAD',thermal_bi:'THM',hub:'HUB',repeater:'REX',pir_outdoor:'PIR',pir_indoor:'PIR',door:'DR',glass:'GL',combi:'CB',siren_ext:'SIR',siren_int:'SIR',keypad:'KP',remote:'BTN',relay:'RLY'};
   var pre=(prefixes[dev.type]||'DEV');
@@ -1147,7 +1148,7 @@ function renderDevList(){
       {key:'ax_acc', label:'Acessórios',           icon:'🧩', cls:'lib-family-thermal', filter:function(d){return d.cat==='acc'||!d.cat;}}
     ];
     axFamilies.forEach(function(fam){
-      var devs=S.lib.filter(fam.filter);
+      var devs=sigsVisibleCatalog(S.lib).filter(fam.filter);
       if(!devs.length) return;
       var hdr=document.createElement('div');
       hdr.className='lib-family-header '+fam.cls;
@@ -1183,7 +1184,7 @@ function renderDevList(){
     {key:'custom',  label:'Personalizadas',         icon:'⚙',  cls:'lib-family-custom',  filter:function(d){return d.custom&&d.family!=='cctv'&&d.family!=='radar'&&d.family!=='thermal';}}
   ];
   families.forEach(function(fam){
-    var devs=S.lib.filter(fam.filter);
+    var devs=sigsVisibleCatalog(S.lib).filter(fam.filter);
     if(!devs.length) return;
     // Header
     var hdr=document.createElement('div');
@@ -1211,6 +1212,7 @@ function renderDevList(){
   });
 }
 function sLib(dev){
+  if(!sigsCatalogDeviceAllowed(dev))return;
   S.activeLib=dev;
   document.getElementById('pbtn').disabled=false;
   renderDevList();
@@ -4876,6 +4878,7 @@ function dcShowPanel(id){
 
 // ── Select brand ─────────────────────────────────────────
 function dcSelectBrand(brand){
+  if(!sigsCatalogDeviceAllowed({brand:brand}))return;
   _dcBrand=brand;
   var b=DC_BRANDS[brand];
 
