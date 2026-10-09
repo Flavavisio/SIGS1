@@ -4798,7 +4798,12 @@ function dcGetCodecNote(id){
   var c=DC_BRANDS[_dcBrand].codecs.find(function(c){return c.id===id;});
   return c?c.note:'';
 }
-function dcCamNote(cam){return cam.bitrate?'Bitrate médio medido: não é reduzido pelo codec, FPS ou hipótese U-Code. Preenche o pico de rede se for conhecido.':dcGetCodecNote(cam.codecId)+(cam.codecId==='uv_ultra265'?' Hipótese selecionada: '+(cam.ucodeSaving||0)+'% adicional face a H.265.':'');}
+function dcCamNote(cam){return cam.bitrate?'A capacidade usa o bitrate médio que introduziste. Codec, FPS, cena e poupança U-Code não voltam a reduzir esse valor.':cam.codecId==='uv_ultra265'?'Ultra 265 combina H.265 com U-Code. A poupança real depende da cena; escolhe 0% quando não tens medições.':dcGetCodecNote(cam.codecId);}
+function dcUcodeHelp(cam){
+  if(cam.bitrate)return 'Não aplicada: o bitrate médio medido já inclui a compressão U-Code. Apaga o bitrate medido para voltar à estimativa automática.';
+  var saving=Number(cam.ucodeSaving)||0,reference=SIGSDiskModel.automatic(Object.assign({},cam,{ucodeSaving:0})),result=SIGSDiskModel.automatic(cam);
+  return (saving?'Simula menos '+saving+'% de bitrate e armazenamento do que a referência H.265.':'0% mantém a referência H.265, sem contar com uma poupança extra.')+' Para esta câmara: '+reference.toFixed(2)+' → '+result.toFixed(2)+' Mbps, antes da simulação de cena. '+(saving?'É uma previsão de poupança, não uma configuração da câmara nem um valor garantido.':'Opção recomendada quando não conheces a poupança real.');
+}
 function dcFmtGB(gib){var bytes=gib*Math.pow(1024,3);return bytes>=1e12?(bytes/1e12).toFixed(2)+' TB':(bytes/1e9).toFixed(1)+' GB';}
 
 function dcEscape(v){return String(v??'').replace(/[&<>\"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c];});}
@@ -5078,13 +5083,13 @@ function dcMakeCamCard(id){
       '<div class="dc-cf"><label>RESOLUÇÃO</label><select onchange="_dcCamSet('+id+',\'resId\',this.value)">'+dcMakeResOpts(cam.resId)+'</select></div>'+
       '<div class="dc-cf"><label>CODEC</label><select onchange="_dcCamSet('+id+',\'codecId\',this.value)">'+dcMakeCodecOpts(cam.codecId)+'</select></div>'+
       '<div class="dc-cf"><label>FPS</label><select onchange="_dcCamSet('+id+',\'fps\',+this.value)">'+fpsopts+'</select></div>'+
-      '<div class="dc-cf"><label>BITRATE MÉDIO MEDIDO</label><div class="dc-bitrate-wrap"><input type="number" min="0.1" max="100" step="0.1" placeholder="Auto" value="'+(cam.bitrate||'')+'" oninput="_dcCamBitrate('+id+',this.value)"><span class="dc-bitrate-unit">Mbps</span></div></div>'+
-      '<div class="dc-cf"><label>PICO REDE (Mbps)</label><input type="number" min="0.1" step="0.1" placeholder="Auto" value="'+(cam.peakMbps||'')+'" oninput="_dcCamSet('+id+',\'peakMbps\',+this.value)"></div>'+
-    (cam.codecId==='uv_ultra265'?'<div class="dc-cf"><label>HIPÓTESE U-CODE</label><select onchange="_dcCamSet('+id+',\'ucodeSaving\',+this.value)">'+[0,25,50,75,90].map(function(v){return '<option value="'+v+'"'+(Number(cam.ucodeSaving||0)===v?' selected':'')+'>'+(v===0?'Sem poupança adicional':v+'% face a H.265')+'</option>';}).join('')+'</select></div>':'')+
+      '<div class="dc-cf"><label>BITRATE MÉDIO MEDIDO (Mbps)</label><div class="dc-bitrate-wrap"><input type="number" min="0.1" max="100" step="0.1" placeholder="Automático" value="'+(cam.bitrate||'')+'" oninput="_dcCamBitrate('+id+',this.value)"><span class="dc-bitrate-unit">Mbps</span></div><small class="dc-field-help">Valor médio observado na câmara/NVR. Usado para calcular o disco. Deixa vazio se não o conheces.</small></div>'+
+      '<div class="dc-cf"><label>PICO DE BITRATE (Mbps)</label><input type="number" min="0.1" step="0.1" placeholder="Automático" value="'+(cam.peakMbps||'')+'" oninput="_dcCamSet('+id+',\'peakMbps\',+this.value)"><small class="dc-field-help">Maior bitrate esperado por câmara. Usado para dimensionar a rede; não aumenta o armazenamento calculado.</small></div>'+
+    (cam.codecId==='uv_ultra265'?'<div class="dc-cf"><label>POUPANÇA ESTIMADA COM U-CODE</label><select id="dc-ucode-'+id+'" aria-describedby="dc-uhelp-'+id+'"'+(cam.bitrate?' disabled':'')+' onchange="_dcCamSet('+id+',\'ucodeSaving\',+this.value)">'+[0,25,50,75,90].map(function(v){return '<option value="'+v+'"'+(Number(cam.ucodeSaving||0)===v?' selected':'')+'>'+(v===0?'0% · Sem poupança extra (recomendado)':v+'% menos bitrate que H.265')+'</option>';}).join('')+'</select><small class="dc-field-help" id="dc-uhelp-'+id+'">'+dcUcodeHelp(cam)+'</small></div>':'')+
     '<div class="dc-cf"><label>QTD.</label><input type="number" value="'+cam.qty+'" min="1" max="999" oninput="_dcCamSet('+id+',\'qty\',+this.value)"></div>'+
       '<div class="dc-cam-tot"><div class="l">TOTAL</div><div class="v" id="dc-ctot-'+id+'">—</div></div>'+
     '</div>'+
-    '<div class="dc-cam-note"><div class="dc-cam-dot" id="dc-cdot-'+id+'" style="background:'+b.color+'"></div><span id="dc-cnote-'+id+'">'+dcGetCodecNote(cam.codecId)+'</span></div>';
+    '<div class="dc-cam-note"><div class="dc-cam-dot" id="dc-cdot-'+id+'" style="background:'+b.color+'"></div><span id="dc-cnote-'+id+'">'+dcCamNote(cam)+'</span></div>';
   return card;
 }
 
@@ -5150,6 +5155,9 @@ function dcCalc(){
     var metric=SIGSDiskModel.group(cam,{motion:_dcMotionOn,motionPercent:motPct*100,motionFactor:motFac,mode:recordMode,eventPercent:recordDuty*100,days:days,hours:hours});
     var baseBr=metric.base,motMix=metric.mean/baseBr,streamBr=metric.mean,recordedBr=metric.recorded,gbGrp=metric.gib;
     cam.qty=metric.qty;
+    var uSelect=document.getElementById('dc-ucode-'+cam.id),uHelp=document.getElementById('dc-uhelp-'+cam.id);
+    if(uSelect)uSelect.disabled=metric.manual;
+    if(uHelp)uHelp.textContent=dcUcodeHelp(cam);
 
     totalCams+=cam.qty;
     totalPeakBW+=metric.peak*cam.qty;
@@ -5355,7 +5363,7 @@ function dcExportTxt(){
     var metric=SIGSDiskModel.group(cam,{motion:_dcMotionOn,motionPercent:Number((document.getElementById('dc-motion-pct')||{value:30}).value),motionFactor:Number((document.getElementById('dc-motion-factor')||{value:2}).value),mode:mode,eventPercent:Number(duty),days:Number(days),hours:Number(hours)}),br=metric.mean;
     lines.push(
       '  '+cam.name+' ×'+cam.qty+': '+r.label+' · '+codec.label+' · '+cam.fps+'fps · '+
-      br.toFixed(2)+' Mbps médios · pico '+metric.peak.toFixed(2)+' Mbps '+(cam.bitrate?'(medido; não alterado por FPS/codec/cena)':'(estimativa)')+(cam.codecId==='uv_ultra265'&&!cam.bitrate?' · hipótese U-Code '+(cam.ucodeSaving||0)+'% face a H.265':'')
+      br.toFixed(2)+' Mbps médios · pico '+metric.peak.toFixed(2)+' Mbps '+(cam.bitrate?'(medido; não alterado por FPS/codec/cena)':'(estimativa)')+(cam.codecId==='uv_ultra265'&&!cam.bitrate?' · poupança U-Code estimada: '+(cam.ucodeSaving||0)+'% menos bitrate que H.265':'')
     );
   });
 
