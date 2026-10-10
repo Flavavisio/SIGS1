@@ -17,7 +17,7 @@
       "max_items_per_project": 50,
       "included_modules": [
         "CCTV",
-        "Calculadora de disco"
+        "Armazenamento"
       ]
     },
     {
@@ -30,7 +30,7 @@
         "CCTV",
         "Intrusão",
         "Incêndio",
-        "Calculadora de disco"
+        "Armazenamento"
       ],
       "full_access": true
     },
@@ -45,7 +45,7 @@
         "CCTV",
         "Intrusão",
         "Incêndio",
-        "Calculadora de disco"
+        "Armazenamento"
       ]
     }
   ],
