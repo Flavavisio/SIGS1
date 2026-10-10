@@ -7,7 +7,11 @@
       "name": "Gratuito",
       "monthly_price_eur": 0,
       "max_projects": 1,
-      "max_items_per_project": 15
+      "max_items_per_project": 15,
+      "included_modules": [
+        "CCTV",
+        "Armazenamento"
+      ]
     },
     {
       "code": "EXPRESS",

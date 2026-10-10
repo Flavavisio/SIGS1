@@ -133,7 +133,7 @@ function openNewProjectWizard(companyId,module){
       var co=ctx.company||{},lic=ctx.license||{},projects=ctx.projects||[];
       if(projects.some(function(p){return sameName(p.name,name);}))throw new Error('Já existe um projeto com este nome nesta empresa. Escolhe outro nome.');
       if(!co.id)throw new Error('Empresa não encontrada.');if(lic.status!=='ACTIVE')throw new Error('Licença inativa.');if(lic.maxProjects!=null&&projects.length>=lic.maxProjects)throw new Error('Limite de projetos atingido.');
-      if((lic.planCode==='EXPRESS'&&mod!=='CCTV')||(lic.modules&&(mod==='INTRUSION'?lic.modules.alarm:mod==='FIRE'?lic.modules.fire:lic.modules.cctv)===false))throw new Error('Este módulo não está incluído na licença ativa.');
+      if((['FREE','EXPRESS'].includes(lic.planCode)&&mod!=='CCTV')||(lic.modules&&(mod==='INTRUSION'?lic.modules.alarm:mod==='FIRE'?lic.modules.fire:lic.modules.cctv)===false))throw new Error('Este módulo não está incluído na licença ativa.');
       var row={company_id:co.id,created_by:CLOUD.user.id,updated_by:CLOUD.user.id,name:name,module:mod,status:'DRAFT',customer_name:(ge('v6-p-client').value||'').trim()||null,customer_company:(ge('v6-p-company').value||'').trim()||null,customer_email:(ge('v6-p-email').value||'').trim()||null,customer_phone:(ge('v6-p-phone').value||'').trim()||null,project_data:emptyProjectData(mod,ge('v6-p-image-profile').value),camera_count:0,detector_count:0,fire_detector_count:0,floor_count:1,last_saved_at:new Date().toISOString()};
       var cfg=sb();return api(cfg.url+'/rest/v1/projects',{method:'POST',headers:h({'Prefer':'return=representation'}),body:JSON.stringify(row)});
     }).then(function(rows){
