@@ -107,6 +107,7 @@ function closeOverlay(id){var x=ge(id);if(x){if(x.__close)x.__close();else x.rem
 function openNewProjectWizard(companyId,module){
   companyId=typeof companyId==='string'?companyId:null;
   if(!logged()){if(typeof notify==='function')notify('Inicia sessão primeiro.');return;}
+  if(module&&typeof window.sigsModuleAllowed==='function'&&!window.sigsModuleAllowed(module)){notify('🔒 Este módulo não está incluído na licença ativa.');return;}
   closeOverlay('sigs-v6-new-project');
   var o=document.createElement('div');o.id='sigs-v6-new-project';o.className='sigs-v6-overlay';
   o.innerHTML='<div class="sigs-v6-dialog"><div class="sigs-v6-dialog-head"><div><div class="sigs-v6-dialog-title">Novo Projeto</div><div class="sigs-v6-dialog-sub">Crie o projeto primeiro. A partir daí o autosave fica ativo.</div></div><button class="sigs-v6-x">✕</button></div>'+
@@ -115,7 +116,7 @@ function openNewProjectWizard(companyId,module){
     '<div class="sigs-v6-dialog-foot"><button class="sag-btn" id="v6-p-cancel">Cancelar</button><button class="sag-btn" id="v6-p-open">Abrir projetos</button><button class="sag-btn primary" id="v6-p-create">Criar projeto</button></div><div id="v6-p-status" class="sigs-v6-status"></div></div>';
   document.body.appendChild(o);
   ge('v6-p-name').focus();
-  var current=String(module||window.MOD||'cctv').toUpperCase();if(current==='ALARM')current='INTRUSION';if(current==='DISK')current='CCTV';var sel=ge('v6-p-module');if(sel){sel.value=current;sel.onchange=function(){ge('v6-p-profile-field').hidden=sel.value!=='CCTV';};sel.onchange();}
+  var current=String(module||window.MOD||'cctv').toUpperCase();if(current==='ALARM')current='INTRUSION';if(current==='DISK')current='CCTV';var sel=ge('v6-p-module');if(sel){Array.from(sel.options).forEach(function(option){var key=option.value==='INTRUSION'?'alarm':option.value==='FIRE'?'fire':'cctv';option.disabled=typeof window.sigsModuleAllowed==='function'&&!window.sigsModuleAllowed(key);});if(!Array.from(sel.options).some(function(option){return option.value===current&&!option.disabled;}))current='CCTV';sel.value=current;sel.onchange=function(){ge('v6-p-profile-field').hidden=sel.value!=='CCTV';};sel.onchange();}
   ge('v6-p-open').onclick=function(){o.remove();window.openCloud(module);};
   o.querySelector('.sigs-v6-x').onclick=function(){o.remove()};ge('v6-p-cancel').onclick=function(){o.remove()};
   if(CLOUD.user.role==='SUPER_ADMIN')loadLicenseContext().then(function(context){
@@ -132,6 +133,7 @@ function openNewProjectWizard(companyId,module){
       var co=ctx.company||{},lic=ctx.license||{},projects=ctx.projects||[];
       if(projects.some(function(p){return sameName(p.name,name);}))throw new Error('Já existe um projeto com este nome nesta empresa. Escolhe outro nome.');
       if(!co.id)throw new Error('Empresa não encontrada.');if(lic.status!=='ACTIVE')throw new Error('Licença inativa.');if(lic.maxProjects!=null&&projects.length>=lic.maxProjects)throw new Error('Limite de projetos atingido.');
+      if((lic.planCode==='EXPRESS'&&mod!=='CCTV')||(lic.modules&&(mod==='INTRUSION'?lic.modules.alarm:mod==='FIRE'?lic.modules.fire:lic.modules.cctv)===false))throw new Error('Este módulo não está incluído na licença ativa.');
       var row={company_id:co.id,created_by:CLOUD.user.id,updated_by:CLOUD.user.id,name:name,module:mod,status:'DRAFT',customer_name:(ge('v6-p-client').value||'').trim()||null,customer_company:(ge('v6-p-company').value||'').trim()||null,customer_email:(ge('v6-p-email').value||'').trim()||null,customer_phone:(ge('v6-p-phone').value||'').trim()||null,project_data:emptyProjectData(mod,ge('v6-p-image-profile').value),camera_count:0,detector_count:0,fire_detector_count:0,floor_count:1,last_saved_at:new Date().toISOString()};
       var cfg=sb();return api(cfg.url+'/rest/v1/projects',{method:'POST',headers:h({'Prefer':'return=representation'}),body:JSON.stringify(row)});
     }).then(function(rows){

@@ -277,6 +277,8 @@
     if(!s||!el)return;
     var demo=document.getElementById('lic-plan').value==='DEMO',options=document.getElementById('lic-demo-options'),days=Number(document.getElementById('lic-demo-days').value);
     options.hidden=!demo;s.disabled=demo;
+    var code=document.getElementById('lic-plan').value,paid=['EXPRESS','PRO','SUPREME'].includes(code);
+    ['cctv','alarm','fire','cloud'].forEach(function(key){var input=document.getElementById('lic-m-'+key);if(!input)return;input.disabled=paid;if(paid)input.checked=!(code==='EXPRESS'&&(key==='alarm'||key==='fire'));});
     el.textContent=licFmtDateLocal(demo?new Date(Date.now()+days*86400000):licCalcEndDate(s.value));
   };
   function licCounterCard(label,value,color,filter){
@@ -700,6 +702,7 @@
     var c=LIC.ctx, r=roleOf(); if(r===ROLE.SUPER_ADMIN)return true;
     if(!c||!c.license)return true; // avoid locking legacy backend before licensing endpoints exist
     if(c.license.status!=='ACTIVE')return false;
+    if(c.license.planCode==='EXPRESS'&&(mod==='alarm'||mod==='fire'))return false;
     var m=c.license.modules||{}; if(mod==='cctv')return m.cctv!==false; if(mod==='alarm')return m.alarm!==false; if(mod==='fire')return m.fire!==false; return true;
   };
 
