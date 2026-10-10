@@ -1,0 +1,23 @@
+/* Protected-house hero; all text and navigation remain real page elements. */
+.nav{background:#fff;border-bottom-color:#e8edf6}
+.hero-scene{position:relative;isolation:isolate;overflow:hidden;background:#06152d;color:#fff}
+.hero-scene::before{content:"";position:absolute;inset:0;z-index:-2;background:url('../images/hero-protected-house-v79.webp') center top/cover no-repeat}
+.hero-scene::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(3,16,39,.62),rgba(3,16,39,.18) 44%,transparent 67%)}
+.hero-scene .hero{display:flex;align-items:center;min-height:660px;padding:78px 0;gap:0}
+.hero-scene .hero-copy{width:52%;max-width:570px;padding:0}
+.hero-scene .hero-tag{font-size:12px;color:#dce8ff;margin-bottom:24px;letter-spacing:.1px}
+.hero-scene .hero-tag .tag-line{background:#67d9ef}
+.hero-scene h1{font-size:clamp(50px,5vw,72px);line-height:1.04;font-weight:750;letter-spacing:-2.8px;color:#fff;margin-bottom:27px}
+.hero-scene h1 em{font-family:inherit;font-weight:inherit;font-style:normal;letter-spacing:inherit;color:#00e3ed}
+.hero-scene .hero-description{max-width:510px;font-size:16px;line-height:1.8;color:#e0e8f6;margin-bottom:28px}
+.hero-scene .hero-actions .button{min-height:52px;white-space:nowrap;color:#fff;background:#071a3655;border:1px solid #8aafff;border-radius:11px}
+.hero-scene .hero-actions .button.primary{background:#0759f5;border-color:#0759f5}
+.hero-scene .hero-actions .button:hover{background:#163b65}
+.hero-scene .hero-actions .button.primary:hover{background:#0045d6}
+.hero-scene .hero-footnote{color:#c7d5ec;font-size:11px;line-height:1.7;margin-top:17px}
+.specialties{background:#fff}
+.specialty .icon{color:#1758ed}
+@media(min-width:1500px){.hero-scene .hero{min-height:740px;padding:88px 0}}
+@media(max-width:1100px){.hero-scene .hero{min-height:620px;padding:65px 0}.hero-scene .hero-copy{width:56%}.hero-scene h1{font-size:58px}.hero-scene .hero-description{font-size:15px}}
+@media(max-width:850px){.hero-scene::before{background-size:auto 380px;background-position:right top}.hero-scene::after{background:linear-gradient(180deg,transparent 180px,#06152d 390px)}.hero-scene .hero{min-height:0;padding:340px 0 52px}.hero-scene .hero-copy{width:100%;max-width:600px}.hero-scene h1{font-size:58px}.hero-scene .hero-description{max-width:540px}}
+@media(max-width:650px){.hero-scene::before{background-size:auto 310px}.hero-scene::after{background:linear-gradient(180deg,transparent 135px,#06152d 315px)}.hero-scene .hero{padding:275px 0 38px}.hero-scene .hero-tag{font-size:10px;margin-bottom:20px}.hero-scene h1{font-size:clamp(39px,10vw,52px);letter-spacing:-1.8px;max-width:none;margin-bottom:22px}.hero-scene .hero-description{font-size:14px;line-height:1.8}.hero-scene .hero-actions{gap:10px}.hero-scene .hero-actions .button{width:100%;font-size:13px}.hero-scene .hero-footnote{font-size:10px}}
