@@ -1,3 +1,4 @@
+#sigs-side-modules[hidden]{display:none!important}
 #sigs-side-modules{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:16px;margin-bottom:20px;flex-shrink:0}
 .sigs-premium .sigs-module-card{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-width:0;min-height:112px;padding:16px 8px;border:1px solid #ffffff22;border-radius:12px;background:#ffffff08;color:#e5edfa;cursor:pointer;font-family:var(--f);transition:background .2s,border-color .2s}
 .sigs-premium .sigs-module-card:hover{background:#ffffff14;border-color:#8caeff}

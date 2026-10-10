@@ -25,6 +25,7 @@
       localStorage.removeItem('sigs_refresh');
     }catch(e){}
     CLOUD.access=null; CLOUD.user=null;
+    var modules=document.getElementById('sigs-side-modules');if(modules)modules.hidden=true;
   }
   function storedAccess(){try{return localStorage.getItem('sigs_sb_access')}catch(e){return null}}
   function storedRefresh(){try{return localStorage.getItem('sigs_sb_refresh')}catch(e){return null}}
@@ -110,7 +111,9 @@
     {p:100,icon:'✓',label:'Pronto'}
   ];
 
+  function setModuleCardsVisible(visible){var modules=ge('sigs-side-modules');if(modules)modules.hidden=!visible;}
   function renderLoginLoader(initialMsg){
+    setModuleCardsVisible(false);
     var el=ge('sigs-gate-main');if(!el)return;
     LOGIN_PROGRESS.value=0;LOGIN_PROGRESS.visible=true;
     el.innerHTML=
@@ -191,6 +194,7 @@
 
 
   function renderLogin(msg){
+    setModuleCardsVisible(false);
     var el=ge('sigs-gate-main'); if(!el)return;
     el.innerHTML='<div class="sag-title">Entrar no SIGS</div>'+
       '<div class="sag-sub">Entra na tua conta ou cria um espaço para ti ou para a tua empresa.</div>'+
@@ -226,6 +230,7 @@
   window.sigsPortalRender=function(){
     var el=ge('sigs-gate-main');if(!el)return;
     if(!window.CLOUD||!CLOUD.user){renderLogin();return}
+    setModuleCardsVisible(!!CLOUD.access);
     var u=CLOUD.user,r=role(),ent=u.entitlements||{};
     if(r==='SUPER_ADMIN'){
       el.innerHTML='<div class="sag-title">Super Admin</div><div class="sag-sub">Gestão central do SIGS Design. Emita licenças para empresas e crie o respetivo Admin.</div>'+
