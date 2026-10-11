@@ -8,7 +8,7 @@ function url(s){return typeof s==='string'&&(/^(https?:\/\/)/i.test(s)||/^data:i
 function devices(){var out=[];(window.FLOORS||[]).forEach(function(f){(f.placed||[]).forEach(function(p){var d=gD(p.libId);if(d)out.push(d);});});return out;}
 function suggestions(){
  var ds=devices(),options={};
- if(ds.some(function(d){return ['dome','bullet','turret','ptz','fisheye','thermal_bi'].includes(d.type);})&&window.SIGSEngineering){
+ if(ds.some(function(d){return ['dome','bullet','turret','ptz','fisheye','thermal_bi','cube','doorbell'].includes(d.type);})&&window.SIGSEngineering){
   var data=SIGSEngineering.snapshot();if(data){options.ups=data.ups;var nodes=data.network&&data.network.nodes;options.rackUnits=nodes?nodes.reduce(function(n,x){return n+(x.kind==='nvr'?2:x.kind==='switch'?1:0);},0)+6:9;}
  }
  return SIGSAccessoryModel.suggest(ds,options);

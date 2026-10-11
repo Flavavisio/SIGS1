@@ -2,10 +2,10 @@
 'use strict';
 function suggest(devices,options){
  options=options||{};
- var cams=devices.filter(function(d){return ['dome','bullet','turret','ptz','fisheye','thermal_bi'].includes(d.type);}),items=[];
+ var cams=devices.filter(function(d){return ['dome','bullet','turret','ptz','fisheye','thermal_bi','cube','doorbell'].includes(d.type);}),items=[],wired=cams.filter(d=>d.connection!=='wifi');
  if(cams.length){
-  items.push({key:'camera-box',ref:'GEN-CAIXA-CCTV',name:'Caixa de ligação para câmara',qty:cams.length,unit:'un.',reason:'Uma por câmara; confirmar necessidade, dimensões, ambiente e compatibilidade antes de encomendar.'});
-  items.push({key:'network-termination',ref:'GEN-TERMINACAO-REDE',name:'Fichas de RJ45',qty:cams.length*2,unit:'un.',reason:'Duas fichas RJ45 por ligação direta; confirmar categoria, blindagem e compatibilidade com o cabo. Ajustar a quantidade se houver tomadas ou patch panel.'});
+  if(wired.length)items.push({key:'camera-box',ref:'GEN-CAIXA-CCTV',name:'Caixa de ligação para câmara',qty:wired.length,unit:'un.',reason:'Uma por câmara; confirmar necessidade, dimensões, ambiente e compatibilidade antes de encomendar.'});
+  if(wired.length)items.push({key:'network-termination',ref:'GEN-TERMINACAO-REDE',name:'Fichas de RJ45',qty:wired.length*2,unit:'un.',reason:'Duas fichas RJ45 por ligação direta; confirmar categoria, blindagem e compatibilidade com o cabo. Ajustar a quantidade se houver tomadas ou patch panel.'});
   var u=options.ups,models=[{ref:'UPS600VA-6',va:600,w:360,rack:false},{ref:'UPS1000VA-ON-2-RACK',va:1000,w:900,rack:true},{ref:'UPS1500VA-ON-2-RACK',va:1500,w:1350,rack:true},{ref:'UPS2000VA-ON-2-RACK',va:2000,w:1800,rack:true}];
   var selected=u&&Number(u.watts)>0&&Number(u.va)>0?models.find(function(m){return m.w>=u.watts&&m.va>=u.va;}):null;
   var upsReason=u?'Carga '+Math.ceil(u.load)+' W; mínimo com reserva '+Math.ceil(u.watts)+' W / '+Math.ceil(u.va)+' VA. Autonomia pretendida '+u.minutes+' min: confirmar na curva do fabricante.':'Dimensionar a potência AC e a autonomia na engenharia do sistema antes de selecionar o modelo.';

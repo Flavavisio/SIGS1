@@ -25,7 +25,7 @@ function allPlaced(){
   return (window.S&&S.placed)||[];
 }
 function deviceOf(p){try{return typeof gD==='function'?gD(p.libId):null;}catch(e){return null;}}
-function isCam(d){return d&&['dome','bullet','ptz','fisheye','turret','thermal_bi'].indexOf(d.type)>=0;}
+function isCam(d){return d&&['dome','bullet','ptz','fisheye','turret','thermal_bi','cube','doorbell'].indexOf(d.type)>=0;}
 
 function menu(icon,label,items,cls){
   var wrap=document.createElement('div');wrap.className='sigs-v5-menu '+(cls||'');

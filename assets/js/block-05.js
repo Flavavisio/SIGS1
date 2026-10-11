@@ -284,7 +284,7 @@
   }
 
   function testProductImage(dev,done){
-    var exact=SIGS_PRODUCT_IMAGES[dev.id]||SIGS_PRODUCT_IMAGES[dev.model]||dev.photoURL||dev.imgUrl||(dev.imgKey&&window.AX_IMG&&AX_IMG[dev.imgKey]);
+    var exact=(window.SIGSAjaxCCTV&&SIGSAjaxCCTV.lookup(dev)?SIGSAjaxCCTV.image(dev):null)||SIGS_PRODUCT_IMAGES[dev.id]||SIGS_PRODUCT_IMAGES[dev.model]||dev.photoURL||dev.imgUrl||(dev.imgKey&&window.AX_IMG&&AX_IMG[dev.imgKey]);
     if(!exact){
       dev.imgUrl=svgThumb(dev);
       done&&done();

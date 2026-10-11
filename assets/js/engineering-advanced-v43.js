@@ -1,5 +1,5 @@
 (function(){'use strict';
-const M=SIGSAdvancedModel,$=id=>document.getElementById(id),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),fmt=v=>Number(v||0).toLocaleString('pt-PT',{maximumFractionDigits:1}),types=['dome','bullet','turret','ptz','fisheye','thermal_bi'];
+const M=SIGSAdvancedModel,$=id=>document.getElementById(id),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),fmt=v=>Number(v||0).toLocaleString('pt-PT',{maximumFractionDigits:1}),types=['dome','bullet','turret','ptz','fisheye','thermal_bi','cube','doorbell'];
 let dialog=null,draft=null,touchUntil=0,lastTap=null,animation=null,frameHandle=null,tabName='zones',pathAnalyses=[];
 const floor=()=>FLOORS[FLOOR_CUR],cfg=()=>SIGS_COMMERCIAL.engineering||{},locked=()=>window.SIGS_V6?.currentStatus==='ARCHIVED',cams=f=>(f.placed||[]).filter(p=>types.includes(gD(p.libId)?.type)).map(p=>({p,d:gD(p.libId)}));
 window.SIGSImageProfile=()=>cfg().imageProfile==='2014'?'2014':'2025';

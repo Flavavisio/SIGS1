@@ -1,7 +1,7 @@
 /* CCTV analytics planning. Exact documented models only; no brand-wide inference.
    A marker identifies the requested target, never a guaranteed detection distance. */
 (function(root){'use strict';
-const cameras=['bullet','dome','turret','ptz','fisheye','thermal_bi'];
+const cameras=['bullet','dome','turret','ptz','fisheye','thermal_bi','cube','doorbell'];
 const checked='2026-10-11',registry={};
 function key(d){return String(d?.model||'').trim().toUpperCase().replace(/^UV-/,'').replace(/\([^)]*\)/g,'').trim();}
 function add(models,label,source){models.forEach(model=>registry[model]={people:true,vehicles:true,label,source,checked});}
@@ -32,7 +32,7 @@ function capabilities(d){
  if(d.analytics&&typeof d.analytics==='object')return {...d.analytics,people:d.analytics.people===true,vehicles:d.analytics.vehicles===true};
  if(d.custom)return {people:false,vehicles:false};
  if(d.type==='thermal_bi'&&d.thermalRangeBasis==='manufacturer-human-vca')return {people:true,vehicles:false,label:'VCA térmica · pessoas',source:d.sourceURL,checked:d.sourceChecked};
- return registry[key(d)]||{people:false,vehicles:false};
+ return root.SIGSAjaxCCTV?.lookup?.(d)?.analytics||registry[key(d)]||{people:false,vehicles:false};
 }
 function active(p,d){const c=capabilities(d);return {people:c.people&&p?.analytics?.people===true,vehicles:c.vehicles&&p?.analytics?.vehicles===true};}
 function matches(d,filter){const c=capabilities(d);return !filter||(filter==='any'&&(c.people||c.vehicles))||(filter==='people'&&c.people)||(filter==='vehicles'&&c.vehicles)||(filter==='both'&&c.people&&c.vehicles);}

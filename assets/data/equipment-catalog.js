@@ -382,7 +382,7 @@ var FIRE_LIB = [
    desc:'Sinalizador visual (flash LED vermelho)'},
 ];
 
-var CCTV_TYPES = ['dome','bullet','ptz','fisheye','radar','thermal_bi'];
+var CCTV_TYPES = ['dome','bullet','ptz','fisheye','radar','thermal_bi','turret','cube','doorbell'];
 
 var ALARM_TYPES = ['hub','repeater','pir_outdoor','pir_indoor','door','glass','combi','siren_ext','siren_int','keypad','remote','relay','fire','leak'];
 

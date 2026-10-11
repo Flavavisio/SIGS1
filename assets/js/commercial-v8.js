@@ -27,7 +27,7 @@ function rows(){
  FLOORS.forEach(function(fl){(fl.placed||[]).forEach(function(p){
   var d=gD(p.libId);if(!d){warnings.push('Equipamento sem referência no catálogo: '+p.libId);return;}
   add({ref:d.model||d.name,name:d.name,type:d.type,qty:1,unit:'un.',system:false},p.libId);
-  if(['dome','bullet','ptz','fisheye','turret','thermal_bi'].indexOf(d.type)>=0)cams.push({p:p,fl:fl});
+  if(['dome','bullet','ptz','fisheye','turret','thermal_bi','cube','doorbell'].indexOf(d.type)>=0)cams.push({p:p,fl:fl});
  });});
  if(window.SIGSNetwork&&SIGSNetwork.enabled()){
   var networkMaterials=SIGSNetwork.materials();

@@ -15,7 +15,7 @@ const ajaxTable={
  indoorcam:{label:'IndoorCam',people:{day:[1,21,1,25],night:[1,14,1,17]}}
 };
 const ajaxModels={'AJ-BULLETCAM-8-W':'standard','AJ-TURRETCAM-8-W':'standard','AJ-TURRETCAM-5-0400-W':'standard','AJ-BULLETCAM-8-HLVF-W':'hlvf','AJ-DOMECAM-5-HLVF-W':'hlvf','AJ-TURRETCAM-8-HLVF-S-B':'superiorHLVF'};
-function ajaxFamily(d){return !d.custom?ajaxModels[A.key(d)]||null:null;}
+function ajaxFamily(d){return !d.custom?root.SIGSAjaxCCTV?.lookup?.(d)?.ajaxFamily||ajaxModels[A.key(d)]||null:null;}
 
 const cache=new Map();
 function settings(p,d){const a=p.analytics||{};return {ajaxSensitivity:a.ajaxSensitivity==='maximum'?'maximum':'default',mode:a.mode==='day'?'day':'night',minPixels:Math.max(8,Math.min(1000,N(a.minPixels,108))),peopleHeight:Math.max(.3,Math.min(3,N(a.peopleHeight,d.type==='thermal_bi'?1.8:1.75))),peopleWidth:Math.max(.15,Math.min(2,N(a.peopleWidth,.5))),vehiclesHeight:Math.max(.5,Math.min(5,N(a.vehiclesHeight,1.5))),vehiclesWidth:Math.max(.5,Math.min(5,N(a.vehiclesWidth,1.8))) };}
@@ -43,7 +43,7 @@ function geometry(p,d,target,options={}){
  const same=!p.mp||Number(p.mp)===Number(d.mp),height=pr.thermal?d.thermalResH:(same&&!p.recordWidth?N(d.resH,width*9/16):width*9/16);
  const fov=N(options.fov,pr.thermal?d.thermalFov:(root.SIGSLensModel?root.SIGSLensModel.fov(p,d):d.fov));
  if(!(fov>0&&fov<180&&width>0&&height>0))return {invalid:'Geometria panorâmica: validar no equipamento.'};
- const tanH=Math.tan(fov*Math.PI/360),tanV=pr.thermal&&d.thermalVerticalFov?Math.tan(d.thermalVerticalFov*Math.PI/360):tanH*height/width;
+ const tanH=Math.tan(fov*Math.PI/360),tanV=pr.thermal&&d.thermalVerticalFov?Math.tan(d.thermalVerticalFov*Math.PI/360):root.SIGSLensModel?.verticalFov(p,d)?Math.tan(root.SIGSLensModel.verticalFov(p,d)*Math.PI/360):tanH*height/width;
  const tilt=Number(p.instTilt??30)*Math.PI/180,h=N(p.instHeight,3),angle=Number(options.angle||0),H=s[target+'Height'],W=s[target+'Width'];
  let max=pr.max;const notes=pr.notes.slice();
  if(!pr.thermal&&root.SIGSLensModel&&!root.SIGSLensModel.policy(d).documented)notes.push('Ótica do catálogo por confirmar: validar FOV e lente no equipamento.');

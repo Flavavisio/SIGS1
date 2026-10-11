@@ -7,7 +7,7 @@ const num=v=>Number.isFinite(Number(v))?Number(v).toLocaleString('pt-PT',{maximu
 const safeURL=v=>typeof v==='string'&&(/^(https?:\/\/)/i.test(v)||/^data:image\/(png|jpeg|webp);base64,/i.test(v))?v:'';
 const specialty=m=>m==='fire'?'Incêndio':m==='alarm'?'Intrusão':'Videovigilância';
 function rows(headers,data){return '<table><thead><tr>'+headers.map(h=>'<th>'+esc(h)+'</th>').join('')+'</tr></thead><tbody>'+data.map(r=>'<tr>'+r.map(v=>'<td>'+esc(v)+'</td>').join('')+'</tr>').join('')+'</tbody></table>';}
-function camera(d){return ['dome','bullet','turret','ptz','fisheye','thermal_bi'].includes(d.type);}
+function camera(d){return ['dome','bullet','turret','ptz','fisheye','thermal_bi','cube','doorbell'].includes(d.type);}
 function snapshot(){
  saveCurrentFloor();
  const c=window.SIGS_COMMERCIAL||{},network=window.SIGSNetwork&&SIGSNetwork.enabled()?SIGSNetwork.snapshot():null;

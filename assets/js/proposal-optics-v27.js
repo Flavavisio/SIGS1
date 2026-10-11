@@ -3,9 +3,9 @@
 'use strict';
 const number=v=>Number.isFinite(Number(v))?Number(v):0;
 let clipId=0;
-const cameras=['dome','bullet','turret','ptz','fisheye','thermal_bi'];
+const cameras=['dome','bullet','turret','ptz','fisheye','thermal_bi','cube','doorbell'];
 function visionRange(p,d,fov,profile){
- if(!['dome','bullet','turret','ptz'].includes(d.type)||!(fov>0&&fov<180))return Math.max(0,number(d.range));
+ if(!['dome','bullet','turret','ptz','cube','doorbell'].includes(d.type)||!(fov>0&&fov<180))return Math.max(0,number(d.range));
  profile=profile||(root.SIGSImageProfile?root.SIGSImageProfile():root.SIGS_COMMERCIAL?.engineering?.imageProfile)||'2025';
  const levels=root.SIGSAdvancedModel?.profiles?.[profile]?.levels,ppm=levels?.at(-1)?.[1]||(profile==='2014'?25:20);
  const mp=number(p.mp||d.mp)||2,explicit=number(p.recordWidth)||(!p.mp||number(p.mp)===number(d.mp)?number(d.resW||d.resolutionW||d.widthPx):0);
@@ -14,12 +14,12 @@ function visionRange(p,d,fov,profile){
 }
 function capture(p,d){if(!cameras.includes(d.type))return {};const lens=root.SIGSLensModel?root.SIGSLensModel.effective(p,d):(number(p.lens)||2.8),reference=root.SIGSLensModel?root.SIGSLensModel.policy(d).base:(number(d.baseLens||d.refLens)||2.8),base=Math.max(1,Math.min(179,number(d.fov)||90));let fov=root.SIGSLensModel?root.SIGSLensModel.fov(p,d):2*Math.atan(Math.tan(base*Math.PI/360)*reference/lens)*180/Math.PI;
  if(d.type==='thermal_bi')fov=number(p.visibleFov||d.visibleFov||d.fov)||30;
- const out={type:d.type,lens,fov:Math.max(1,Math.min(360,fov)),range:d.type==='thermal_bi'?Math.max(0,number(p.visibleRange||d.visibleRange||d.range)):visionRange(p,d,fov),illuminationRange:Math.max(0,number(d.range)),rotation:number(p.rotation),instTilt:p.instTilt==null?30:number(p.instTilt),instHeight:number(p.instHeight)||3};
+ const out={type:d.type,lens,verticalFov:root.SIGSLensModel?.verticalFov(p,d),fov:Math.max(1,Math.min(360,fov)),range:d.type==='thermal_bi'?Math.max(0,number(p.visibleRange||d.visibleRange||d.range)):visionRange(p,d,fov),illuminationRange:Math.max(0,number(d.range)),rotation:number(p.rotation),instTilt:p.instTilt==null?30:number(p.instTilt),instHeight:number(p.instHeight)||3};
  if(d.type==='thermal_bi'){out.thermalFov=number(p.thermalFov||d.thermalFov)||30;out.thermalRange=number(p.thermalRange||d.thermalRange)||0;}return out;
 }
 function sector(p,ppm,obstacles){if(!cameras.includes(p.type)||!(ppm>0)||!(p.fov>0&&p.range>0))return '';const x=number(p.x),y=number(p.y),rotation=number(p.rotation)-90;
  function shape(fov,range,color){
- const tilt=p.instTilt==null?(p.tilt==null?30:number(p.tilt)):number(p.instTilt),half=Math.atan(Math.tan(Math.min(179,fov)*Math.PI/360)*9/16)*180/Math.PI;
+ const tilt=p.instTilt==null?(p.tilt==null?30:number(p.tilt)):number(p.instTilt),half=p.verticalFov?number(p.verticalFov)/2:Math.atan(Math.tan(Math.min(179,fov)*Math.PI/360)*9/16)*180/Math.PI;
  const blind=tilt<0||tilt+half>=90?0:(number(p.instHeight)||3)/Math.tan((tilt+half)*Math.PI/180)*ppm;
  const far=tilt-half,reach=fov<180&&tilt>=0&&far>0?(number(p.instHeight)||3)/Math.tan(far*Math.PI/180):Infinity;
  range=Math.min(range,reach);
