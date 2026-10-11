@@ -110,6 +110,34 @@ function outerRange(p,d,base){
  for(const target of ['people','vehicles'])if(active[target])for(let j=0;j<=36;j++){const angle=(-fov/2+fov*j/36)*Math.PI/180,r=calculate(p,d,target,{fov,angle});if(r.available)max=Math.max(max,r.max);}
  return max;
 }
+// Draggable analytics targets belong to each camera and are distinct from 3D scene objects.
+function markerPosition(p,target,r,fov,activeCount,index){
+ const factor=root.S.scale.ppm,stored=p.analytics?.markerPositions?.[target];
+ if(stored&&Number.isFinite(stored.x)&&Number.isFinite(stored.y))return {x:stored.x,y:stored.y,custom:true};
+ const angle=(activeCount===2?(index?1:-1)*Math.min(8,fov/8):0)*Math.PI/180;
+ const dist=r?.available?r.max:0,rot=(Number(p.rotation)||0)*Math.PI/180;
+ return {x:Number(p.x)+Math.sin(rot+angle)*dist*factor,y:Number(p.y)-Math.cos(rot+angle)*dist*factor,custom:false};
+}
+function markerAssessment(p,d,target,position,fov,range){
+ const ppm=root.S.scale.ppm,dx=(position.x-p.x)/ppm,dy=(position.y-p.y)/ppm;
+ const distance=Math.hypot(dx,dy),bearing=Math.atan2(dx,-dy),rotation=(Number(p.rotation)||0)*Math.PI/180;
+ const rel=Math.atan2(Math.sin(bearing-rotation),Math.cos(bearing-rotation));
+ if(Math.abs(rel)>fov*Math.PI/360+1e-7)return {ok:false,reason:'FORA DO FOV',distance};
+ const r=calculate(p,d,target,{angle:rel,fov,rangeLimit:range});
+ if(!r.available)return {ok:null,reason:'POR CONFIRMAR',distance};
+ if(distance<r.min||distance>r.max)return {ok:false,reason:'FORA DO ALCANCE',distance,max:r.max};
+ const floor=root.FLOORS?.[root.FLOOR_CUR];
+ const geo=root.SIGSSiteGeometry,segments=geo?.segments,intersection=geo?.intersection;
+ if(floor?.obstacles?.length&&typeof segments==='function'&&typeof intersection==='function'){
+  const total=Math.hypot(position.x-p.x,position.y-p.y);
+  const hit=(floor.obstacles||[]).some(o=>segments([o]).some(([a,b])=>{
+   const d=intersection({x:p.x,y:p.y},{x:(position.x-p.x)/total,y:(position.y-p.y)/total},a,b);
+   return d!==null&&d>0&&d<total;
+  }));
+  if(hit)return {ok:false,reason:'OBSTÁCULO',distance,max:r.max};
+ }
+ return {ok:true,reason:'OK · estimativa',distance,max:r.max};
+}
 function draw(ctx,p,d,fov,range){
  const active=A.active(p,d);if(p.visible===false||!root.S.scale.ok)return;
  const factor=root.S.scale.ppm*root.S.zoom,targets=['people','vehicles'].filter(t=>active[t]),half=Math.min(fov/2,89)*Math.PI/180;
@@ -120,8 +148,13 @@ function draw(ctx,p,d,fov,range){
   const contours=Array.from({length:37},(_,j)=>{const angle=-half+half*2*j/36;return {angle,result:calculate(p,d,target,{fov,rangeLimit:range,angle})};});
   for(const boundary of ['min','max']){ctx.save();if(boundary==='min')ctx.globalAlpha*=.45;let open=false;ctx.beginPath();for(const {angle,result:r} of contours){if(!r.available){open=false;continue;}const x=Math.sin(angle)*r[boundary]*factor,y=-Math.cos(angle)*r[boundary]*factor;if(open)ctx.lineTo(x,y);else ctx.moveTo(x,y);open=true;}ctx.stroke();ctx.restore();}
   const angle=targets.length===2?(i?1:-1)*Math.min(8,fov/8)*Math.PI/180:0,r=calculate(p,d,target,{fov,rangeLimit:range,angle});if(!r.available)return;
-  const radius=r.max*factor,x=Math.sin(angle)*radius,y=-Math.cos(angle)*radius,size=Math.min(22,Math.max(8,radius*Math.sin(half)*.35));
-  ctx.save();ctx.translate(x,y);ctx.rotate(-(p.rotation||0)*Math.PI/180);ctx.setLineDash([]);ctx.fillStyle='rgba(8,17,35,.9)';ctx.beginPath();ctx.arc(0,0,size*.72,0,Math.PI*2);ctx.fill();A.glyph(ctx,target,size);ctx.font='bold 10px Arial';ctx.fillStyle=color;ctx.textAlign='center';ctx.fillText(r.max.toFixed(1)+' m',0,size+7);ctx.restore();
+  const position=markerPosition(p,target,r,fov,targets.length,i);
+  const dx=(position.x-p.x)*root.S.zoom,dy=(position.y-p.y)*root.S.zoom,rot=(Number(p.rotation)||0)*Math.PI/180;
+  const x=dx*Math.cos(rot)+dy*Math.sin(rot),y=-dx*Math.sin(rot)+dy*Math.cos(rot);
+  const a=markerAssessment(p,d,target,position,fov,range);
+  const size=22;
+  ctx.save();ctx.translate(x,y);ctx.rotate(-(p.rotation||0)*Math.PI/180);ctx.setLineDash([]);ctx.fillStyle='rgba(8,17,35,.9)';ctx.beginPath();ctx.arc(0,0,size*.72,0,Math.PI*2);ctx.fill();A.glyph(ctx,target,size);ctx.font='bold 10px Arial';ctx.fillStyle=color;ctx.textAlign='center';ctx.fillText(a.distance.toFixed(1)+' m',0,size+7);
+  if(position.custom){ctx.font='bold 10px Arial';ctx.fillStyle=a.ok===true?'#4ade80':a.ok===false?'#fb7185':'#fde68a';ctx.fillText(a.reason,0,size+20);}ctx.restore();
  });ctx.restore();
 }
 function sync(p,d){
@@ -138,6 +171,61 @@ function sync(p,d){
   for(const note of r.notes||[]){const text=root.document.createElement('small');text.textContent=note;row.appendChild(text);}if(r.source){const link=root.document.createElement('a');link.href=r.source;link.target='_blank';link.rel='noopener noreferrer';link.textContent='Fonte do alcance de referência';row.appendChild(link);}host.appendChild(row);
  }
 }
+// Direct dragging of the person/car markers printed at the analytical range limits.
+// Pointer capture enables both mouse and touch; positions are persisted with the camera.
+let markerDrag=null,ignoreClickUntil=0;
+function markerHit(event){
+ if(!root.S?.scale?.ok||root.MOD!=='cctv'||root.S.tool||root.SIGS_V6?.currentStatus==='ARCHIVED')return null;
+ const pt=root.ep(event),cameras=[...root.S.placed].reverse();
+ for(const p of cameras){
+  const d=root.gD(p.libId);if(!d||p.visible===false)continue;
+  const active=A.active(p,d),targets=['people','vehicles'].filter(t=>active[t]);
+  const fov=root.SIGSLensModel?.fov(p,d)||d.fov||90;
+  const range=outerRange(p,d,d.range||90);
+  for(let i=targets.length-1;i>=0;i--){
+   const target=targets[i],r=calculate(p,d,target,{fov,rangeLimit:range});
+   if(!r.available)continue;
+   const position=markerPosition(p,target,r,fov,targets.length,i);
+   const point=root.w2s(position.x,position.y);
+   if(Math.hypot(pt.x-point.x,pt.y-point.y)<=23)return {p,target,position};
+  }
+ }
+ return null;
+}
+function registerMarkerDragging(){
+ const cv=root.cv;if(!cv||cv.dataset.analyticsMarkersDrag==='1')return;
+ cv.dataset.analyticsMarkersDrag='1';
+ cv.addEventListener('pointerdown',e=>{
+  if(e.button!==0||markerDrag)return;const hit=markerHit(e);if(!hit)return;
+  e.preventDefault();e.stopImmediatePropagation();
+  root.pushUndo?.();
+  hit.p.analytics=hit.p.analytics||{};
+  hit.p.analytics.markerPositions=hit.p.analytics.markerPositions||{};
+  hit.p.analytics.markerPositions[hit.target]={x:hit.position.x,y:hit.position.y};
+  markerDrag={p:hit.p,target:hit.target,pointerId:e.pointerId};
+  try{cv.setPointerCapture(e.pointerId)}catch(_){}
+  cv.style.touchAction='none';cv.style.cursor='grabbing';
+ },true);
+ cv.addEventListener('pointermove',e=>{
+  if(!markerDrag||markerDrag.pointerId!==e.pointerId)return;
+  e.preventDefault();e.stopImmediatePropagation();
+  const at=root.ep(e),w=root.s2w(at.x,at.y);
+  markerDrag.p.analytics.markerPositions[markerDrag.target]={x:w.x,y:w.y};
+  root.render?.();
+ },true);
+ function finish(e){
+  if(!markerDrag||markerDrag.pointerId!==e.pointerId)return;
+  e.preventDefault();e.stopImmediatePropagation();
+  markerDrag=null;ignoreClickUntil=Date.now()+250;
+  try{cv.releasePointerCapture(e.pointerId)}catch(_){}
+  cv.style.touchAction='';cv.style.cursor='';
+  root.saveCurrentFloor?.();root.sigsV6MarkDirty?.();root.render?.();
+ }
+ cv.addEventListener('pointerup',finish,true);
+ cv.addEventListener('pointercancel',finish,true);
+ cv.addEventListener('click',e=>{if(Date.now()<ignoreClickUntil){e.preventDefault();e.stopImmediatePropagation()}},true);
+}
+if(root.document){if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',registerMarkerDragging);else registerMarkerDragging();}
 root.sigsSetAnalyticsSetting=function(key,value){
  const p=root.fP(root.S.selId),d=p&&root.gD(p.libId);if(!p||root.MOD!=='cctv'||root.SIGS_V6?.currentStatus==='ARCHIVED')return;
  const limits={minPixels:[8,1000],peopleHeight:[.3,3],peopleWidth:[.15,2],vehiclesHeight:[.5,5],vehiclesWidth:[.5,5]};
