@@ -184,6 +184,7 @@ function currentFlowState(){
   return {project:true,plant:fp,scale:scale,devices:hasDevices,coverage:hasDevices,system:sys,material:hasDevices,report:hasDevices};
 }
 function updateSpecialtyMenus(){
+  if(window.SIGSIntrusion)SIGSIntrusion.mode();
   var mod=window.MOD||'cctv',cctv=mod==='cctv';
   document.querySelectorAll('[data-cctv-only]').forEach(function(el){el.style.display=cctv?'':'none';});
   document.querySelectorAll('[data-system-entry]').forEach(function(el){
@@ -222,6 +223,7 @@ function reorganizeRightPanel(){
     var head=document.createElement('div');head.className='sigs-project-tab-head';
     head.innerHTML='<div class="sigs-project-tab-title">📊 Resumo do Projeto</div><div class="sigs-project-tab-sub">Uma única vista com o estado técnico e os principais números.</div>';
     stats.appendChild(head);stats.appendChild(summary);
+    var specialty=el('specialty-project-summary');if(specialty)stats.appendChild(specialty);
     var actions=document.createElement('div');actions.className='sigs-project-actions';
     actions.innerHTML='<button type="button" id="v5-go-system">🧠 Sistema</button><button type="button" id="v5-go-audit">🛡 Verificar</button><button type="button" id="v5-go-bom">📋 Material</button><button type="button" id="v5-go-report">📄 Relatório</button>';
     stats.appendChild(actions);
@@ -357,6 +359,7 @@ function auditProject(){
       if(hubs.length===1){var hd=deviceOf(hubs[0])||{},m=String(hd.desc||'').match(/até\s+(\d+)\s+disp/i);if(m){var cap=Number(m[1]),used=placed.length-hubs.length;if(used>cap)add('error','Capacidade Hub',used+' dispositivos para uma capacidade catalogada de '+cap+'.');else if(used/cap>.85)add('warning','Capacidade Hub',used+'/'+cap+' dispositivos ('+Math.round(used/cap*100)+'%).');else add('ok','Capacidade Hub',used+'/'+cap+' dispositivos.');}else add('info','Capacidade Hub','O limite de dispositivos deste modelo ainda não está estruturado no catálogo técnico.');}
     }
     if(!sirens.length)add('warning','Sinalização de alarme','Não existe sirene interior ou exterior colocada no projeto.');
+    if(window.SIGSIntrusion)SIGSIntrusion.audit(add);
     if(repeaters.length)add('info','Repetidores Ajax',repeaters.length+' ReX/repetidor(es) colocado(s). A V7 ainda não calcula cobertura rádio por obstáculos.');
   }
 
@@ -379,6 +382,7 @@ function auditProject(){
 }
 
 function renderAudit(){
+  var subtitle=document.querySelector('#sigs-audit-modal .sub');if(subtitle)subtitle.textContent=MOD==='alarm'?'Planta · deteção · Hubs · grupos · sirenes · instalação':MOD==='fire'?'Planta · centrais · deteção · sinalização · autonomia':'Escala · catálogo · DORI · NVR · cabos · PoE · rede · armazenamento';
   var a=auditProject(),sum=el('sigs-audit-summary'),list=el('sigs-audit-list');
   var counts={error:0,warning:0,ok:0,info:0};a.forEach(function(x){counts[x.sev]++;});
   if(sum)sum.innerHTML=

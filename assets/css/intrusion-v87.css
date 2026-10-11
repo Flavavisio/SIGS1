@@ -1,0 +1,9 @@
+.intrusion-field{display:grid;grid-template-columns:minmax(0,1fr) minmax(75px,1fr);align-items:center;gap:8px;margin:7px 0;font-size:11px;color:var(--txt2)}
+.intrusion-field input,.intrusion-field select{width:100%;min-width:0;padding:6px;border-radius:6px;border:1px solid var(--bdr2);background:var(--bg2);color:var(--txt);font:inherit}
+.intrusion-check{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--txt);margin:7px 0}.intrusion-check input{accent-color:#f97316}
+.intrusion-side{border:1px solid var(--bdr2);border-radius:8px;padding:4px 8px;margin:8px 0}.intrusion-note{font-size:11px;color:var(--txt3);line-height:1.6;margin:8px 0;display:block}
+.intrusion-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0}.intrusion-kpis div{padding:8px;background:var(--bg2);border:1px solid var(--bdr2);border-radius:7px;display:flex;flex-direction:column}.intrusion-kpis b{font-size:19px;color:var(--txt)}.intrusion-kpis span{font-size:10px;color:var(--txt3)}
+.intrusion-inventory>div{font-size:11px;padding:7px 0;border-bottom:1px solid var(--bdr)}.intrusion-inventory small{display:block;color:var(--txt3);margin-top:4px}
+body[data-sigs-module="alarm"] #v7-engineering-note,body[data-sigs-module="fire"] #v7-engineering-note{display:none!important}
+
+body[data-sigs-module="alarm"] #scene-v29,body[data-sigs-module="fire"] #scene-v29,body[data-sigs-module="alarm"] #multi-storage-controls,body[data-sigs-module="fire"] #multi-storage-controls,body[data-sigs-module="alarm"] #net60-open,body[data-sigs-module="fire"] #net60-open{display:none!important}

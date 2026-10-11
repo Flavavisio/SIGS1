@@ -253,6 +253,7 @@ function sigsClipBlind(context,p,fov){
   context.moveTo(radius,0);context.arc(0,0,radius,0,Math.PI*2);context.closePath();context.clip('evenodd');
 }
 function drawCov(p,dev){
+  if(MOD==='alarm'&&typeof SIGSIntrusion!=='undefined'){SIGSIntrusion.draw(ctx,p,dev);return;}
   var s=w2s(p.x,p.y);
   var fov,range;
   if(MOD==='cctv'){
@@ -761,6 +762,7 @@ function placeDevice(x,y){
   var n=nextNum(pre);
   S.devN++; // keep for save-format compatibility
   var pc={id:uid(),libId:dev.id,x:x,y:y,rotation:0,label:pre+(n<10?'0':'')+n,color:dev.color,opacity:0.22,visible:true,lens:typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).initial:2.8,afov:dev.fov,arange:dev.range,zone:1,mp:dev.mp||4,codec:(String(dev.brand||'').toLowerCase().includes('unv')||String(dev.brand||'').toLowerCase().includes('uniview'))?'ultra265b':'h265',days:30,instHeight:dev.height||3,instTilt:30};
+  if(MOD==='alarm'&&typeof SIGSIntrusion!=='undefined'){pc.intrusion=SIGSIntrusion.settings({},dev);pc.instHeight=pc.intrusion.height;['lens','mp','codec','days','instTilt'].forEach(function(k){delete pc[k];});}
   pushUndo();
   S.placed.push(pc);
   S.justPlaced=true; // block next onClick from placing another
@@ -785,14 +787,8 @@ function select(id){
   var installPanel=document.getElementById('cctv-install');
   if(installPanel) installPanel.style.display=(MOD==='cctv')?'':'none';
   document.getElementById('alarm-zone').style.display=MOD==='alarm'?'':'none';
-  // Ajax devices have no rotation
-  var rotRow=document.getElementById('rot-row'), rotBtns=document.getElementById('rot-btns');
-  if(rotRow)  rotRow.style.display  = MOD==='alarm'?'none':'';
-  if(rotBtns) rotBtns.style.display = MOD==='alarm'?'none':'';
-  // Ajax: hide rotation controls
-  var rotRow=document.getElementById('rot-row'), rotBtns=document.getElementById('rot-btns');
-  if(rotRow) rotRow.style.display=MOD==='alarm'?'none':'';
-  if(rotBtns) rotBtns.style.display=MOD==='alarm'?'none':'';
+  var directed=MOD!=='alarm'||(window.SIGSIntrusion&&SIGSIntrusion.profile(dev).kind!=='point');
+  ['rot-row','rot-btns'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display=directed?'':'none';});
   syncP(); tab('props'); render();
 }
 function syncP(){
@@ -833,12 +829,7 @@ function syncP(){
   } else {
     var dp=document.getElementById('cctv-dori'); if(dp)dp.style.display='none';
   }
-  if(MOD==='alarm'&&dev){
-    document.getElementById('p-arange').value=pc.arange!==undefined?pc.arange:(dev.range||0);
-    document.getElementById('p-afov').value=pc.afov!==undefined?pc.afov:(dev.fov||0);
-    document.getElementById('p-zone').value=pc.zone||1;
-    document.getElementById('pinfo').textContent=(dev.desc||'')+'  |  Zona '+(pc.zone||1);
-  }
+  if(MOD==='alarm'&&dev&&window.SIGSIntrusion)SIGSIntrusion.sync(pc,dev);
   // Sync install height & tilt for CCTV
   if(MOD==='cctv'){
     var hEl=document.getElementById('p-instH');
@@ -2011,6 +2002,7 @@ function updateStats(){
   var html='';for(var k in t)html+='<div class="si"><span class="sk">'+k+'</span><span class="sv">'+t[k]+'</span></div>';
   var types=document.getElementById('s-types');if(types)types.innerHTML=html||'<div style="color:var(--txt3);font-size:11px">Nenhum dispositivo</div>';
   updateProjSummary();
+  if(typeof SIGSIntrusion!=='undefined')SIGSIntrusion.mode();
 }
 
 function updateProjSummary(){
@@ -2943,6 +2935,7 @@ function buildSystemTab(){
   if(cctvContent)cctvContent.style.display=isCCTV?'flex':'none';
   if(specialtyContent)specialtyContent.style.display=isCCTV?'none':'block';
   if(!isCCTV){
+    if(MOD==='alarm'&&typeof SIGSIntrusion!=='undefined'){if(specialtyContent)specialtyContent.innerHTML=SIGSIntrusion.summary();return;}
     var centralType=MOD==='fire'?'fire_central':'hub';
     var devices=allPlaced.filter(function(p){return !!gD(p.libId);});
     var centrals=devices.filter(function(p){return gD(p.libId).type===centralType;});
@@ -3109,7 +3102,7 @@ syncP=function(){
 var _origUpdP=updP;
 updP=function(key,val){
   _origUpdP(key,val);
-  if(key==='mp'||key==='codec'||key==='days'){
+  if(MOD==='cctv'&&(key==='mp'||key==='codec'||key==='days')){
     var pc=fP(S.selId);if(pc)pc[key]=val;
     updateStoragePanel();
   }
@@ -3236,6 +3229,7 @@ function updateMultiSelPanel(){
 }
 
 function applyMultiStorage(){
+  if(MOD!=='cctv')return;
   var mp=+document.getElementById('multi-mp').value;
   var codec=document.getElementById('multi-codec').value;
   var days=+document.getElementById('multi-days').value;

@@ -498,6 +498,7 @@
             </div>
             <div id="ps-nodata" style="font-size:10px;color:var(--txt3);text-align:center;padding:4px;display:none">Sem câmaras no projeto</div>
           </div>
+          <div id="specialty-project-summary" style="display:none"></div>
         </div>
         <div id="cpanel" style="display:none">
           <div class="ps">
@@ -659,13 +660,7 @@
             </div>
           </div>
 
-          <!-- Alarm zone panel -->
-          <div id="alarm-zone" class="ps" style="display:none">
-            <div class="stl">Zona de Deteção</div>
-            <div class="fr"><span class="fl">Alcance (m)</span><input class="fi" id="p-arange" type="number" min="0" max="200" oninput="updP('arange',+this.value)"></div>
-            <div class="fr"><span class="fl">Ângulo (°)</span><input class="fi" id="p-afov" type="number" min="0" max="360" oninput="updP('afov',+this.value)"></div>
-            <div class="fr"><span class="fl">Zona #</span><input class="fi" id="p-zone" type="number" min="1" max="128" value="1" oninput="updP('zone',+this.value)"></div>
-          </div>
+          <div id="alarm-zone" class="ps" style="display:none"></div>
           <!-- CCTV Cable panel -->
           <div id="cctv-cable" class="ps" style="display:none">
             <div class="stl" style="margin-bottom:6px">🔌 Cabo Estimado</div>
@@ -818,6 +813,7 @@
   <span id="multi-sel-count" style="font-family:var(--m);font-size:11px;font-weight:700;color:var(--acc);white-space:nowrap">0 sel.</span>
   <div style="width:1px;height:18px;background:var(--bdr2)"></div>
   <!-- Storage params for all selected -->
+  <div id="multi-storage-controls" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
   <select id="multi-mp" onchange="applyMultiStorage()" style="padding:3px 6px;border-radius:5px;background:var(--bg4);border:1px solid var(--bdr2);color:var(--txt2);font-size:10px;cursor:pointer;font-family:var(--m)" title="Resolução MP para todos">
     <option value="2">2MP</option><option value="4" selected>4MP</option><option value="5">5MP</option>
     <option value="8">8MP</option><option value="12">12MP</option>
@@ -832,6 +828,7 @@
   <input id="multi-days" type="number" min="1" max="365" value="30" onchange="applyMultiStorage()" style="width:52px;padding:3px 5px;border-radius:5px;background:var(--bg4);border:1px solid var(--bdr2);color:var(--txt2);font-size:10px;font-family:var(--m)" title="Dias de gravação">
   <span style="font-size:9px;color:var(--txt3);font-family:var(--m)">dias</span>
   <button onclick="applyMultiStorage()" style="padding:3px 9px;border-radius:5px;background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.3);color:var(--acc);font-size:10px;font-weight:700;cursor:pointer;font-family:var(--f)">💾 Aplicar</button>
+  </div>
   <div style="width:1px;height:18px;background:var(--bdr2)"></div>
   <button onclick="multiSelColor()" style="padding:4px 9px;border-radius:5px;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);color:var(--acc);font-size:11px;font-weight:600;cursor:pointer;font-family:var(--f)">🎨 Cor</button>
   <input type="color" id="multi-col-picker" style="display:none;position:absolute" onchange="applyMultiColor(this.value)">
@@ -1234,7 +1231,7 @@
   </div>
 </div>
 
-<script src="assets/data/equipment-catalog.js?v=20261007-0700"></script>
+<script src="assets/data/equipment-catalog.js?v=20261011-intrusion87"></script>
 <script src="assets/data/poe-network-catalog.js?v=20261007-0700"></script>
 <script src="assets/data/ajax-cctv-v47.js?v=20261008-0700"></script>
 <script src="assets/data/product-images.js?v=20261007-0700"></script>
@@ -1250,7 +1247,9 @@
 <script src="assets/js/catalog-activation-v68.js?v=20261009-activation68"></script>
 <script src="assets/js/analytics-v85.js?v=20261011-reach86"></script>
 <script src="assets/js/analytics-range-v86.js?v=20261011-reach86"></script>
-<script src="assets/js/block-03.js?v=20261011-reach86"></script>
+<link rel="stylesheet" href="assets/css/intrusion-v87.css?v=20261011-intrusion87">
+<script src="assets/js/intrusion-v87.js?v=20261011-intrusion87"></script>
+<script src="assets/js/block-03.js?v=20261011-intrusion87"></script>
 
 <!-- ══ PRESENTATION MODE OVERLAY ══ -->
 <div id="pres-overlay">
@@ -1280,7 +1279,7 @@
 
 <script src="assets/js/block-05.js?v=20261010-login81"></script>
 <script src="assets/js/catalog-supabase.js?v=20261009-thermal69"></script>
-<script src="assets/js/ux-v5.js?v=20261008-0640"></script>
+<script src="assets/js/ux-v5.js?v=20261011-intrusion87"></script>
 <script src="assets/js/projects-v6.js?v=20261010-free83"></script>
 <script src="assets/js/engineering-v7.js?v=20261008-0010"></script>
 <script src="assets/js/commercial-model-v8.js?v=20261007-0700"></script>
@@ -1296,27 +1295,27 @@
 <script src="assets/js/pending-model-v25.js?v=20261007-0700"></script>
 <script src="assets/js/alternatives-model-v26.js?v=20261007-0700"></script>
 <script src="assets/js/workflow-v12.js?v=20261008-0640"></script>
-<script src="assets/js/sidebar-v13.js?v=20261011-analytics85"></script>
+<script src="assets/js/sidebar-v13.js?v=20261011-intrusion87"></script>
 <script src="assets/js/brand-v23.js?v=20261007-0700"></script>
 <link rel="stylesheet" href="assets/css/modules-v75.css?v=20261010-login81">
 <script src="assets/js/modules-v75.js?v=20261010-modules76"></script>
-<script src="assets/js/technical-report-v22.js?v=20261009-vision63"></script>
+<script src="assets/js/technical-report-v22.js?v=20261011-intrusion87"></script>
 <script src="assets/data/nvr-poe-v55.js?v=20261008-2340"></script>
 <script src="assets/js/recommendation-model-v24.js?v=20261008-2335"></script>
 <script src="assets/js/recommendations-v24.js?v=20261009-activation68"></script>
 <link rel="stylesheet" href="assets/css/site-geometry-v28.css?v=20261007-0700">
-<script src="assets/js/site-geometry-v28.js?v=20261011-reach86"></script>
+<script src="assets/js/site-geometry-v28.js?v=20261011-intrusion87"></script>
 <link rel="stylesheet" href="assets/css/scene-v29.css?v=20261007-0700">
 <script src="assets/js/scene-model-v29.js?v=20261007-0700"></script>
 <script src="assets/js/scene-v29.js?v=20261009-panels71"></script>
 <link rel="stylesheet" href="assets/css/engineering-v39.css?v=20261007-0700">
-<script src="assets/js/engineering-v39.js?v=20261010-menu78"></script>
+<script src="assets/js/engineering-v39.js?v=20261011-intrusion87"></script>
 <link rel="stylesheet" href="assets/css/engineering-advanced-v43.css?v=20261008-0010">
-<script src="assets/js/engineering-advanced-v43.js?v=20261009-activation68"></script>
+<script src="assets/js/engineering-advanced-v43.js?v=20261011-intrusion87"></script>
 
 <script src="assets/js/activity-v42.js?v=20261009-activation68" defer></script>
 <link rel="stylesheet" href="assets/css/network-v60.css?v=20261009-network60">
 <script src="assets/js/network-model-v60.js?v=20261009-network60"></script>
-<script src="assets/js/network-v60.js?v=20261009-activation68"></script>
+<script src="assets/js/network-v60.js?v=20261011-intrusion87"></script>
 </body>
 </html>
