@@ -1,0 +1,13 @@
+/* Ajax EN54 cards — scoped to fire product cards only. */
+.sigs-ajax-fire-card.di{display:grid;grid-template-columns:78px minmax(0,1fr);column-gap:10px;row-gap:4px;align-items:center;height:auto;min-height:104px;padding:10px;margin-bottom:7px;border:1px solid rgba(239,68,68,.19);border-radius:12px;background:rgba(255,255,255,.035);cursor:pointer;position:relative}
+.sigs-ajax-fire-card.di:hover{border-color:rgba(248,113,113,.7);background:rgba(239,68,68,.09)}
+.sigs-ajax-fire-card .sigs-fire-photo{height:78px;width:78px;border-radius:9px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;grid-row:span 2}
+.sigs-ajax-fire-card .sigs-fire-photo img{max-width:95%;max-height:95%;object-fit:contain}
+.sigs-ajax-fire-card .sigs-fire-fallback{font-size:29px}
+.sigs-ajax-fire-card .sigs-fire-info{min-width:0;display:flex;flex-direction:column;gap:3px}
+.sigs-ajax-fire-card .sigs-fire-family{font-size:9px;font-weight:800;letter-spacing:.08em;color:#fb7185}
+.sigs-ajax-fire-card .sigs-fire-info strong{font-size:12px;line-height:1.3;white-space:normal}
+.sigs-ajax-fire-card .sigs-fire-info small{font-size:9px;color:#94a3b8;overflow-wrap:anywhere}
+.sigs-ajax-fire-card .sigs-fire-info>span:last-child{font-size:10px;color:#cbd5e1;line-height:1.4}
+.sigs-ajax-fire-card .sigs-fire-info-link{font-size:10px;color:#fda4af;text-decoration:underline;text-underline-offset:2px;grid-column:2;justify-self:start}
+.sigs-ajax-fire-card .sigs-fire-info-link:hover{color:white}
