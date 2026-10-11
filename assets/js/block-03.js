@@ -1096,6 +1096,7 @@ function clearDevs(){if(!confirm('Remover todos?'))return;pushUndo();S.placed=[]
 // Family open/closed state
 var _libFamilyOpen = {cctv:false, hikvision:false, dahua:false, uniview:false, radar:false, thermal:false, custom:false};
 
+function escHTMLFire(v){return String(v??'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 function _makeDevItem(dev){
   var d=document.createElement('div');
   var isSel=S.activeLib&&S.activeLib.id===dev.id;
@@ -1113,6 +1114,16 @@ function _makeDevItem(dev){
   }
   var iconHtml;
   var imgSrc=dev.photoURL||dev.imgUrl||(dev.imgKey&&AX_IMG[dev.imgKey]?AX_IMG[dev.imgKey]:null);
+  if(MOD==='fire') {
+    d.classList.add('sigs-ajax-fire-card');
+    var image=imgSrc?'<img src="'+imgSrc+'" loading="lazy" alt="" onerror="this.style.display=\'none\';this.nextElementSibling.hidden=false"><span hidden class="sigs-fire-fallback">'+(dev.icon||'🔥')+'</span>':'<span class="sigs-fire-fallback">'+(dev.icon||'🔥')+'</span>';
+    d.innerHTML='<div class="sigs-fire-photo">'+image+'</div><div class="sigs-fire-info"><span class="sigs-fire-family">AJAX · EN54</span><strong>'+escHTMLFire(dev.name)+'</strong><small>'+escHTMLFire(dev.model||'')+'</small><span>'+escHTMLFire(dev.desc||'')+'</span></div>';
+    d.title='Adicionar '+dev.name+' à planta';
+    var info=document.createElement('a');info.className='sigs-fire-info-link';info.textContent='Ficha oficial ↗';info.href=/^https:\/\/support\.ajax\.systems\//.test(dev.sourceURL||'')?dev.sourceURL:'https://support.ajax.systems/en/en54-line/';info.target='_blank';info.rel='noopener noreferrer';info.onclick=function(e){e.stopPropagation();};d.appendChild(info);
+    d.onclick=function(e){e.stopPropagation();sLib(dev);};
+    d.oncontextmenu=function(e){e.preventDefault();e.stopPropagation();openCtxLib(dev,e);};
+    return d;
+  }
   if(imgSrc){
     iconHtml='<div class="dico sigs-product-photo" style="background:#fff;border:1px solid '+hr(dev.color,.3)+';overflow:hidden;padding:1px">'
       +'<img src="'+imgSrc+'" style="width:80px;height:24px;object-fit:contain;display:block;margin:auto" onerror="this.parentNode.innerHTML=\'<span style=font-size:16px>'+dev.icon+'</span>\'">'
@@ -1157,7 +1168,8 @@ function renderDevList(){
       {key:'fr_cen', label:'Centrais', icon:'🧯', cls:'lib-family-cctv',    filter:function(d){return d.cat==='central';}},
       {key:'fr_bat', label:'Bateria',  icon:'🔋', cls:'lib-family-thermal', filter:function(d){return d.cat==='bateria';}},
       {key:'fr_det', label:'Detetores',icon:'🔥', cls:'lib-family-radar',   filter:function(d){return d.cat==='detetor';}},
-      {key:'fr_sir', label:'Sirenes',  icon:'🔔', cls:'lib-family-custom',  filter:function(d){return d.cat==='sirene';}}
+      {key:'fr_sir', label:'Sirenes',  icon:'🔔', cls:'lib-family-custom',  filter:function(d){return d.cat==='sirene';}},
+      {key:'fr_mod', label:'Módulos e acessórios', icon:'🧩', cls:'lib-family-thermal', filter:function(d){return d.cat==='modulo'||d.cat==='acessorio';}}
     ] : [
       {key:'ax_int', label:'Detetores Interiores', icon:'🏠', cls:'lib-family-cctv',    filter:function(d){return d.cat==='int';}},
       {key:'ax_ext', label:'Detetores Exteriores', icon:'🌳', cls:'lib-family-radar',   filter:function(d){return d.cat==='ext';}},
