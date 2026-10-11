@@ -1,7 +1,7 @@
 /* SIGS CCTV planning assistant v98 — illustrative analysis, never certification. */
 (function(root){'use strict';
 const $=id=>document.getElementById(id);
-let mode='coverage', overlay=false, placement=false, suggested=null, mapCache=null;
+let mode='coverage', overlay=false, placement=false, suggested=null, mapCache=null, compareIds=[];
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
 const floor=()=>root.FLOORS?.[root.FLOOR_CUR];
 const cameras=()=>root.S?.placed?.filter(p=>{const d=root.gD(p.libId);return d&&['bullet','dome','turret','ptz','fisheye','thermal_bi','cube','doorbell'].includes(d.type)&&p.visible!==false})||[];
@@ -44,7 +44,7 @@ function drawOverlay(){
 }
 function selected(){const p=root.fP(root.S.selId);return p&&cameras().find(c=>c.id===p.id)?p:cameras()[0];}
 function compare(){
- const ids=[...document.querySelectorAll('#sigs-intel [data-cmp]')].map(x=>x.value),rows=ids.map(id=>cameras().find(p=>String(p.id)===id)).filter(Boolean);
+ const ids=compareIds.length?compareIds:[...document.querySelectorAll('#sigs-intel [data-cmp]')].map(x=>x.value),rows=ids.map(id=>cameras().find(p=>String(p.id)===id)).filter(Boolean);
  if(rows.length!==2)return 'Seleciona duas câmaras.';
  const fmt=p=>{const d=root.gD(p.libId),L=root.SIGSAnalyticsRange;
  const person=L?.calculate(p,d,'people'),car=L?.calculate(p,d,'vehicles');
@@ -71,12 +71,12 @@ function update(){
  }else if(mode==='preview')html+=preview();
  else if(mode==='suggest'){html+='<button type="button" id="sigs-i-choose">Selecionar ponto na planta</button><p>Escolhe um portão, entrada ou zona de interesse. O SIGS avalia as câmaras já instaladas e apresenta uma recomendação.</p>';
  if(suggested){const v=suggested.best;html+='<p><b>Zona escolhida:</b> '+suggested.covered+' câmaras com visibilidade · '+suggested.analytic+' com analítica de pessoas.</p><p><b>Melhor câmara existente:</b> '+esc(v.d.model||v.d.name||v.p.label||'Câmara')+' · '+v.v.meters.toFixed(1)+' m · '+(v.a.visible?'Analítica estimada OK':v.v.visible?'Visível, sem analítica confirmada':'Sem cobertura')+'.</p>';} }
- else if(mode==='compare'){const cams=cameras();html+='<div class="sigs-i-compare">'+[0,1].map((j)=>'<select data-cmp="'+j+'">'+cams.map((p,i)=>'<option value="'+esc(p.id)+'" '+(i===j?'selected':'')+'>'+esc(root.gD(p.libId)?.model||p.label||'Câmara '+(i+1))+'</option>').join('')+'</select>').join('')+'</div><div id="sigs-i-results">'+compare()+'</div>';}
+ else if(mode==='compare'){const cams=cameras();if(!compareIds.length)compareIds=cams.slice(0,2).map(c=>String(c.id));html+='<div class="sigs-i-compare">'+[0,1].map((j)=>'<select data-cmp="'+j+'">'+cams.map((p,i)=>'<option value="'+esc(p.id)+'" '+(String(p.id)===compareIds[j]?'selected':'')+'>'+esc(root.gD(p.libId)?.model||p.label||'Câmara '+(i+1))+'</option>').join('')+'</select>').join('')+'</div><div id="sigs-i-results">'+compare()+'</div>';}
  body.innerHTML=html;
  body.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{mode=b.dataset.tab;update();});
  const check=$('sigs-i-overlay');if(check)check.onchange=e=>{overlay=e.target.checked;root.render();update();};
  const button=$('sigs-i-choose');if(button)button.onclick=()=>{placement=true;root.hint?.('Clica no ponto a proteger na planta. Escape para cancelar.');};
- body.querySelectorAll('[data-cmp]').forEach(el=>el.onchange=()=>{$('sigs-i-results').innerHTML=compare();});
+ body.querySelectorAll('[data-cmp]').forEach((el,i)=>el.onchange=()=>{compareIds[i]=el.value;$('sigs-i-results').innerHTML=compare();});
 }
 function install(){
  if($('sigs-intel')||!$('lp')||!root.cv)return;
