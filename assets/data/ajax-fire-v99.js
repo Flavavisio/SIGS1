@@ -14,8 +14,8 @@ const manuals={
  f14:'en54-fireprotect-vad-jeweller'
 };
 for(const d of root.FIRE_LIB){
- d.brand='ajax';d.family='en54';d.technology='Jeweller';d.imageSource='Catálogo de imagens SIGS — confirmar disponibilidade';
- d.sourceURL=manuals[d.id]?'https://support.ajax.systems/en/en54-line/'+manuals[d.id]+'/':source;
+ d.brand='ajax';d.family='en54';d.technology='Jeweller';d.imageSource='Imagem configurada no catálogo SIGS (disponibilidade por verificar)';
+ d.sourceURL=source;
  d.certificationNote='Linha Ajax EN54. Validar certificados, requisitos legais e dimensionamento do projeto.';
  d.colorVariants='Consultar referência/cor na ficha oficial';
 }
