@@ -34,6 +34,7 @@ var AX_IMG = {
 // Pre-load Ajax images. Two attempts: crossOrigin first (for canvas), then without (for <img> only).
 // corsOk[key] = true means image loaded WITH crossOrigin and can be drawn on canvas
 var AX_LOADED = {};
+var AX_PHOTO_SOURCE = {};
 var AX_CORS_OK = {};
 (function(){
   Object.keys(AX_IMG).forEach(function(k){
@@ -101,7 +102,7 @@ function startModule(mod) {
     var idx = base.findIndex(function(d){ return d.id===cd.id; });
     if(idx>=0) base[idx]=cd; else base.push(cd);
   });
-  S.lib = base;
+  S.lib = mod==='alarm'&&window.SIGSIntrusionCatalog88?SIGSIntrusionCatalog88.enrich(base):base;
   S.placed=[]; S.meas=[]; S.selId=null; S.multiSel=[]; S.activeLib=null; S.devN=0;
   S.fp=null; S.scale={ok:false,ppm:10,mpp:0.1}; S.zoom=1; S.pan={x:0,y:0};
   S.undoStack=[]; S.redoStack=[]; updateUndoUI();
@@ -475,13 +476,14 @@ function drawIcon(p,dev){
 
   // Try draw photo (custom upload OR imgUrl) from preloaded cache
   var _photoKey='__photo__'+dev.id;
-  if(AX_LOADED[_photoKey]){
+  if(AX_CORS_OK[_photoKey]&&AX_LOADED[_photoKey]){
     var photoObj=AX_LOADED[_photoKey];
     ctx.beginPath();ctx.arc(0,0,sz,0,Math.PI*2);
     ctx.fillStyle='rgba(255,255,255,0.95)';ctx.fill();
     ctx.strokeStyle=hr(col,.8);ctx.lineWidth=2;ctx.stroke();
     var d2=sz*1.75;
-    try{ ctx.drawImage(photoObj,-d2/2,-d2/2,d2,d2); }catch(e){}
+    var ratio=Math.min(d2/(photoObj.naturalWidth||photoObj.width||1),d2/(photoObj.naturalHeight||photoObj.height||1)),pw=(photoObj.naturalWidth||photoObj.width)*ratio,ph=(photoObj.naturalHeight||photoObj.height)*ratio;
+    try{ ctx.drawImage(photoObj,-pw/2,-ph/2,pw,ph); }catch(e){}
     ctx.restore(); drawDevLabels(p,dev,s,sz,col); return;
   }
   // Try draw Ajax product photo if CORS-loaded successfully
@@ -1344,19 +1346,12 @@ function saveDevice(){
 }
 
 function _preloadDevPhoto(dev){
-  var key='__photo__'+dev.id;
-  if(AX_LOADED[key]) return;
-  var src = dev.photoURL || dev.imgUrl; if(!src) return;
-  // Try with crossOrigin first (needed for canvas drawImage)
-  var img=new Image();
-  img.crossOrigin='anonymous';
-  img.onload=function(){ AX_LOADED[key]=img; render(); };
-  img.onerror=function(){
-    // CORS blocked — load without crossOrigin (works for <img> in sidebar only)
-    var img2=new Image();
-    img2.onload=function(){ AX_LOADED[key]=img2; };
-    img2.src=src;
-  };
+  var key='__photo__'+dev.id,src=window.SIGSIntrusionCatalog88?SIGSIntrusionCatalog88.image(dev):dev.photoURL||dev.imgUrl;
+  if(!src||AX_PHOTO_SOURCE[key]===src)return;
+  AX_PHOTO_SOURCE[key]=src;delete AX_LOADED[key];AX_CORS_OK[key]=false;
+  var img=new Image();img.crossOrigin='anonymous';
+  img.onload=function(){if(AX_PHOTO_SOURCE[key]!==src)return;AX_LOADED[key]=img;AX_CORS_OK[key]=true;render();};
+  img.onerror=function(){if(AX_PHOTO_SOURCE[key]===src)delete AX_PHOTO_SOURCE[key];};
   img.src=src;
 }
 // Preload photos for all lib entries on startup
@@ -1844,7 +1839,7 @@ function _restoreProjectData(d){
   if(typeof closeMap==='function') closeMap();
   S.floorPlanLoadId=(S.floorPlanLoadId||0)+1;
   if(d.module&&d.module!==MOD) startModule(d.module);
-  if(d.lib)S.lib=d.lib; if(MOD==='cctv'&&typeof SIGSAjaxCCTV!=='undefined')S.lib=SIGSAjaxCCTV.merge(S.lib); if(MOD==='cctv'&&typeof SIGSCCTVExpansion!=='undefined')S.lib=SIGSCCTVExpansion.merge(S.lib); if(MOD==='cctv'&&typeof SIGSCCTVVisiotech!=='undefined')S.lib=SIGSCCTVVisiotech.merge(S.lib);
+  if(d.lib)S.lib=d.lib;if(MOD==='alarm'&&window.SIGSIntrusionCatalog88)S.lib=SIGSIntrusionCatalog88.enrich(S.lib); if(MOD==='cctv'&&typeof SIGSAjaxCCTV!=='undefined')S.lib=SIGSAjaxCCTV.merge(S.lib); if(MOD==='cctv'&&typeof SIGSCCTVExpansion!=='undefined')S.lib=SIGSCCTVExpansion.merge(S.lib); if(MOD==='cctv'&&typeof SIGSCCTVVisiotech!=='undefined')S.lib=SIGSCCTVVisiotech.merge(S.lib);
 if(MOD==='cctv'&&typeof SIGSCCTVVisiotech100!=='undefined')S.lib=SIGSCCTVVisiotech100.merge(S.lib); if(MOD==='cctv'&&typeof SIGSThermalCatalog!=='undefined')S.lib=SIGSThermalCatalog.merge(S.lib); if(d.placed)S.placed=d.placed; if(d.meas)S.meas=d.meas;
   if(d.scale)S.scale=d.scale; if(d.devN)S.devN=d.devN;
   if(d.floors&&d.floors.length){ FLOORS=d.floors; FLOOR_CUR=d.floorCur||0; renderFloorBar(); }
@@ -1853,7 +1848,7 @@ if(MOD==='cctv'&&typeof SIGSCCTVVisiotech100!=='undefined')S.lib=SIGSCCTVVisiote
   var meta=(d.floors&&d.floors[FLOOR_CUR]&&d.floors[FLOOR_CUR].fp)||d.fp||null;
   S.fp=meta?Object.assign({},meta,{img:null}):null;
   if(meta&&meta.imgData){ var target=S.fp,img=new Image(); img.onload=function(){ if(S.fp!==target)return; target.img=img; var fl=document.getElementById('fplock'); if(fl)fl.checked=!!target.locked; if(typeof sigsSetPlantLocked==='function')sigsSetPlantLocked(!!target.locked); if(typeof fitView==='function')fitView(); render(); updateStats(); }; img.src=meta.imgData; }
-  renderDevList(); deselect(); render(); updateStats();
+  if(typeof _preloadAllPhotos==='function')_preloadAllPhotos();renderDevList(); deselect(); render(); updateStats();
 }
 
 // ── Guardar / abrir na cloud ──
@@ -1967,7 +1962,7 @@ function doLoadProj(e){
     try{
       var d=JSON.parse(ev.target.result);
       if(d.module&&d.module!==MOD)startModule(d.module);
-      if(d.lib)S.lib=d.lib; if(MOD==='cctv'&&typeof SIGSAjaxCCTV!=='undefined')S.lib=SIGSAjaxCCTV.merge(S.lib); if(MOD==='cctv'&&typeof SIGSCCTVExpansion!=='undefined')S.lib=SIGSCCTVExpansion.merge(S.lib); if(MOD==='cctv'&&typeof SIGSCCTVVisiotech!=='undefined')S.lib=SIGSCCTVVisiotech.merge(S.lib);
+      if(d.lib)S.lib=d.lib;if(MOD==='alarm'&&window.SIGSIntrusionCatalog88)S.lib=SIGSIntrusionCatalog88.enrich(S.lib); if(MOD==='cctv'&&typeof SIGSAjaxCCTV!=='undefined')S.lib=SIGSAjaxCCTV.merge(S.lib); if(MOD==='cctv'&&typeof SIGSCCTVExpansion!=='undefined')S.lib=SIGSCCTVExpansion.merge(S.lib); if(MOD==='cctv'&&typeof SIGSCCTVVisiotech!=='undefined')S.lib=SIGSCCTVVisiotech.merge(S.lib);
 if(MOD==='cctv'&&typeof SIGSCCTVVisiotech100!=='undefined')S.lib=SIGSCCTVVisiotech100.merge(S.lib); if(MOD==='cctv'&&typeof SIGSThermalCatalog!=='undefined')S.lib=SIGSThermalCatalog.merge(S.lib); if(d.placed)S.placed=d.placed; if(d.meas)S.meas=d.meas;
       if(d.scale)S.scale=d.scale; if(d.devN)S.devN=d.devN;
       // Restore floors
