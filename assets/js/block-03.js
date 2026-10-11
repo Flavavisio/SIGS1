@@ -236,10 +236,10 @@ function drawFP(){
   ctx.strokeStyle='rgba(0,200,240,0.2)'; ctx.lineWidth=1; ctx.setLineDash([5,4]);
   ctx.strokeRect(s.x,s.y,sw,sh); ctx.setLineDash([]); ctx.restore();
 }
-function sigsClipBlind(context,p,fov){
+function sigsClipBlind(context,p,fov,channelVerticalFov){
   if(!S.scale.ok)return;
   var tilt=p.instTilt!==undefined?p.instTilt:30;if(tilt<0)return;
-  var dev=typeof gD==='function'?gD(p.libId):null,vfov=typeof SIGSLensModel!=='undefined'&&typeof SIGSLensModel.verticalFov==='function'&&SIGSLensModel.verticalFov(p,dev);
+  var dev=typeof gD==='function'?gD(p.libId):null,vfov=channelVerticalFov||typeof SIGSLensModel!=='undefined'&&typeof SIGSLensModel.verticalFov==='function'&&SIGSLensModel.verticalFov(p,dev);
   var ground=sigsGroundGeometry(p.instHeight||3,tilt,fov,null,vfov),factor=S.scale.ppm*S.zoom;
   // Apply the far ground limit before removing the near blind zone; both clips affect only this overlay.
   if(fov<180&&Number.isFinite(ground.reach)){
@@ -398,8 +398,10 @@ function _drawRadarCov(p,dev,s){
 
 function _drawThermalBiCov(p,dev,s){
   var thermalFov=dev.thermalFov||dev.fov||30;
-  var thermalRange=dev.thermalRange||dev.range||100;
-  var visibleFov=dev.visibleFov||dev.fov||30;
+  var thermalRange=dev.thermalRange||dev.thermalDetectionRange||dev.range||100;
+  if(typeof SIGSAnalyticsRange!=='undefined')thermalRange=SIGSAnalyticsRange.outerRange(p,dev,thermalRange);
+  var variableVisible=typeof SIGSLensModel!=='undefined'&&SIGSLensModel.policy(dev).adjustable;
+  var visibleFov=variableVisible?SIGSLensModel.fov(p,dev):dev.visibleFov||dev.fov||30;
   var visibleRange=dev.visibleRange||dev.range||150;
   var rot=p.rotation*Math.PI/180;
   var opa=p.opacity!==undefined?p.opacity:0.22;
@@ -422,11 +424,11 @@ function _drawThermalBiCov(p,dev,s){
   ctx.save(); ctx.translate(s.x,s.y); ctx.rotate(rot);
 
   // ── Visible (blue) drawn first, behind ──
-  ctx.save();sigsClipBlind(ctx,p,visibleFov);
+  ctx.save();sigsClipBlind(ctx,p,visibleFov,variableVisible?SIGSLensModel.verticalFov(p,dev):dev.visibleVerticalFov);
   _drawSector(ctx,vRpx,visibleFov,'rgba('+vRgb+','+opa+')','rgba('+vRgb+',0.75)',1.5);ctx.restore();
 
   // ── Thermal cone (user colour) on top ──
-  sigsClipBlind(ctx,p,thermalFov);
+  sigsClipBlind(ctx,p,thermalFov,dev.thermalVerticalFov);
   _drawSector(ctx,tRpx,thermalFov,'rgba('+tRgb+','+(opa*1.2)+')','rgba('+tRgb+',0.88)',2);
   if(typeof SIGSAnalytics!=='undefined')SIGSAnalytics.draw(ctx,p,dev,thermalFov,thermalRange);
 
@@ -809,12 +811,13 @@ function syncP(){
     var lensPanel=document.getElementById('cctv-lens');
     var doriPanel=document.getElementById('cctv-dori');
     if(isRadar||isThermal){
-      if(lensPanel) lensPanel.style.display='none';
+      if(lensPanel) lensPanel.style.display=isThermal&&typeof SIGSLensModel!=='undefined'&&SIGSLensModel.policy(dev).adjustable?'':'none';
+      if(isThermal&&typeof SIGSLensModel!=='undefined'&&SIGSLensModel.policy(dev).adjustable){SIGSLensModel.syncControl(document.getElementById('plens'),pc,dev);document.getElementById('plensv').textContent=SIGSLensModel.valueLabel(pc,dev);}
       if(doriPanel) doriPanel.style.display='none';
       if(isRadar){
         document.getElementById('pinfo').textContent='Radar · '+dev.radarFov+'° · '+dev.radarRange+'m';
       } else {
-        document.getElementById('pinfo').innerHTML='<span style="color:#ef4444">🌡 Térmica: '+dev.thermalRange+'m · '+dev.thermalFov+'°</span>  <span style="color:#3b82f6">📷 Visível: '+dev.visibleRange+'m · '+dev.visibleFov+'°</span>';
+        document.getElementById('pinfo').innerHTML='<span style="color:#ef4444">🌡 Térmica: '+(window.SIGSUniviewCCTV91&&SIGSUniviewCCTV91.lookup(dev)?SIGSUniviewCCTV91.rangeLabel(dev):dev.thermalRange+'m')+' · '+dev.thermalFov+'°</span>  <span style="color:#3b82f6">📷 Visível: '+dev.visibleRange+'m · '+dev.visibleFov+'°</span>';
       }
     } else {
       if(lensPanel) lensPanel.style.display='';
@@ -867,8 +870,9 @@ function _calcBlindSpot(h,tilt){
   var bsEl=document.getElementById('bs-ground'),reachEl=document.getElementById('bs-reach'),hintEl=document.getElementById('bs-hint');
   if(!bsEl)return;
   var p=fP(S.selId),dev=p&&gD(p.libId),hfov=dev?lFOV(dev.fov,(typeof SIGSLensModel!=='undefined'?SIGSLensModel.effective(p,dev):(p.lens||2.8)),typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).base:undefined,dev):60;
-  if(dev&&dev.type==='thermal_bi')hfov=p.thermalFov||dev.thermalFov||hfov;
-  var vfov=typeof SIGSLensModel!=='undefined'&&typeof SIGSLensModel.verticalFov==='function'&&SIGSLensModel.verticalFov(p,dev),ground=sigsGroundGeometry(h,tilt,hfov,null,vfov);
+  var fixedThermal=dev&&dev.type==='thermal_bi'&&!(typeof SIGSLensModel!=='undefined'&&SIGSLensModel.policy(dev).adjustable);
+  if(fixedThermal)hfov=p.thermalFov||dev.thermalFov||hfov;
+  var vfov=fixedThermal?dev.thermalVerticalFov:typeof SIGSLensModel!=='undefined'&&typeof SIGSLensModel.verticalFov==='function'&&SIGSLensModel.verticalFov(p,dev),ground=sigsGroundGeometry(h,tilt,hfov,null,vfov);
   bsEl.textContent=ground.blind.toFixed(2)+' m';bsEl.style.color='#a855f7';
   reachEl.textContent=Number.isFinite(ground.reach)?ground.reach.toFixed(1)+' m':'sem limite geométrico';
   hintEl.textContent=(vfov?'FOV vertical da ficha · ':'Estimativa 16:9 · FOV vertical ')+ground.verticalFov.toFixed(1)+'° · zona cega = '+h+' m ÷ tan('+tilt+'° + '+ground.verticalHalf.toFixed(1)+'°). A cobertura na planta é recortada entre a zona cega e o limite no chão, até ao alcance indicado.';
@@ -1089,7 +1093,7 @@ function _makeDevItem(dev){
   if(dev.type==='radar'){
     meta='Radar · '+dev.radarFov+'° · '+dev.radarRange+'m';
   } else if(dev.type==='thermal_bi'){
-    meta='<span style="color:#ef4444">🌡'+dev.thermalRange+'m</span> <span style="color:#3b82f6">📷'+dev.visibleRange+'m</span>';
+    meta='<span style="color:#ef4444">🌡'+(window.SIGSUniviewCCTV91&&SIGSUniviewCCTV91.lookup(dev)?SIGSUniviewCCTV91.rangeLabel(dev):dev.thermalRange+'m')+'</span> <span style="color:#3b82f6">📷'+dev.visibleRange+'m</span>';
   } else if(MOD==='cctv'){
     meta=dev.name+' · '+dev.fov+'° · '+dev.range+'m';
   } else {
@@ -3347,9 +3351,12 @@ function poeStandardForW(w){
 
 function poeDeviceWatts(p,dev){
   var ajax=window.SIGSAjaxCCTV&&SIGSAjaxCCTV.lookup(dev);
-  if(ajax&&ajax.connection==='wifi')return {w:0,source:'external',externalW:ajax.devicePowerW||0};
+  if(ajax&&ajax.connection==='wifi')return {w:0,source:'external',externalW:ajax.devicePowerW||0,wireless:true};
+  var unv=window.SIGSUniviewCCTV91&&SIGSUniviewCCTV91.lookup(dev);
+  if(unv&&unv.poeSupported===false)return {w:0,source:'external',externalW:unv.devicePowerW||0,wireless:unv.connection==='wifi'};
   if(p&&Number(p.poeW)>0)return {w:Number(p.poeW),source:'manual'};
   if(ajax)return {w:ajax.poeDesignW,source:ajax.poePowerBasis==='class-reserve'?'estimated':'catalogue'};
+  if(unv&&Number(unv.poeW)>0)return {w:Number(unv.poeW),source:unv.poePowerBasis==='manufacturer-declared'?'estimated':'catalogue'};
   var model=dev&&(dev.model||dev.name)||'';
   if(model&&POE_MODEL_WATTS[model]!=null)return {w:Number(POE_MODEL_WATTS[model]),source:'model'};
   if(dev&&Number(dev.poeW)>0)return {w:Number(dev.poeW),source:'catalogue'};
@@ -3385,11 +3392,11 @@ function setPoeCfg(key,val){
 }
 
 function calcPoE(cams){
-  var totalW=0,maxSingle=0,totalBW=0,rows=[],wiredCount=0,localW=0;
+  var totalW=0,maxSingle=0,totalBW=0,rows=[],wiredCount=0,wifiCount=0,localW=0;
   cams.forEach(function(p){
     var dev=gD(p.libId);if(!dev)return;
     var pw=poeDeviceWatts(p,dev),std=poeStandardForW(pw.w),bw=cameraNetworkMbps(p);
-    if(pw.source==='external'){localW+=pw.externalW||0;std={name:'Sem PoE',label:'Local / Wi-Fi'};}else wiredCount++;
+    if(pw.source==='external'){localW+=pw.externalW||0;std={name:'Sem PoE',label:pw.wireless?'Local / Wi-Fi':'Local / Ethernet'};}if(pw.wireless)wifiCount++;else wiredCount++;
     totalW+=pw.w;
     totalBW+=bw;
     maxSingle=Math.max(maxSingle,pw.w);
@@ -3417,7 +3424,7 @@ function calcPoE(cams){
   return {
     rows:rows,totalW:Math.round(totalW*10)/10,totalWithMargin:totalWithMargin,
     maxSingle:maxSingle,totalBW:totalBW,requiredPorts:requiredPorts,
-    cameraPorts:wiredCount,wifiCount:cams.length-wiredCount,localW:localW,reservePorts:POE_CFG.reservePorts,marginPct:POE_CFG.marginPct,
+    cameraPorts:wiredCount,wifiCount:wifiCount,localW:localW,reservePorts:POE_CFG.reservePorts,marginPct:POE_CFG.marginPct,
     uplink:uplink,suggested:suggested.slice(0,3)
   };
 }
@@ -3461,14 +3468,14 @@ function buildPoESection(cams){
     '</div>';
 
   var rows=poe.rows.map(function(r){
-    var sourceLabel=r.source==='model'||r.source==='catalogue'?'MODELO':(r.source==='manual'?'MANUAL':'EST.');
+    var sourceLabel=r.source==='external'?'LOCAL':r.source==='model'||r.source==='catalogue'?'MODELO':(r.source==='manual'?'MANUAL':'EST.');
     var sourceClass=(r.source==='estimated')?'poe-warn':'poe-ok';
     return '<div class="poe-row">'+
       '<div style="min-width:0">'+
         '<div style="font-family:var(--m);font-size:10px;font-weight:700;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+r.label+'</div>'+
         '<div style="font-size:8px;color:var(--txt3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+r.model+' · '+r.std.label+' '+r.std.name+' · '+r.bw.toFixed(1)+' Mbps</div>'+
       '</div>'+
-      '<input class="poe-w-input" data-poe-id="'+r.id+'" type="number" min="1" max="100" step="0.5" value="'+r.w+'" title="Consumo PoE em watts">'+
+      '<input class="poe-w-input" data-poe-id="'+r.id+'" type="number" min="0" max="100" step="0.5" value="'+r.w+'" '+(r.source==='external'?'disabled':'')+' title="Consumo PoE em watts">'+
       '<div style="text-align:right"><div style="font-family:var(--m);font-size:10px;font-weight:800;color:var(--acc4)">'+r.w.toFixed(1)+' W</div><span class="poe-badge '+sourceClass+'">'+sourceLabel+'</span></div>'+
     '</div>';
   }).join('');
@@ -3504,7 +3511,7 @@ function buildPoESection(cams){
       ?'<div style="font-size:10px;color:#ef4444;margin-top:4px;line-height:1.5">⚠ Nenhum switch da base atual cumpre simultaneamente portas + budget. Considere dois switches ou um modelo de maior capacidade.</div>'
       :swHtml)+
     '<div style="margin-top:7px;padding:6px 8px;border-radius:6px;background:var(--bg2);border:1px dashed var(--bdr2);font-size:8px;color:var(--txt3);line-height:1.5">'+
-      'MODELO = valor específico disponível na base · EST. = estimativa por tipo de equipamento · MANUAL = valor definido pelo técnico.'+
+      'MODELO = valor específico disponível na base · EST. = valor de projeto; confirmar consumo máximo · MANUAL = valor definido pelo técnico · LOCAL = alimentação externa, sem PoE.'+
     '</div>';
 
   var marginSel=document.getElementById('poe-margin-select');

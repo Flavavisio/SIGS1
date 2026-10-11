@@ -3,10 +3,11 @@ const placedAt=(i,id)=>(Number(i)===FLOOR_CUR?S.placed:FLOORS[i].placed).find(p=
 const locked=()=>window.SIGS_V6?.currentStatus==='ARCHIVED',settings=()=>SIGS_COMMERCIAL.engineering||{},cameras=()=>FLOORS.flatMap((f,i)=>(f.placed||[]).filter(p=>types.includes(gD(p.libId)?.type)).map(p=>({p,d:gD(p.libId),f,i})));
 function snapshot(){saveCurrentFloor();if(MOD!=='cctv')return null;const cams=cameras(),r=sigsSystemRecommendation(),poe=calcPoE(cams.map(x=>x.p)),cfg=settings(),raw=cams.reduce((t,{p,d})=>t+calcStorage(p.mp||d.mp||4,p.codec||'h265',p.days||30,p).gb,0),required=raw*1.05*1.2,ups=M.ups(poe.totalW,r.disk?.qty||0,{...cfg,otherW:(Number(cfg.otherW)||0)+(poe.localW||0)}),zones=cams.flatMap(({p,d,f})=>(p.qualityTargets||[]).map(t=>({...M.quality(p,d,f,t),floor:f.name}))),notes=window.SIGSNetwork&&SIGSNetwork.enabled()?[]:[...r.warnings];
  if(poe.wifiCount)notes.push('Equipamentos Wi-Fi: prever cobertura de rede e alimentação local. UPS inclui o consumo declarado dos equipamentos; confirmar perdas das fontes AC e se estão ligados à UPS.');
+ if(poe.localW&&cams.some(({d})=>d.poeSupported===false))notes.push('Existem câmaras Ethernet com alimentação externa, sem PoE. A UPS inclui a potência declarada; confirmar tensão, perdas das fontes AC/DC e alimentação de cada local.');
  if(!zones.length)notes.push('Marca pontos de verificação nas zonas importantes; a qualidade de imagem ainda não foi avaliada.');
  for(const z of zones)if(z.rangeNote)notes.push(z.camera+' · '+z.name+': '+z.rangeNote+'. Confirmar iluminação noturna.');
  for(const z of zones)if(!z.passed)notes.push(z.floor+' · '+z.camera+' · '+z.name+': '+z.status+'; objetivo '+z.goal+'.');
- if(poe.rows?.some(x=>x.source==='estimated'))notes.push('Consumos PoE estimados por tipo: confirmar valores máximos com IR, aquecimento e movimento PTZ.');
+ if(poe.rows?.some(x=>x.source==='estimated'))notes.push('Consumos PoE com valores de projeto: confirmar valores máximos com IR, aquecimento e movimento PTZ.');
  if(cams.some(({p})=>!p.recordMbps))notes.push('Existem bitrates de gravação estimados. Confirmar a média medida com atividade diurna e noturna.');
  if(cams.some(({p})=>!p.netMbps))notes.push('A banda de rede usa uma estimativa de pico H.265; confirmar os limites configurados e os substreams.');
  if(cams.some(({p,d})=>String(p.codec||'').startsWith('ultra')&&SIGSRecommendationModel.brand(d)!=='Uniview'))notes.push('Ultra 265 selecionado numa câmara de outra marca: confirmar suporte ou escolher H.265/bitrate medido.');

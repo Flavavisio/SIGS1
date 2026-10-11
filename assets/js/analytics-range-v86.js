@@ -18,10 +18,12 @@ const ajaxModels={'AJ-BULLETCAM-8-W':'standard','AJ-TURRETCAM-8-W':'standard','A
 function ajaxFamily(d){return !d.custom?root.SIGSAjaxCCTV?.lookup?.(d)?.ajaxFamily||ajaxModels[A.key(d)]||null:null;}
 
 const cache=new Map();
-function settings(p,d){const a=p.analytics||{};return {ajaxSensitivity:a.ajaxSensitivity==='maximum'?'maximum':'default',mode:a.mode==='day'?'day':'night',minPixels:Math.max(8,Math.min(1000,N(a.minPixels,108))),peopleHeight:Math.max(.3,Math.min(3,N(a.peopleHeight,d.type==='thermal_bi'?1.8:1.75))),peopleWidth:Math.max(.15,Math.min(2,N(a.peopleWidth,.5))),vehiclesHeight:Math.max(.5,Math.min(5,N(a.vehiclesHeight,1.5))),vehiclesWidth:Math.max(.5,Math.min(5,N(a.vehiclesWidth,1.8))) };}
+function settings(p,d){const a=p.analytics||{};return {ajaxSensitivity:a.ajaxSensitivity==='maximum'?'maximum':'default',mode:a.mode==='day'?'day':'night',minPixels:Math.max(8,Math.min(1000,N(a.minPixels,108))),peopleHeight:Math.max(.3,Math.min(3,N(a.peopleHeight,d.type==='thermal_bi'?1.8:1.75))),peopleWidth:Math.max(.15,Math.min(2,N(a.peopleWidth,.5))),vehiclesHeight:Math.max(.5,Math.min(5,N(a.vehiclesHeight,d.thermalVehicleRangeBasis==='manufacturer-vehicle-vca'?1.4:1.5))),vehiclesWidth:Math.max(.5,Math.min(5,N(a.vehiclesWidth,d.thermalVehicleRangeBasis==='manufacturer-vehicle-vca'?4:1.8))) };}
 function profile(p,d,target){
  const s=settings(p,d),c=A.capabilities(d);if(!c[target])return null;
  if(d.type==='thermal_bi'&&target==='people'&&d.thermalRangeBasis==='manufacturer-human-vca')return {min:.05,max:N(d.thermalRange,0),method:'documented',label:'Referência VCA do fabricante',source:d.sourceURL,thermal:true,notes:['Alcance de referência para pessoa de 1,8 × 0,5 m; confirmar condições e tamanho do alvo.']};
+ if(d.type==='thermal_bi'&&target==='vehicles'&&d.thermalVehicleRangeBasis==='manufacturer-vehicle-vca')return {min:.05,max:N(d.thermalVehicleRange,0),method:'documented',label:'Referência VCA térmica · veículos',source:d.sourceURL,thermal:true,notes:['Alvo de ensaio do fabricante: '+(d.thermalVehicleRangeTarget||'confirmar na ficha')+'. Confirmar dimensão do alvo e condições da instalação.']};
+ if(d.type==='thermal_bi'&&d.analytics?.channel==='thermal')return {unavailable:'Alcance SIP térmico para '+(target==='people'?'pessoas':'carros')+' não publicado nesta ficha.',notes:['A deteção geral / DORI não substitui um alcance confirmado para a analítica. Confirmar no local.'],source:d.sourceURL};
  if((ajaxFamily(d)||String(d.brand||'').toLowerCase()==='ajax')&&!d.custom){
   const family=ajaxFamily(d),table=ajaxTable[family],r=table?.[target]?.[s.mode];
   if(!table)return {unavailable:'Alcance Ajax por confirmar para esta referência.',notes:['Sem correspondência verificada com a tabela do fabricante.'],source:ajaxGuide};
@@ -47,7 +49,7 @@ function geometry(p,d,target,options={}){
  const tilt=Number(p.instTilt??30)*Math.PI/180,h=N(p.instHeight,3),angle=Number(options.angle||0),H=s[target+'Height'],W=s[target+'Width'];
  let max=pr.max;const notes=pr.notes.slice();
  if(!pr.thermal&&root.SIGSLensModel&&!root.SIGSLensModel.policy(d).documented)notes.push('Ótica do catálogo por confirmar: validar FOV e lente no equipamento.');
- if(s.mode==='night'&&!pr.thermal){const light=N(d.range,0);if(!(light>0))return {invalid:'Alcance noturno de iluminação por confirmar.'};max=Math.min(max,light);notes.push('Noite: limitado também ao alcance de iluminação indicado ('+light+' m).');}
+ if(s.mode==='night'&&!pr.thermal){const light=Math.max(N(d.range,0),N(d.whiteRange,0));if(!(light>0))return {invalid:'Alcance noturno de iluminação por confirmar.'};max=Math.min(max,light);notes.push('Noite: limitado também ao alcance de iluminação indicado ('+light+' m).');}
  if(N(options.rangeLimit,0))max=Math.min(max,options.rangeLimit);
  return {s,pr,width,height,fov,tanH,tanV,tilt,h,angle,H,W,min:pr.min,max,notes};
 }
@@ -102,7 +104,7 @@ function draw(ctx,p,d,fov,range){
 function sync(p,d){
  const host=root.document?.getElementById('analytics-reach');if(!host)return;host.textContent='';const s=settings(p,d),active=A.active(p,d),locked=root.SIGS_V6?.currentStatus==='ARCHIVED';
  root.document.querySelectorAll('[data-analytics-mode]').forEach(button=>{const selected=button.dataset.analyticsMode===s.mode;button.setAttribute('aria-pressed',String(selected));button.classList.toggle('selected',selected);button.disabled=locked;});
- const conditions=root.document.getElementById('analytics-conditions');if(conditions)conditions.textContent=d.type==='thermal_bi'&&d.thermalRangeBasis==='manufacturer-human-vca'?'Analítica térmica: referência VCA para pessoas, de dia e de noite. Validar o contraste térmico e as condições de ensaio do fabricante.':s.mode==='day'?'Dia: boa iluminação, alvo completo e sem contraluz ou obstáculos.':'Noite: iluminação IR ou luz suficiente no alvo; o alcance fica limitado à iluminação indicada. Evitar reflexos e objetos próximos dos LEDs.';
+ const conditions=root.document.getElementById('analytics-conditions');if(conditions)conditions.textContent=d.type==='thermal_bi'&&(d.thermalRangeBasis==='manufacturer-human-vca'||d.analytics?.channel==='thermal')?'Analítica no canal térmico, de dia e de noite. Alcances SIP publicados por alvo; validar o contraste térmico e as condições de ensaio do fabricante.':s.mode==='day'?'Dia: boa iluminação, alvo completo e sem contraluz ou obstáculos.':'Noite: iluminação IR ou luz suficiente no alvo; o alcance fica limitado à iluminação indicada. Evitar reflexos e objetos próximos dos LEDs.';
  const sensitivity=root.document.getElementById('analytics-ajax-sensitivity');if(sensitivity)sensitivity.hidden=!ajaxFamily(d);
  root.document.querySelectorAll('[data-analytics-setting]').forEach(el=>{el.value=s[el.dataset.analyticsSetting];el.disabled=locked;});
  const hasEstimate=['people','vehicles'].some(t=>A.capabilities(d)[t]&&profile(p,d,t)?.method==='estimate');root.document.getElementById('analytics-pixel-row').hidden=!hasEstimate;
