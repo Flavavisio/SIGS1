@@ -27,7 +27,10 @@ function profile(p,d,target){
  if((ajaxFamily(d)||String(d.brand||'').toLowerCase()==='ajax')&&!d.custom){
   const family=ajaxFamily(d),table=ajaxTable[family],r=table?.[target]?.[s.mode];
   if(!table)return {unavailable:'Alcance Ajax por confirmar para esta referência.',notes:['Sem correspondência verificada com a tabela do fabricante.'],source:ajaxGuide};
-  if(!r&&target==='vehicles'&&s.mode==='night')return {min:Math.max(.05,(p.instHeight||3)/2),max:500,method:'estimate',label:'Estimativa SIGS · veículos à noite',source:ajaxGuide,notes:['Ajax: alcance de carros à noite não publicado neste guia. A capacidade de classificação existe; o alcance mostrado é uma estimativa geométrica, não um valor certificado Ajax.','Critério de projeto: '+s.minPixels+' px de altura do alvo, com enquadramento completo. Validar iluminação, sensibilidade e deteção no local.']};
+  if(!r&&target==='vehicles'&&s.mode==='night'){
+   const i=s.ajaxSensitivity==='maximum'?3:1,day=table.vehicles?.day?.[i],personDay=table.people?.day?.[i],personNight=table.people?.night?.[i];
+   if(day&&personDay&&personNight){const max=day*personNight/personDay;return {min:Math.max(1,(p.instHeight||3)/2),max,referenceMax:max,method:'proportional',label:'Estimativa SIGS · proporção dia/noite Ajax',source:ajaxGuide,notes:['Ajax: alcance de carros à noite não publicado para esta família. Estimativa por proporção, não um valor certificado Ajax.','Carro à noite = carro de dia × pessoa à noite ÷ pessoa de dia: '+day+' × '+personNight+' ÷ '+personDay+' = '+max.toFixed(1)+' m.','Usa os valores da mesma família e sensibilidade; alvo completo, sem obstáculos e iluminação suficiente.']};}
+  }
   if(!r)return {unavailable:'Ajax: alcance de '+(target==='vehicles'?'carros':'pessoas')+' à '+(s.mode==='night'?'noite':'dia')+' não publicado neste guia.',notes:['A função pode estar disponível, mas esta combinação não tem alcance medido em condições padronizadas no guia. Confirmar no local.'],source:ajaxGuide};
   const maximum=s.ajaxSensitivity==='maximum',from=r[maximum?2:0],to=r[maximum?3:1],notes=['Tabela Ajax · '+table.label+' · '+(s.mode==='day'?'dia':'noite')+'.',
    'Fabricante: '+from+'–'+to+' m · '+(maximum?'sensibilidade máxima (10)':'recomendado, sensibilidade predefinida (3)')+'.',
@@ -49,17 +52,26 @@ function geometry(p,d,target,options={}){
  const tanH=Math.tan(fov*Math.PI/360),tanV=pr.thermal&&d.thermalVerticalFov?Math.tan(d.thermalVerticalFov*Math.PI/360):root.SIGSLensModel?.verticalFov(p,d)?Math.tan(root.SIGSLensModel.verticalFov(p,d)*Math.PI/360):tanH*height/width;
  const tilt=Number(p.instTilt??30)*Math.PI/180,h=N(p.instHeight,3),angle=Number(options.angle||0),H=s[target+'Height'],W=s[target+'Width'];
  let max=pr.max;const notes=pr.notes.slice();
+ let method=pr.method,label=pr.label;
+ // SIGS assumption: apply the family reference at the initial catalogue focal setting.
+ // Optical magnification beyond it is a SIGS estimate, never another Ajax measurement.
+ if(ajaxFamily(d)&&root.SIGSLensModel){const L=root.SIGSLensModel,q=L.policy(d);
+  if(q.adjustable){const baseP={...p,lens:q.initial},baseV=L.verticalFov(baseP,d),baseF=L.fov(baseP,d),baseTan=baseV?Math.tan(baseV*Math.PI/360):Math.tan(baseF*Math.PI/360)*height/width,factor=baseTan/tanV;
+   if(Math.abs(factor-1)>1e-6){max=Math.min(500,max*factor);method='optical';label='Estimativa SIGS · zoom ótico sobre referência Ajax';notes.push('Hipótese SIGS: referência da família aplicada na focal inicial '+q.initial+' mm; extensão pelo aumento ótico vertical ('+factor.toFixed(2)+'×), não medida pelo fabricante. O alvo completo tem de continuar dentro da imagem.');}
+  }
+ }
+ const effectiveProfile={...pr,method,label};
  if(!pr.thermal&&root.SIGSLensModel&&!root.SIGSLensModel.policy(d).documented)notes.push('Ótica do catálogo por confirmar: validar FOV e lente no equipamento.');
- if(s.mode==='night'&&!pr.thermal){const light=Math.max(N(d.range,0),N(d.whiteRange,0));if(!(light>0))return {invalid:'Alcance noturno de iluminação por confirmar.'};max=Math.min(max,light);notes.push('Noite: limitado também ao alcance de iluminação indicado ('+light+' m).');}
+ if(s.mode==='night'&&!pr.thermal){const light=Math.max(N(d.range,0),N(d.whiteRange,0));if(ajaxFamily(d)){notes.push('Iluminação integrada: '+light+' m. Para usar o alcance estimado além desta distância, é necessária luz suficiente no alvo; validar no local.');}else{if(!(light>0))return {invalid:'Alcance noturno de iluminação por confirmar.'};max=Math.min(max,light);notes.push('Noite: limitado também ao alcance de iluminação indicado ('+light+' m).');}}
  if(N(options.rangeLimit,0))max=Math.min(max,options.rangeLimit);
- return {s,pr,width,height,fov,tanH,tanV,tilt,h,angle,H,W,min:pr.min,max,notes};
+ return {s,pr:effectiveProfile,width,height,fov,tanH,tanV,tilt,h,angle,H,W,min:pr.min,max,notes};
 }
 function projectAt(g,distance){
  const x=Math.sin(g.angle)*distance,z=Math.cos(g.angle)*distance,c=Math.cos(g.tilt),s=Math.sin(g.tilt),points=[];
  for(const y of [0,g.H])for(const side of [-1,1]){const depth=z*c+(g.h-y)*s;if(depth<=.001)return {valid:false,pixels:0};points.push({x:(x+side*g.W/2)/depth,y:((y-g.h)*c+z*s)/depth});}
  const pixels=(Math.max(...points.map(p=>p.y))-Math.min(...points.map(p=>p.y)))*g.height/(2*g.tanV);
  const framed=points.every(p=>Math.abs(p.x)<=g.tanH&&Math.abs(p.y)<=g.tanV);
- return {valid:framed&&(g.pr.method==='documented'||pixels>=g.s.minPixels),pixels,framed};
+ return {valid:framed&&(g.pr.method!=='estimate'||pixels>=g.s.minPixels),pixels,framed};
 }
 function calculate(p,d,target,options={}){
  const g=geometry(p,d,target,options);if(!g)return {available:false,status:'Analítica por confirmar.'};if(g.invalid)return {available:false,status:g.invalid,notes:g.notes,source:g.source};
@@ -77,7 +89,7 @@ function calculate(p,d,target,options={}){
  let result;
  if(!possible||!(far>near+1e-6))result={available:false,status:'Sem intervalo útil: rever lente, altura, inclinação ou critério.',method:g.pr.method,notes:g.notes};
  else{
-  if(g.pr.method==='estimate'&&far>=499.99)g.notes.push('Limite de simulação SIGS: 500 m.');
+  if(g.pr.method!=='documented'&&far>=499.99)g.notes.push('Limite de simulação SIGS: 500 m.');
   result={available:true,min:near,max:far,pixels:projectAt(g,far).pixels,method:g.pr.method,label:g.pr.label,source:g.pr.source,notes:g.notes,fov:g.fov,width:g.width,height:g.height,targetHeight:g.H,targetWidth:g.W,mode:g.s.mode};
  }
  if(cache.size>16384)cache.clear();cache.set(key,result);return result;
@@ -105,7 +117,7 @@ function draw(ctx,p,d,fov,range){
 function sync(p,d){
  const host=root.document?.getElementById('analytics-reach');if(!host)return;host.textContent='';const s=settings(p,d),active=A.active(p,d),locked=root.SIGS_V6?.currentStatus==='ARCHIVED';
  root.document.querySelectorAll('[data-analytics-mode]').forEach(button=>{const selected=button.dataset.analyticsMode===s.mode;button.setAttribute('aria-pressed',String(selected));button.classList.toggle('selected',selected);button.disabled=locked;});
- const conditions=root.document.getElementById('analytics-conditions');if(conditions)conditions.textContent=d.type==='thermal_bi'&&(d.thermalRangeBasis==='manufacturer-human-vca'||d.analytics?.channel==='thermal')?'Analítica no canal térmico, de dia e de noite. Alcances SIP publicados por alvo; validar o contraste térmico e as condições de ensaio do fabricante.':s.mode==='day'?'Dia: boa iluminação, alvo completo e sem contraluz ou obstáculos.':'Noite: iluminação IR ou luz suficiente no alvo; o alcance fica limitado à iluminação indicada. Evitar reflexos e objetos próximos dos LEDs.';
+ const conditions=root.document.getElementById('analytics-conditions');if(conditions)conditions.textContent=d.type==='thermal_bi'&&(d.thermalRangeBasis==='manufacturer-human-vca'||d.analytics?.channel==='thermal')?'Analítica no canal térmico, de dia e de noite. Alcances SIP publicados por alvo; validar o contraste térmico e as condições de ensaio do fabricante.':s.mode==='day'?'Dia: boa iluminação, alvo completo e sem contraluz ou obstáculos.':ajaxFamily(d)?'Noite: referências Ajax e estimativa dos carros pela proporção dia/noite. Além da iluminação IR integrada, é necessária luz suficiente no alvo.':'Noite: iluminação IR ou luz suficiente no alvo; o alcance fica limitado à iluminação indicada. Evitar reflexos e objetos próximos dos LEDs.';
  const sensitivity=root.document.getElementById('analytics-ajax-sensitivity');if(sensitivity)sensitivity.hidden=!ajaxFamily(d);
  root.document.querySelectorAll('[data-analytics-setting]').forEach(el=>{el.value=s[el.dataset.analyticsSetting];el.disabled=locked;});
  const hasEstimate=['people','vehicles'].some(t=>A.capabilities(d)[t]&&profile(p,d,t)?.method==='estimate');root.document.getElementById('analytics-pixel-row').hidden=!hasEstimate;
