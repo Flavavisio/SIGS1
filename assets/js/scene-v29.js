@@ -14,7 +14,63 @@ function paintView(){if(!dialog?.isConnected)return;const canvas=$('scene-camera
 function open(){if(!floor())return;if(!S.scale.ok){notify('Define a escala para abrir a vista 3D.');return;}const cameras=cams();if(!cameras.length){notify('Coloca uma câmara no piso primeiro.');return;}cancel();SIGSGeometryTools.cancel();dialog?.remove();demoMode=false;dialog=document.createElement('div');dialog.id='scene-preview';dialog.className='sigs-v6-overlay';dialog.innerHTML='<section class="scene-dialog" role="dialog" aria-modal="true" aria-label="Vista da câmara em 3D"><div class="scene-head"><h2>Vista da câmara em 3D</h2><button id="scene-close">Fechar</button></div><div class="scene-controls"><label>Câmara<select id="scene-camera">'+cameras.map(p=>'<option value="'+esc(p.id)+'"'+(p.id===S.selId?' selected':'')+'>'+esc(p.label||p.id)+'</option>').join('')+'</select></label><label>Altura padrão de novas paredes (m)<input id="scene-wall-height" type="number" min="0.1" max="20" step="0.1" value="'+(floor().scene3d?.wallHeight||2.7)+'" '+(window.SIGS_V6?.currentStatus==='ARCHIVED'?'disabled':'')+'></label></div><div class="scene-demo"><button id="scene-demo-toggle" aria-pressed="false">Testar pessoa e carro</button><label>Parede de teste<select id="scene-demo-wall" disabled><option value="none">Sem parede</option><option value="low">Parede baixa · 1,8 m</option><option value="high">Parede alta · 4 m</option><option value="side">Parede lateral · fora do FOV</option></select></label><small id="scene-demo-note">Usa as referências colocadas na planta.</small></div><canvas id="scene-camera-canvas" width="1280" height="720"></canvas><p id="scene-status"></p><div id="scene-assessment"></div><details><summary>Dimensões e orientação das referências</summary><div id="scene-dimensions">'+(floor().sceneTargets||[]).map((t,i)=>'<div class="scene-target-edit"><b>'+(t.kind==='car'?'Carro ':'Pessoa ')+(i+1)+'</b>'+[['height','Altura (m)'],['width','Largura (m)'],['length','Comprimento (m)'],['rotation','Orientação (°)']].map(([key,label])=>'<label>'+label+'<input data-target="'+esc(t.id)+'" data-dimension="'+key+'" type="number" step="0.1" min="'+(key==='rotation'?'-360':'0.1')+'" max="'+(key==='rotation'?'360':'20')+'" value="'+Number(t[key])+'" '+(window.SIGS_V6?.currentStatus==='ARCHIVED'?'disabled':'')+'></label>').join('')+'</div>').join('')+'</div></details><p class="scene-note">Pré-visualização geométrica com modelos simplificados. Não simula iluminação, textura, resolução real ou reconhecimento. A vista 3D considera a altura indicada para as paredes e a profundidade de cada superfície. A avaliação estima a visibilidade de pontos dos modelos e pode indicar bloqueio parcial; em planta, as paredes são obstáculos opacos sem altura.</p></section>';document.body.appendChild(dialog);$('scene-close').onclick=()=>{dialog.remove();dialog=null;};dialog.addEventListener('keydown',e=>{if(e.key==='Tab'){const nodes=[...dialog.querySelectorAll('button,input:not(:disabled),select,summary')].filter(n=>n.getClientRects().length);if(e.shiftKey&&document.activeElement===nodes[0]){e.preventDefault();nodes.at(-1)?.focus();}else if(!e.shiftKey&&document.activeElement===nodes.at(-1)){e.preventDefault();nodes[0]?.focus();}}});dialog.addEventListener('click',e=>{if(e.target===dialog){dialog.remove();dialog=null;}});$('scene-camera').onchange=paintView;$('scene-demo-toggle').onclick=()=>{demoMode=!demoMode;$('scene-demo-toggle').setAttribute('aria-pressed',String(demoMode));$('scene-demo-toggle').textContent=demoMode?'Voltar ao projeto':'Testar pessoa e carro';$('scene-demo-wall').disabled=!demoMode;$('scene-demo-note').textContent=demoMode?'Cenário de teste — não altera nem grava o projeto.':'Usa as referências colocadas na planta.';paintView();};$('scene-demo-wall').onchange=paintView;$('scene-wall-height').onchange=()=>{const input=$('scene-wall-height');if(!mutable()||!input.checkValidity()){input.value=floor().scene3d?.wallHeight||2.7;return;}pushUndo();floor().scene3d={...floor().scene3d,wallHeight:Number(input.value)};dirty();paintView();};dialog.querySelectorAll('[data-dimension]').forEach(input=>input.onchange=()=>{if(!mutable()||!input.checkValidity())return;const t=floor().sceneTargets.find(t=>t.id===input.dataset.target);if(!t)return;pushUndo();t[input.dataset.dimension]=Number(input.value);dirty();paintView();});paintView();$('scene-close').focus();}
 const click=window.onClick,down=window.onDown;window.onDown=function(e){if(placing){e.preventDefault();return;}return down(e);};window.onClick=function(e){if(!e.sceneTouch&&Date.now()<touchUntil)return;if(placing){if(e.button!==0)return;const w=s2w(ep(e).x,ep(e).y);if(typeof placing==='object'){if(!mutable())return;pushUndo();const t=floor().sceneTargets.find(t=>t.id===placing.move);if(t){t.x=w.x;t.y=w.y;}cancel();dirty();}else commit(w);return;}return click(e);};
 cv.addEventListener('pointerup',e=>{if(placing&&(e.pointerType==='touch'||e.pointerType==='pen')){e.preventDefault();e.stopPropagation();touchUntil=Date.now()+400;window.onClick({button:0,clientX:e.clientX,clientY:e.clientY,sceneTouch:true});}});
-const renderBase=window.render;window.render=function(){renderBase();if(!floor()||!S.scale.ok)return;ctx.save();(floor().sceneTargets||[]).forEach((t,i)=>{const p=w2s(t.x,t.y),dims=M.dimensions(t),factor=S.scale.ppm*S.zoom;ctx.save();ctx.translate(p.x,p.y);ctx.rotate((t.rotation||0)*Math.PI/180);ctx.fillStyle=t.kind==='car'?'#e7a33b':'#2caec0';ctx.strokeStyle='#fff';ctx.lineWidth=1.5;if(t.kind==='car'){ctx.fillRect(-dims.width*factor/2,-dims.length*factor/2,dims.width*factor,dims.length*factor);ctx.strokeRect(-dims.width*factor/2,-dims.length*factor/2,dims.width*factor,dims.length*factor);}else{ctx.beginPath();ctx.arc(0,0,Math.max(4,dims.width*factor/2),0,Math.PI*2);ctx.fill();ctx.stroke();}ctx.restore();ctx.font='12px Arial';ctx.fillStyle='#fff';ctx.fillText((t.kind==='car'?'Carro ':'Pessoa ')+(i+1),p.x+8,p.y-8);});ctx.restore();};
+
+// Avaliação no ponto real da planta. Não confundir alcance estimado com garantia de IA.
+function sceneAnalyticsStatus(t,cam){
+ const d=gD(cam.libId),api=window.SIGSAnalyticsRange,caps=window.SIGSAnalytics;
+ const kind=t.kind==='car'?'vehicles':'people';
+ if(!d||!api||!caps?.active(cam,d)?.[kind])return {text:'Analítica inativa',ok:null};
+ if(!S.scale?.ok||!S.scale.ppm)return {text:'Definir escala',ok:null};
+ const dx=t.x-cam.x,dy=t.y-cam.y,metres=Math.hypot(dx,dy)/S.scale.ppm;
+ const bearing=(Math.atan2(dx,-dy)*180/Math.PI+360)%360;
+ const relative=((bearing-(Number(cam.rotation)||0)+540)%360)-180;
+ const fov=window.SIGSLensModel?.fov(cam,d)||d.fov||90;
+ if(Math.abs(relative)>fov/2)return {text:'Fora do campo de visão',ok:false,metres};
+ const r=api.calculate(cam,d,kind,{angle:relative*Math.PI/180,fov});
+ if(!r.available)return {text:r.status||'Sem alcance validado',ok:null,metres};
+ if(metres<r.min||metres>r.max)return {text:'FORA DO ALCANCE',ok:false,metres,limit:r.max};
+ const walls=floor()?.obstacles||[];
+ if(window.SIGSSiteGeometry?.segments&&window.SIGSSiteGeometry?.intersection){
+  const blocked=walls.some(o=>window.SIGSSiteGeometry.segments([o]).some(([a,b])=>{
+    const len=Math.hypot(dx,dy);if(!len)return false;
+    const hit=window.SIGSSiteGeometry.intersection({x:cam.x,y:cam.y},{x:dx/len,y:dy/len},a,b);
+    return hit!==null&&hit>0&&hit<len;
+  }));
+  if(blocked)return {text:'Obstáculo na linha de visão',ok:false,metres};
+ }
+ return {text:'OK · estimativa SIGS',ok:true,metres,limit:r.max};
+}
+let sceneDrag=null,sceneSuppressClick=false;
+cv.addEventListener('pointerdown',e=>{
+ if(placing||S.tool||!mutable()||!S.scale?.ok||e.button!==0)return;
+ const pos=ep(e),list=floor()?.sceneTargets||[],radius=19;
+ const candidate=[...list].reverse().find(t=>{const v=w2s(t.x,t.y);return Math.hypot(v.x-pos.x,v.y-pos.y)<=radius;});
+ if(!candidate)return;
+ e.preventDefault();e.stopPropagation();pushUndo();
+ sceneDrag={id:candidate.id,pointerId:e.pointerId,startX:candidate.x,startY:candidate.y};
+ try{cv.setPointerCapture(e.pointerId)}catch(_){}
+ cv.style.touchAction='none';cw.style.cursor='grabbing';
+},true);
+cv.addEventListener('pointermove',e=>{
+ if(!sceneDrag||sceneDrag.pointerId!==e.pointerId)return;
+ e.preventDefault();e.stopPropagation();
+ const t=floor()?.sceneTargets?.find(t=>t.id===sceneDrag.id);
+ if(t){const p=ep(e),w=s2w(p.x,p.y);t.x=w.x;t.y=w.y;render();}
+},true);
+function finishSceneDrag(e){
+ if(!sceneDrag||sceneDrag.pointerId!==e.pointerId)return;
+ e.preventDefault();e.stopPropagation();sceneDrag=null;sceneSuppressClick=true;
+ try{cv.releasePointerCapture(e.pointerId)}catch(_){}
+ cv.style.touchAction='';cw.style.cursor='default';dirty();
+ setTimeout(()=>{sceneSuppressClick=false},0);
+}
+cv.addEventListener('pointerup',finishSceneDrag,true);
+cv.addEventListener('pointercancel',finishSceneDrag,true);
+const sceneOldClick=window.onClick;
+window.onClick=function(e){if(sceneSuppressClick)return;return sceneOldClick(e);};
+const renderBase=window.render;window.render=function(){renderBase();if(!floor()||!S.scale.ok)return;ctx.save();(floor().sceneTargets||[]).forEach((t,i)=>{const p=w2s(t.x,t.y),dims=M.dimensions(t),factor=S.scale.ppm*S.zoom;ctx.save();ctx.translate(p.x,p.y);ctx.rotate((t.rotation||0)*Math.PI/180);ctx.fillStyle=t.kind==='car'?'#e7a33b':'#2caec0';ctx.strokeStyle='#fff';ctx.lineWidth=1.5;if(t.kind==='car'){ctx.fillRect(-dims.width*factor/2,-dims.length*factor/2,dims.width*factor,dims.length*factor);ctx.strokeRect(-dims.width*factor/2,-dims.length*factor/2,dims.width*factor,dims.length*factor);}else{ctx.beginPath();ctx.arc(0,0,Math.max(4,dims.width*factor/2),0,Math.PI*2);ctx.fill();ctx.stroke();}ctx.restore();ctx.font='12px Arial';ctx.fillStyle='#fff';ctx.fillText((t.kind==='car'?'Carro ':'Pessoa ')+(i+1),p.x+8,p.y-8);
+ const cam=cams().find(c=>c.id===S.selId)||cams()[0];
+ if(cam){const a=sceneAnalyticsStatus(t,cam);ctx.font='bold 12px Arial';ctx.fillStyle=a.ok===true?'#22c55e':a.ok===false?'#ef4444':'#fbbf24';ctx.fillText((a.metres===undefined?'':a.metres.toFixed(1)+' m · ')+a.text,p.x+8,p.y+16);}});ctx.restore();};
 const snap=window.snapShot,apply=window.applySnap;window.snapShot=function(){const d=JSON.parse(snap());d.sceneTargets=floor()?.sceneTargets||[];d.scene3d=floor()?.scene3d||{};return JSON.stringify(d);};window.applySnap=function(s){const d=JSON.parse(s);if(floor()){floor().sceneTargets=d.sceneTargets||[];floor().scene3d=d.scene3d||{};}apply(s);list();};const switcher=window.switchFloor;window.switchFloor=function(){cancel();dialog?.remove();dialog=null;const r=switcher.apply(this,arguments);list();return r;};const restore=window._restoreProjectData;window._restoreProjectData=function(){cancel();dialog?.remove();dialog=null;const r=restore.apply(this,arguments);list();return r;};const start=window.startModule;window.startModule=function(){cancel();dialog?.remove();dialog=null;const r=start.apply(this,arguments);list();return r;};const set=window.setTool;window.setTool=function(){cancel();return set.apply(this,arguments);};document.addEventListener('keydown',e=>{if(e.key==='Escape'){cancel();dialog?.remove();dialog=null;}});
 window.SIGSSceneTools={place,cancel,open};function install(){const lp=$('lp');if(!lp||$('scene-v29'))return;const panel=document.createElement('details');panel.id='scene-v29';panel.innerHTML='<summary>Pessoa, carro e vista 3D</summary><div class="scene-content"></div>';panel.addEventListener('toggle',()=>{if(panel.open)list();});($('s13-scene-panel')||lp).prepend(panel);list();}setTimeout(install,1100);
 })();
