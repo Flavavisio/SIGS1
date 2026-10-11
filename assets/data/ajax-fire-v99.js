@@ -25,6 +25,21 @@ const more=[
  {id:'f16',cat:'acessorio',name:'GlandBox',model:'GlandBox',type:'fire_accessory',icon:'🧩',desc:'Acessório de passagem e organização de cabos para a central Ajax EN54.',sourceURL:'https://support.ajax.systems/en/en54-line/'}
 ];
 more.forEach(d=>{if(existing.has(d.id))return;root.FIRE_LIB.push({...d,brand:'ajax',family:'en54',technology:'Jeweller',fov:0,range:0,color:'#ef4444',certificationNote:'Validar compatibilidade e referência exata no fabricante.'});});
+
+// Only explicitly verified commercial variants should appear in the colour filter.
+// EN54 colour/SKU availability is not established for this catalogue, so never invent black versions.
+root.FIRE_LIB.forEach(function(d){
+ d.variantColor=d.variantColor||'confirmar';
+ d.requiresFireHub=d.id!=='f01'&&d.id!=='f03'&&d.id!=='f04'&&d.id!=='f16';
+ d.compatibilityStatus='verify';
+ d.compatibilityNote=d.requiresFireHub
+  ?'Confirmar compatibilidade com EN54 Fire Hub Jeweller e versão OS Malevich no verificador oficial Ajax.'
+  :'Confirmar montagem, referência exata e requisitos do projeto na documentação Ajax.';
+ if(d.id==='f03'||d.id==='f04')d.compatibilityNote='Bateria para EN54 Fire Hub ou EN54 Fire ReX; confirmar autonomia exigida e configuração.';
+ if(d.id==='f16')d.compatibilityNote='Acessório de cablagem; confirmar aplicação na central EN54.';
+ if(d.id==='f15')d.compatibilityNote='Módulo de 2 entradas/2 saídas; confirmar equipamentos associados e compatibilidade com a CIE.';
+ if(d.type==='fire'&&d.range>0)d.coverageNote='Raio de cobertura ilustrativo; dimensionar segundo EN54, regras aplicáveis e características do local.';
+});
 root.FIRE_TYPES=[...new Set([...root.FIRE_TYPES,'fire_module','fire_accessory'])];
 root.SIGSAjaxFireCatalog={source,count:root.FIRE_LIB.length};
 })(window);
