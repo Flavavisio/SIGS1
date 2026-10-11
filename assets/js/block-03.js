@@ -331,6 +331,7 @@ function drawCov(p,dev){
     });
     ctx.setLineDash([]);
   }
+  if(MOD==='cctv'&&typeof SIGSAnalytics!=='undefined')SIGSAnalytics.draw(ctx,p,dev,fov,range);
   ctx.restore();
 }
 
@@ -423,6 +424,7 @@ function _drawThermalBiCov(p,dev,s){
   // ── Thermal cone (user colour) on top ──
   sigsClipBlind(ctx,p,thermalFov);
   _drawSector(ctx,tRpx,thermalFov,'rgba('+tRgb+','+(opa*1.2)+')','rgba('+tRgb+',0.88)',2);
+  if(typeof SIGSAnalytics!=='undefined')SIGSAnalytics.draw(ctx,p,dev,thermalFov,thermalRange);
 
 
 
@@ -848,6 +850,7 @@ function syncP(){
       _calcBlindSpot(h,t);
     }
   }
+  if(typeof SIGSAnalytics!=='undefined')SIGSAnalytics.sync(pc,dev);
 }
 function deselect(){S.selId=null;S.multiSel=[];document.getElementById('nosel').style.display='';document.getElementById('cpanel').style.display='none';document.getElementById('rpill').style.display='none';document.getElementById('multi-sel-bar').style.display='none';render();}
 

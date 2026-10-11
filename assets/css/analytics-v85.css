@@ -1,0 +1,12 @@
+#cctv-analytics[hidden],#s13-analytics-wrap[hidden]{display:none!important}
+#s13-analytics-wrap{display:block;margin-top:6px}
+#s13-analytics-wrap select{width:100%}
+.sigs-analytics-option{display:flex;align-items:center;gap:8px;padding:9px 8px;margin:5px 0;border:1px solid var(--bdr);border-radius:7px;background:var(--bg1);font-size:11px;cursor:pointer}
+.sigs-analytics-option svg{width:20px;height:20px;flex-shrink:0}
+.sigs-analytics-option input{margin:0;accent-color:var(--acc);flex-shrink:0}
+.sigs-analytics-option:has(input:checked){border-color:var(--acc);background:rgba(59,130,246,.09)}
+.sigs-analytics-option.unavailable{opacity:.5;cursor:default}
+#analytics-model,.sigs-analytics-note{font-size:10px;line-height:1.5;color:var(--txt2);margin-top:7px}
+#analytics-source{display:inline-block;font-size:10px;color:var(--acc);margin-top:5px}
+#analytics-source[hidden]{display:none}
+.sigs-analytics-tag{color:var(--acc)!important}
