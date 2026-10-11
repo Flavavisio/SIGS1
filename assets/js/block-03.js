@@ -1118,6 +1118,9 @@ function _makeDevItem(dev){
     d.classList.add('sigs-ajax-fire-card');
     var image=imgSrc?'<img src="'+imgSrc+'" loading="lazy" alt="" onerror="this.style.display=\'none\';this.nextElementSibling.hidden=false"><span hidden class="sigs-fire-fallback">'+(dev.icon||'🔥')+'</span>':'<span class="sigs-fire-fallback">'+(dev.icon||'🔥')+'</span>';
     d.innerHTML='<div class="sigs-fire-photo">'+image+'</div><div class="sigs-fire-info"><span class="sigs-fire-family">AJAX · EN54</span><strong>'+escHTMLFire(dev.name)+'</strong><small>'+escHTMLFire(dev.model||'')+'</small><span>'+escHTMLFire(dev.desc||'')+'</span></div>';
+    var photoNote=document.createElement('small');photoNote.className='sigs-fire-photo-status';
+    photoNote.textContent=dev.imgUrl?'Fotografia do catálogo · por verificar':'Fotografia não disponível · consultar ficha oficial';
+    d.querySelector('.sigs-fire-info').appendChild(photoNote);
     var details=document.createElement('small');details.className='sigs-fire-safety';details.textContent='Cor: '+(dev.variantColor==='confirmar'?'por confirmar':dev.variantColor)+' · '+(dev.compatibilityNote||'Confirmar compatibilidade.');
     d.querySelector('.sigs-fire-info').appendChild(details);
     d.title='Adicionar '+dev.name+' à planta';
