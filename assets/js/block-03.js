@@ -1118,6 +1118,8 @@ function _makeDevItem(dev){
     d.classList.add('sigs-ajax-fire-card');
     var image=imgSrc?'<img src="'+imgSrc+'" loading="lazy" alt="" onerror="this.style.display=\'none\';this.nextElementSibling.hidden=false"><span hidden class="sigs-fire-fallback">'+(dev.icon||'🔥')+'</span>':'<span class="sigs-fire-fallback">'+(dev.icon||'🔥')+'</span>';
     d.innerHTML='<div class="sigs-fire-photo">'+image+'</div><div class="sigs-fire-info"><span class="sigs-fire-family">AJAX · EN54</span><strong>'+escHTMLFire(dev.name)+'</strong><small>'+escHTMLFire(dev.model||'')+'</small><span>'+escHTMLFire(dev.desc||'')+'</span></div>';
+    var details=document.createElement('small');details.className='sigs-fire-safety';details.textContent='Cor: '+(dev.variantColor==='confirmar'?'por confirmar':dev.variantColor)+' · '+(dev.compatibilityNote||'Confirmar compatibilidade.');
+    d.querySelector('.sigs-fire-info').appendChild(details);
     d.title='Adicionar '+dev.name+' à planta';
     var info=document.createElement('a');info.className='sigs-fire-info-link';info.textContent='Ficha oficial ↗';info.href=/^https:\/\/support\.ajax\.systems\//.test(dev.sourceURL||'')?dev.sourceURL:'https://support.ajax.systems/en/en54-line/';info.target='_blank';info.rel='noopener noreferrer';info.onclick=function(e){e.stopPropagation();};d.appendChild(info);
     d.onclick=function(e){e.stopPropagation();sLib(dev);};
@@ -1160,8 +1162,15 @@ function _makeDevItem(dev){
   return d;
 }
 
+var _fireColorFilter='all';
+function _fireFilters(el){
+ var wrap=document.createElement('div');wrap.className='sigs-fire-filters';
+ wrap.innerHTML='<label>Cor do produto <select id="sigs-fire-color"><option value="all">Todas</option><option value="white">Branco confirmado</option><option value="black">Preto confirmado</option><option value="confirmar">Por confirmar</option></select></label><small>As variantes sem referência oficial são assinaladas como por confirmar.</small>';
+ el.appendChild(wrap);var sel=wrap.querySelector('select');sel.value=_fireColorFilter;sel.onchange=function(){_fireColorFilter=sel.value;renderDevList();};
+}
 function renderDevList(){
   var el=document.getElementById('dlist'); el.innerHTML='';
+  if(MOD==='fire')_fireFilters(el);
   if(MOD!=='cctv'){
     // Módulos Ajax (intrusão / incêndio): agrupar por família
     var axFamilies = MOD==='fire' ? [
@@ -1176,7 +1185,7 @@ function renderDevList(){
       {key:'ax_acc', label:'Acessórios',           icon:'🧩', cls:'lib-family-thermal', filter:function(d){return d.cat==='acc'||!d.cat;}}
     ];
     axFamilies.forEach(function(fam){
-      var devs=sigsVisibleCatalog(S.lib).filter(fam.filter);
+      var devs=sigsVisibleCatalog(S.lib).filter(fam.filter).filter(function(d){return MOD!=='fire'||_fireColorFilter==='all'||(d.variantColor||'confirmar')===_fireColorFilter;});
       if(!devs.length) return;
       var hdr=document.createElement('div');
       hdr.className='lib-family-header '+fam.cls;
