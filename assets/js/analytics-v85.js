@@ -58,6 +58,7 @@ function sync(p,d){
  ['people','vehicles'].forEach(t=>{const el=root.document.getElementById('p-analytics-'+t);el.checked=a[t];el.disabled=!c[t]||locked;el.closest('label').classList.toggle('unavailable',!c[t]);});
  const status=root.document.getElementById('analytics-model');status.textContent=c.people||c.vehicles?(c.label||'Analítica documentada'):'Analítica de pessoas/carros por confirmar para este modelo.';
  const source=root.document.getElementById('analytics-source');source.hidden=!/^https:\/\//.test(c.source||'');if(!source.hidden){source.href=c.source;source.textContent='Ficha / guia do fabricante';}
+ if(root.SIGSAnalyticsRange)root.SIGSAnalyticsRange.sync(p,d);
 }
 root.sigsSetAnalytics=function(target,value){
  const p=root.fP(root.S.selId),d=p&&root.gD(p.libId);if(root.MOD!=='cctv'||!p||!['people','vehicles'].includes(target))return;

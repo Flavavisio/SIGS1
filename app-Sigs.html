@@ -18,7 +18,7 @@
 <link rel="stylesheet" href="assets/css/proposal-v10.css?v=20261007-0700">
 <link rel="stylesheet" href="assets/css/workflow-v12.css?v=20261007-0700">
 <link rel="stylesheet" href="assets/css/sidebar-v13.css?v=20261009-panels71">
-<link rel="stylesheet" href="assets/css/analytics-v85.css?v=20261011-analytics85">
+<link rel="stylesheet" href="assets/css/analytics-v85.css?v=20261011-reach86">
 <link rel="stylesheet" href="assets/css/brand-v23.css?v=20261007-0700"><link rel="icon" type="image/svg+xml" href="assets/brand/sigs-favicon.svg"><link rel="stylesheet" href="assets/css/recommendations-v24.css?v=20261007-0700"><link rel="stylesheet" href="assets/css/activity-v42.css?v=20261009-activation68">
 <link rel="stylesheet" href="assets/css/disk-layout-v65.css?v=20261009-simple67"></head>
 <body class="sigs-locked sigs-premium">
@@ -571,7 +571,16 @@
             <label class="sigs-analytics-option"><input id="p-analytics-people" type="checkbox" onchange="sigsSetAnalytics('people',this.checked)"><svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="4" r="2" fill="#ef4444"/><path d="M12 9v7m-6-4 6-4 6 4M7 22l5-6 5 6"/></svg><span>Ativar analítica para pessoas</span></label>
             <label class="sigs-analytics-option"><input id="p-analytics-vehicles" type="checkbox" onchange="sigsSetAnalytics('vehicles',this.checked)"><svg viewBox="0 0 24 24" fill="none" stroke="#facc15" stroke-width="2.2" stroke-linejoin="round" aria-hidden="true"><path d="M3 17V11l3-1 2-5h8l2 5 3 1v6H3Z"/><circle cx="7" cy="18" r="2" fill="#facc15"/><circle cx="17" cy="18" r="2" fill="#facc15"/></svg><span>Ativar analítica para carros</span></label>
             <a id="analytics-source" target="_blank" rel="noopener noreferrer" hidden></a>
-            <div class="sigs-analytics-note">Os ícones no FOV assinalam as analíticas previstas no projeto. Validar alcance, enquadramento e condições no local.</div>
+            <label class="analytics-mode">Condições de cálculo<select data-analytics-setting="mode" onchange="sigsSetAnalyticsSetting('mode',this.value)"><option value="night">Noite · com iluminação indicada</option><option value="day">Dia · boa iluminação</option></select></label>
+            <div id="analytics-reach" aria-live="polite"></div>
+            <details class="analytics-criteria"><summary>Critérios de dimensionamento</summary><div class="analytics-criteria-grid">
+              <label id="analytics-pixel-row">Mín. altura do alvo · px<input data-analytics-setting="minPixels" type="number" min="8" max="1000" step="1" value="108" onchange="sigsSetAnalyticsSetting('minPixels',this.value)"></label>
+              <label>Pessoa · altura (m)<input data-analytics-setting="peopleHeight" type="number" min="0.3" max="3" step="0.05" value="1.75" onchange="sigsSetAnalyticsSetting('peopleHeight',this.value)"></label>
+              <label>Pessoa · largura (m)<input data-analytics-setting="peopleWidth" type="number" min="0.15" max="2" step="0.05" value="0.5" onchange="sigsSetAnalyticsSetting('peopleWidth',this.value)"></label>
+              <label>Carro · altura (m)<input data-analytics-setting="vehiclesHeight" type="number" min="0.5" max="5" step="0.1" value="1.5" onchange="sigsSetAnalyticsSetting('vehiclesHeight',this.value)"></label>
+              <label>Carro · largura frontal (m)<input data-analytics-setting="vehiclesWidth" type="number" min="0.5" max="5" step="0.1" value="1.8" onchange="sigsSetAnalyticsSetting('vehiclesWidth',this.value)"></label>
+            </div><p class="sigs-analytics-note">Nas estimativas, 108 px é um critério inicial SIGS, ajustável. A resolução considerada é a imagem do projeto; confirmar a resolução usada pela IA no equipamento.</p></details>
+            <div class="sigs-analytics-note">Linhas tracejadas e ícones marcam o limite calculado por alvo, em metros, com vista desimpedida. Referências do fabricante e estimativas estão identificadas. Validar iluminação, obstáculos e funcionamento no local.</div>
           </div>
           <!-- DORI panel -->
           <div id="cctv-dori" class="ps" style="display:none">
@@ -1239,8 +1248,9 @@
 <script src="assets/js/engineering-advanced-model-v43.js?v=20261008-2335"></script>
 <script src="assets/js/disk-model-v64.js?v=20261009-disk64"></script>
 <script src="assets/js/catalog-activation-v68.js?v=20261009-activation68"></script>
-<script src="assets/js/analytics-v85.js?v=20261011-analytics85"></script>
-<script src="assets/js/block-03.js?v=20261011-analytics85"></script>
+<script src="assets/js/analytics-v85.js?v=20261011-reach86"></script>
+<script src="assets/js/analytics-range-v86.js?v=20261011-reach86"></script>
+<script src="assets/js/block-03.js?v=20261011-reach86"></script>
 
 <!-- ══ PRESENTATION MODE OVERLAY ══ -->
 <div id="pres-overlay">
@@ -1295,7 +1305,7 @@
 <script src="assets/js/recommendation-model-v24.js?v=20261008-2335"></script>
 <script src="assets/js/recommendations-v24.js?v=20261009-activation68"></script>
 <link rel="stylesheet" href="assets/css/site-geometry-v28.css?v=20261007-0700">
-<script src="assets/js/site-geometry-v28.js?v=20261009-panels71"></script>
+<script src="assets/js/site-geometry-v28.js?v=20261011-reach86"></script>
 <link rel="stylesheet" href="assets/css/scene-v29.css?v=20261007-0700">
 <script src="assets/js/scene-model-v29.js?v=20261007-0700"></script>
 <script src="assets/js/scene-v29.js?v=20261009-panels71"></script>

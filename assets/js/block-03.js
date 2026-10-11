@@ -264,6 +264,7 @@ function drawCov(p,dev){
       _drawThermalBiCov(p,dev,s); return;
     }
     fov=lFOV(dev.fov,(typeof SIGSLensModel!=='undefined'?SIGSLensModel.effective(p,dev):(p.lens||2.8)),typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).base:undefined,dev); range=lRange(dev.range,(typeof SIGSLensModel!=='undefined'?SIGSLensModel.effective(p,dev):(p.lens||2.8)),p,dev);
+    if(typeof SIGSAnalyticsRange!=='undefined')range=SIGSAnalyticsRange.outerRange(p,dev,range);
   }
   else{
     // Ajax: only PIR types show a coverage zone; others are point devices
@@ -864,6 +865,7 @@ function updInstall(){
   document.getElementById('p-tiltv').textContent=tilt+'°';
   pc.instHeight=h; pc.instTilt=tilt;
   _calcBlindSpot(h,tilt);
+  if(typeof SIGSAnalytics!=='undefined')SIGSAnalytics.sync(pc,gD(pc.libId));
   render();
 }
 
@@ -1050,6 +1052,7 @@ function updP(key,val){
   else if(key==='arange'){pc.arange=val;if(dev)document.getElementById('pinfo').textContent=(dev.desc||'')+'  |  Zona '+(pc.zone||1);}
   else if(key==='afov')pc.afov=val;
   else if(key==='zone'){pc.zone=val;if(dev)document.getElementById('pinfo').textContent=(dev.desc||'')+'  |  Zona '+val;}
+  if(typeof SIGSAnalytics!=='undefined')SIGSAnalytics.sync(pc,dev);
   render();
 }
 function delSel(){
@@ -3119,6 +3122,7 @@ updP=function(key,val){
     var tEl2=document.getElementById('p-tilt');
     if(tEl2) _calcBlindSpot(val, parseFloat(tEl2.value)||30);
   }
+  if((key==='mp'||key==='instHeight')&&typeof SIGSAnalytics!=='undefined'){var selected=fP(S.selId);if(selected){SIGSAnalytics.sync(selected,gD(selected.libId));render();}}
 };
 
 // Hook tab switch to auto-build system tab
