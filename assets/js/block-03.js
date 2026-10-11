@@ -817,7 +817,7 @@ function syncP(){
       if(isRadar){
         document.getElementById('pinfo').textContent='Radar · '+dev.radarFov+'° · '+dev.radarRange+'m';
       } else {
-        document.getElementById('pinfo').innerHTML='<span style="color:#ef4444">🌡 Térmica: '+(window.SIGSUniviewCCTV91&&SIGSUniviewCCTV91.lookup(dev)?SIGSUniviewCCTV91.rangeLabel(dev):dev.thermalRange+'m')+' · '+dev.thermalFov+'°</span>  <span style="color:#3b82f6">📷 Visível: '+dev.visibleRange+'m · '+dev.visibleFov+'°</span>';
+        document.getElementById('pinfo').innerHTML='<span style="color:#ef4444">🌡 Térmica: '+(window.SIGSHikvisionCCTV92&&SIGSHikvisionCCTV92.lookup(dev)?SIGSHikvisionCCTV92.rangeLabel(dev):window.SIGSUniviewCCTV91&&SIGSUniviewCCTV91.lookup(dev)?SIGSUniviewCCTV91.rangeLabel(dev):dev.thermalRange+'m')+' · '+dev.thermalFov+'°</span>  <span style="color:#3b82f6">📷 Visível: '+dev.visibleRange+'m · '+dev.visibleFov+'°</span>';
       }
     } else {
       if(lensPanel) lensPanel.style.display='';
@@ -1093,7 +1093,7 @@ function _makeDevItem(dev){
   if(dev.type==='radar'){
     meta='Radar · '+dev.radarFov+'° · '+dev.radarRange+'m';
   } else if(dev.type==='thermal_bi'){
-    meta='<span style="color:#ef4444">🌡'+(window.SIGSUniviewCCTV91&&SIGSUniviewCCTV91.lookup(dev)?SIGSUniviewCCTV91.rangeLabel(dev):dev.thermalRange+'m')+'</span> <span style="color:#3b82f6">📷'+dev.visibleRange+'m</span>';
+    meta='<span style="color:#ef4444">🌡'+(window.SIGSHikvisionCCTV92&&SIGSHikvisionCCTV92.lookup(dev)?SIGSHikvisionCCTV92.rangeLabel(dev):window.SIGSUniviewCCTV91&&SIGSUniviewCCTV91.lookup(dev)?SIGSUniviewCCTV91.rangeLabel(dev):dev.thermalRange+'m')+'</span> <span style="color:#3b82f6">📷'+dev.visibleRange+'m</span>';
   } else if(MOD==='cctv'){
     meta=dev.name+' · '+dev.fov+'° · '+dev.range+'m';
   } else {
@@ -3352,9 +3352,12 @@ function poeStandardForW(w){
 function poeDeviceWatts(p,dev){
   var ajax=window.SIGSAjaxCCTV&&SIGSAjaxCCTV.lookup(dev);
   if(ajax&&ajax.connection==='wifi')return {w:0,source:'external',externalW:ajax.devicePowerW||0,wireless:true};
+  var hik=window.SIGSHikvisionCCTV92&&SIGSHikvisionCCTV92.lookup(dev);
+  if(hik&&hik.poeSupported===false)return {w:0,source:'external',externalW:hik.devicePowerW||0,wireless:hik.connection==='wifi'};
   var unv=window.SIGSUniviewCCTV91&&SIGSUniviewCCTV91.lookup(dev);
   if(unv&&unv.poeSupported===false)return {w:0,source:'external',externalW:unv.devicePowerW||0,wireless:unv.connection==='wifi'};
   if(p&&Number(p.poeW)>0)return {w:Number(p.poeW),source:'manual'};
+  if(hik&&Number(hik.poeW)>0)return {w:Number(hik.poeW),source:'catalogue'};
   if(ajax)return {w:ajax.poeDesignW,source:ajax.poePowerBasis==='class-reserve'?'estimated':'catalogue'};
   if(unv&&Number(unv.poeW)>0)return {w:Number(unv.poeW),source:unv.poePowerBasis==='manufacturer-declared'?'estimated':'catalogue'};
   var model=dev&&(dev.model||dev.name)||'';
