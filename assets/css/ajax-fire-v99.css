@@ -17,3 +17,5 @@
 .sigs-fire-filters select{max-width:65%;padding:7px;border-radius:7px;border:1px solid #475569;color:inherit;background:#1b293b}
 .sigs-fire-filters small,.sigs-fire-safety{font-size:10px;line-height:1.35;color:#fbbf24;display:block}
 .sigs-ajax-fire-card .sigs-fire-safety{padding-top:4px}
+
+.sigs-ajax-fire-card .sigs-fire-photo-status{font-size:9px;color:#9ca3af;line-height:1.3;display:block}
