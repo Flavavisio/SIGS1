@@ -11,11 +11,13 @@ const manuals={
  f10:'en54-fireprotect-heat-smoke-sounder-jeweller',
  f11:'en54-manualcallpoint-jeweller',
  f12:'en54-fireprotect-sounder-jeweller',f13:'en54-fireprotect-sounder-vad-jeweller',
- f14:'en54-fireprotect-vad-jeweller'
+ f14:'en54-fireprotect-vad-jeweller',
+ f15:'en54-i-o-module-2x2-jeweller',
+ f16:'glandbox'
 };
 for(const d of root.FIRE_LIB){
  d.brand='ajax';d.family='en54';d.technology='Jeweller';d.imageSource='Imagem configurada no catálogo SIGS (disponibilidade por verificar)';
- d.sourceURL=source;
+ d.sourceURL=source+manuals[d.id]+'/';
  d.certificationNote='Linha Ajax EN54. Validar certificados, requisitos legais e dimensionamento do projeto.';
  d.colorVariants='Consultar referência/cor na ficha oficial';
 }
@@ -29,7 +31,17 @@ more.forEach(d=>{if(existing.has(d.id))return;root.FIRE_LIB.push({...d,brand:'aj
 // Only explicitly verified commercial variants should appear in the colour filter.
 // EN54 colour/SKU availability is not established for this catalogue, so never invent black versions.
 root.FIRE_LIB.forEach(function(d){
+ if(manuals[d.id])d.sourceURL=source+manuals[d.id]+'/';
+ const officialNames={
+  f11:'EN54 ManualCallPoint Jeweller',
+  f12:'EN54 FireProtect (Sounder) Jeweller',
+  f13:'EN54 FireProtect (Sounder/VAD) Jeweller',
+  f14:'EN54 FireProtect (VAD) Jeweller'
+ };
+ if(officialNames[d.id])d.name=officialNames[d.id];
+ if(d.id==='f15')d.desc='Módulo Ajax EN54 Jeweller com 2 entradas e 2 saídas para integração de equipamentos com fios.';
  d.variantColor=d.variantColor||'confirmar';
+ d.photoStatus=d.imgUrl?'URL do catálogo SIGS, ainda sem verificação de carregamento':'Fotografia em falta';
  d.requiresFireHub=d.id!=='f01'&&d.id!=='f03'&&d.id!=='f04'&&d.id!=='f16';
  d.compatibilityStatus='verify';
  d.compatibilityNote=d.requiresFireHub
