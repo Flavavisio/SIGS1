@@ -11,3 +11,9 @@
 .sigs-ajax-fire-card .sigs-fire-info>span:last-child{font-size:10px;color:#cbd5e1;line-height:1.4}
 .sigs-ajax-fire-card .sigs-fire-info-link{font-size:10px;color:#fda4af;text-decoration:underline;text-underline-offset:2px;grid-column:2;justify-self:start}
 .sigs-ajax-fire-card .sigs-fire-info-link:hover{color:white}
+
+.sigs-fire-filters{display:flex;flex-direction:column;gap:5px;padding:10px;margin:7px 0 12px;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);border-radius:10px}
+.sigs-fire-filters label{font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.sigs-fire-filters select{max-width:65%;padding:7px;border-radius:7px;border:1px solid #475569;color:inherit;background:#1b293b}
+.sigs-fire-filters small,.sigs-fire-safety{font-size:10px;line-height:1.35;color:#fbbf24;display:block}
+.sigs-ajax-fire-card .sigs-fire-safety{padding-top:4px}
