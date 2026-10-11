@@ -27,6 +27,7 @@ function profile(p,d,target){
  if((ajaxFamily(d)||String(d.brand||'').toLowerCase()==='ajax')&&!d.custom){
   const family=ajaxFamily(d),table=ajaxTable[family],r=table?.[target]?.[s.mode];
   if(!table)return {unavailable:'Alcance Ajax por confirmar para esta referência.',notes:['Sem correspondência verificada com a tabela do fabricante.'],source:ajaxGuide};
+  if(!r&&target==='vehicles'&&s.mode==='night')return {min:Math.max(.05,(p.instHeight||3)/2),max:500,method:'estimate',label:'Estimativa SIGS · veículos à noite',source:ajaxGuide,notes:['Ajax: alcance de carros à noite não publicado neste guia. A capacidade de classificação existe; o alcance mostrado é uma estimativa geométrica, não um valor certificado Ajax.','Critério de projeto: '+s.minPixels+' px de altura do alvo, com enquadramento completo. Validar iluminação, sensibilidade e deteção no local.']};
   if(!r)return {unavailable:'Ajax: alcance de '+(target==='vehicles'?'carros':'pessoas')+' à '+(s.mode==='night'?'noite':'dia')+' não publicado neste guia.',notes:['A função pode estar disponível, mas esta combinação não tem alcance medido em condições padronizadas no guia. Confirmar no local.'],source:ajaxGuide};
   const maximum=s.ajaxSensitivity==='maximum',from=r[maximum?2:0],to=r[maximum?3:1],notes=['Tabela Ajax · '+table.label+' · '+(s.mode==='day'?'dia':'noite')+'.',
    'Fabricante: '+from+'–'+to+' m · '+(maximum?'sensibilidade máxima (10)':'recomendado, sensibilidade predefinida (3)')+'.',
@@ -119,7 +120,7 @@ root.sigsSetAnalyticsSetting=function(key,value){
  const p=root.fP(root.S.selId),d=p&&root.gD(p.libId);if(!p||root.MOD!=='cctv'||root.SIGS_V6?.currentStatus==='ARCHIVED')return;
  const limits={minPixels:[8,1000],peopleHeight:[.3,3],peopleWidth:[.15,2],vehiclesHeight:[.5,5],vehiclesWidth:[.5,5]};
  if(key==='mode'){if(!['day','night'].includes(value))return;}else if(key==='ajaxSensitivity'){if(!ajaxFamily(d)||!['default','maximum'].includes(value))return;}else{value=Number(value);if(!limits[key]||!Number.isFinite(value)||value<limits[key][0]||value>limits[key][1]){sync(p,d);return;}}
- if(settings(p,d)[key]===value)return;root.pushUndo();p.analytics={...p.analytics,[key]:value};root.saveCurrentFloor?.();root.sigsV6MarkDirty?.();A.sync(p,d);root.render();
+ if(settings(p,d)[key]===value)return;root.pushUndo();p.analytics={...p.analytics,[key]:value};root.saveCurrentFloor?.();root.sigsV6MarkDirty?.();A.sync(p,d);root._calcBlindSpot?.(p.instHeight||3,p.instTilt??30);root.render();
 };
 root.SIGSAnalyticsRange={ajaxTable,ajaxFamily,settings,profile,geometry,projectAt,calculate,outerRange,draw,sync};A.draw=draw;
 if(typeof module!=='undefined'&&module.exports)module.exports=root.SIGSAnalyticsRange;

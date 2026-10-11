@@ -64,7 +64,7 @@ root.sigsSetAnalytics=function(target,value){
  const p=root.fP(root.S.selId),d=p&&root.gD(p.libId);if(root.MOD!=='cctv'||!p||!['people','vehicles'].includes(target))return;
  if(root.SIGS_V6?.currentStatus==='ARCHIVED'||!capabilities(d)[target]){sync(p,d);return;}
  const next=value===true;if(active(p,d)[target]===next)return;
- root.pushUndo();p.analytics={...p.analytics,[target]:next};root.saveCurrentFloor?.();root.sigsV6MarkDirty?.();sync(p,d);root.render();
+ root.pushUndo();p.analytics={...p.analytics,[target]:next};root.saveCurrentFloor?.();root.sigsV6MarkDirty?.();sync(p,d);root._calcBlindSpot?.(p.instHeight||3,p.instTilt??30);root.render();
 };
 root.SIGSAnalytics={registry,key,capabilities,active,matches,glyph,draw,sync};
 if(typeof module!=='undefined'&&module.exports)module.exports=root.SIGSAnalytics;

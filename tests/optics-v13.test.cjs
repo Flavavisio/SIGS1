@@ -5,7 +5,7 @@ function fn(name){const start=source.indexOf('function '+name+'(');assert.ok(sta
 const nodes={};for(const id of ['plensv','pinfo','plensinfo','bs-ground','bs-reach','bs-hint'])nodes[id]={style:{}};
 const pc={libId:'cam',instHeight:3,instTilt:30},dev={fov:90,range:30};let diagram;
 const ctx={S:{selId:'cam'},MOD:'cctv',fP:()=>pc,gD:()=>dev,document:{getElementById:id=>nodes[id]},sigsGroundGeometry:ground,updateDoriPanel(){},render(){},_drawBlindSpotDiagram(...args){diagram=args;}};
-vm.createContext(ctx);for(const name of ['lFOV','lRange','lDesc','_calcBlindSpot','updP'])vm.runInContext(fn(name),ctx);
+vm.createContext(ctx);for(const name of ['lFOV','lRange','lDesc','sigsLensInfo','_calcBlindSpot','updP'])vm.runInContext(fn(name),ctx);
 ctx.updP('lens',2.8);const wideBlind=parseFloat(nodes['bs-ground'].textContent),wideHalf=diagram[3];
 ctx.updP('lens',12);const teleBlind=parseFloat(nodes['bs-ground'].textContent);assert.ok(teleBlind>wideBlind);assert.ok(diagram[3]<wideHalf);assert.equal(pc.lens,12);assert.equal(nodes['bs-ground'].textContent,ground(3,30,ctx.lFOV(90,12)).blind.toFixed(2)+' m');assert.ok(nodes['bs-hint'].textContent.includes('16:9'));
 assert.equal(ctx.lRange(30,12),30);assert.equal(ctx.lFOV(90,2.8),90);
