@@ -6,6 +6,17 @@ const copy=x=>JSON.parse(JSON.stringify(x));
 const originalBuild=root._buildProjectData,originalRestore=root._restoreProjectData,originalStart=root.startModule;
 if(typeof originalBuild!=='function'||typeof originalRestore!=='function'||typeof originalStart!=='function')return;
 function sharedFloors(d){return (d?.floors||[]).map(f=>({id:f.id,name:f.name,fp:f.fp?copy(f.fp):null,scale:f.scale?copy(f.scale):null,meas:f.meas?copy(f.meas):[]}));}
+function syncSharedPlans(source,target){
+ const common=sharedFloors(source);if(!common.length)return target;
+ const original=target.floors||[];
+ target.floors=common.map((f,i)=>{
+  const old=original.find(o=>o.id===f.id)||original[i];
+  return {...(old||{}),id:f.id,name:f.name,fp:f.fp,scale:f.scale,meas:f.meas,
+   placed:old?.placed||[],devN:old?.devN||0};
+ });
+ target.floorCur=Math.min(target.floorCur||0,target.floors.length-1);
+ return target;
+}
 function saveModule(){if(!enabled||switching||!kinds.includes(root.MOD))return;const d=originalBuild();snapshots[root.MOD]=copy(d);}
 function available(){return Object.keys(snapshots).filter(x=>kinds.includes(x));}
 function load(kind){
@@ -14,11 +25,10 @@ function load(kind){
  try{
   if(enabled){const active=originalBuild();snapshots[root.MOD]=copy(active);}
   else{snapshots={[root.MOD]:copy(originalBuild())};enabled=true;}
-  const previous=root.MOD;
+  const source=snapshots[root.MOD];
   const next=snapshots[kind];
-  if(next){originalStart(kind);originalRestore(copy(next));}
+  if(next){const normalized=syncSharedPlans(source,copy(next));snapshots[kind]=copy(normalized);originalStart(kind);originalRestore(normalized);}
   else{
-   const source=snapshots[root.MOD]||Object.values(snapshots)[0];
    originalStart(kind);
    const floors=sharedFloors(source);
    if(floors.length){
