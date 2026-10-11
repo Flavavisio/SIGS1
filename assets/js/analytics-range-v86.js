@@ -64,12 +64,16 @@ function geometry(p,d,target,options={}){
  if(!pr.thermal&&root.SIGSLensModel&&!root.SIGSLensModel.policy(d).documented)notes.push('Ótica do catálogo por confirmar: validar FOV e lente no equipamento.');
  if(s.mode==='night'&&!pr.thermal){const light=Math.max(N(d.range,0),N(d.whiteRange,0));if(ajaxFamily(d)){notes.push('Iluminação integrada: '+light+' m. Para usar o alcance estimado além desta distância, é necessária luz suficiente no alvo; validar no local.');}else{if(!(light>0))return {invalid:'Alcance noturno de iluminação por confirmar.'};max=Math.min(max,light);notes.push('Noite: limitado também ao alcance de iluminação indicado ('+light+' m).');}}
  if(N(options.rangeLimit,0))max=Math.min(max,options.rangeLimit);
- return {s,pr:effectiveProfile,width,height,fov,tanH,tanV,tilt,h,angle,H,W,min:pr.min,max,notes};
+ return {s,pr:effectiveProfile,target,width,height,fov,tanH,tanV,tilt,h,angle,H,W,min:pr.min,max,notes};
 }
 function projectAt(g,distance){
  const x=Math.sin(g.angle)*distance,z=Math.cos(g.angle)*distance,c=Math.cos(g.tilt),s=Math.sin(g.tilt),points=[];
  for(const y of [0,g.H])for(const side of [-1,1]){const depth=z*c+(g.h-y)*s;if(depth<=.001)return {valid:false,pixels:0};points.push({x:(x+side*g.W/2)/depth,y:((y-g.h)*c+z*s)/depth});}
- const pixels=(Math.max(...points.map(p=>p.y))-Math.min(...points.map(p=>p.y)))*g.height/(2*g.tanV);
+ const verticalPixels=(Math.max(...points.map(p=>p.y))-Math.min(...points.map(p=>p.y)))*g.height/(2*g.tanV);
+ const horizontalPixels=(Math.max(...points.map(p=>p.x))-Math.min(...points.map(p=>p.x)))*g.width/(2*g.tanH);
+ // Critério SIGS: para veículos consideram-se as duas dimensões, não apenas a altura.
+ // Isto NÃO substitui um limite de analítica publicado pelo fabricante.
+ const pixels=g.target==='vehicles'?Math.max(verticalPixels,horizontalPixels):verticalPixels;
  const framed=points.every(p=>Math.abs(p.x)<=g.tanH&&Math.abs(p.y)<=g.tanV);
  return {valid:framed&&(g.pr.method!=='estimate'||pixels>=g.s.minPixels),pixels,framed};
 }
@@ -82,9 +86,15 @@ function calculate(p,d,target,options={}){
  for(const y of [0,g.H])for(const side of [-1,1]){const b=(g.h-y)*sin,offset=side*g.W/2,vertical=(y-g.h)*cos,z=Math.cos(g.angle)*sin;
   bound(-a,b-.001);bound(Math.sin(g.angle)-g.tanH*a,g.tanH*b-offset);bound(-Math.sin(g.angle)-g.tanH*a,g.tanH*b+offset);bound(z-g.tanV*a,g.tanV*b-vertical);bound(-z-g.tanV*a,g.tanV*b+vertical);
  }
- if(g.pr.method==='estimate'){
-  const b0=g.h*sin,b1=(g.h-g.H)*sin,k=g.s.minPixels,fy=g.height/(2*g.tanV),q2=k*a*a,q1=k*a*(b0+b1)-g.H*Math.cos(g.angle)*fy,q0=k*b0*b1;
-  if(q2<1e-12)bound(q1,-q0);else{const discriminant=q1*q1-4*q2*q0;if(discriminant<0)possible=false;else{const delta=Math.sqrt(discriminant);near=Math.max(near,(-q1-delta)/(2*q2));far=Math.min(far,(-q1+delta)/(2*q2));}}
+ if(g.pr.method==='estimate'&&possible&&far>near){
+  // Limite de tamanho do alvo em pixels, calculado com dimensões reais da pessoa/carro.
+  // Depois das desigualdades de enquadramento, procura-se a maior distância útil.
+  if(projectAt(g,near).pixels<g.s.minPixels)possible=false;
+  else if(projectAt(g,far).pixels<g.s.minPixels){
+   let lo=near,hi=far;
+   for(let i=0;i<27;i++){const mid=(lo+hi)/2;if(projectAt(g,mid).pixels>=g.s.minPixels)lo=mid;else hi=mid;}
+   far=lo;
+  }
  }
  let result;
  if(!possible||!(far>near+1e-6))result={available:false,status:'Sem intervalo útil: rever lente, altura, inclinação ou critério.',method:g.pr.method,notes:g.notes};
