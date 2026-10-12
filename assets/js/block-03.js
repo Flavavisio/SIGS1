@@ -1124,7 +1124,7 @@ function _makeDevItem(dev){
     var details=document.createElement('small');details.className='sigs-fire-safety';details.textContent='Cor: '+(dev.variantColor==='confirmar'?'por confirmar':dev.variantColor)+' · '+(dev.compatibilityNote||'Confirmar compatibilidade.');
     d.querySelector('.sigs-fire-info').appendChild(details);
     d.title='Adicionar '+dev.name+' à planta';
-    var info=document.createElement('a');info.className='sigs-fire-info-link';info.textContent='Ficha oficial ↗';info.href=/^https:\/\/support\.ajax\.systems\//.test(dev.sourceURL||'')?dev.sourceURL:'https://support.ajax.systems/en/en54-line/';info.target='_blank';info.rel='noopener noreferrer';info.onclick=function(e){e.stopPropagation();};d.appendChild(info);
+    var info=document.createElement('a');info.className='sigs-fire-info-link';info.href=window.SIGSProductLinks?SIGSProductLinks.resolve(dev):dev.sourceURL;info.textContent=window.SIGSProductLinks?SIGSProductLinks.label(info.href):'Ficha oficial ↗';info.target='_blank';info.rel='noopener noreferrer';info.onclick=function(e){e.stopPropagation();};d.appendChild(info);
     d.onclick=function(e){e.stopPropagation();sLib(dev);};
     d.oncontextmenu=function(e){e.preventDefault();e.stopPropagation();openCtxLib(dev,e);};
     return d;

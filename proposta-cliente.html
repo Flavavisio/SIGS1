@@ -4,6 +4,8 @@
 <main><h1 id="heading">Consulta da proposta</h1><p class="muted">Apenas utilizadores com permissão no projeto podem consultar a proposta. O link, por si só, não concede acesso.</p>
 <section class="box" id="login"><h2>Entrar com o teu e-mail</h2><p>Receberás uma ligação de início de sessão. O acesso depende das permissões atribuídas à tua conta.</p><form id="form"><input type="email" id="email" placeholder="o-teu-email@exemplo.pt" required><button>Enviar ligação</button></form></section>
 <p id="warn" role="status"></p><div id="proposal" hidden></div></main>
+<script src="assets/data/product-destinations-v106.js?v=20261012-links106"></script>
+<script src="assets/js/product-links-v106.js?v=20261012-links106"></script>
 <script>
 (()=>{'use strict';const API='https://kbihedvyykjlbnipdgfm.supabase.co',KEY='sb_publishable_7iaBGJr6qS-YO1HOySsKUQ_vCxOU52o',q=new URLSearchParams(location.search),id=q.get('project');
 const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -17,7 +19,7 @@ let html='<article><h2>Resumo do projeto</h2><span class="pill">Estado: '+esc(p.
 for(const [key,data] of Object.entries(multi)){const name=({alarm:'Intrusão',cctv:'CCTV',fire:'Incêndio'})[key]||key,lib=new Map((data.lib||[]).map(x=>[String(x.id),x]));const floors=data.floors||[{name:'Piso',placed:data.placed||[],fp:data.fp}];
 html+='<article><h2>'+esc(name)+'</h2>';for(const floor of floors){const equipment=floor.placed||[];html+='<h3>'+esc(floor.name||'Piso')+'</h3><p>'+equipment.length+' equipamentos propostos</p>';
 const img=floor.fp?.imgData;if(typeof img==='string'&&/^data:image\/(?:png|jpeg|webp);base64,/.test(img))html+='<img class="plan" alt="Planta do projeto" src="'+img+'">';
-html+='<div class="grid">'+equipment.map(row=>{const dev=lib.get(String(row.libId))||{};return '<div class="box"><strong>'+esc(dev.name||dev.model||'Equipamento')+'</strong><p class="muted">'+esc(dev.desc||dev.type||'')+'</p></div>';}).join('')+'</div>';}html+='</article>';}
+html+='<div class="grid">'+equipment.map(row=>{const dev=lib.get(String(row.libId))||{};return '<div class="box"><strong>'+esc(dev.name||dev.model||'Equipamento')+'</strong><p class="muted">'+esc(dev.desc||dev.type||'')+'</p>'+(window.SIGSProductLinks?SIGSProductLinks.markup(dev):'')+'</div>';}).join('')+'</div>';}html+='</article>';}
 $('proposal').innerHTML=html;$('proposal').hidden=false;
 }catch(ex){$('warn').textContent='Não foi possível abrir a proposta: '+ex.message+' O acesso tem de ser autorizado no SIGS.';}})();
 })();

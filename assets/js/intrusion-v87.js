@@ -80,7 +80,7 @@ function sync(p,d){
 
  }else body+='<p class="intrusion-note">Este equipamento é representado pela posição. Não tem cone de visão nem alcance de deteção volumétrica.</p>';
  if(q.technology){body+='<details class="intrusion-details"><summary>Ficha verificada do detetor</summary>'+field('Tecnologia','<output>'+esc(q.technology)+'</output>')+(q.ip?field('Proteção','<output>'+esc(q.ip)+'</output>'):'')+(typeof q.antiMask==='boolean'?field('Anti-mascaramento','<output>'+(q.antiMask?'Sim':'Não')+'</output>'):'')+(q.pet?'<p class="intrusion-note">Animais: '+esc(q.pet)+'</p>':'')+(q.photo?'<p class="intrusion-note">'+esc(q.photo)+'</p>':'')+(q.notes?'<p class="intrusion-note">'+esc(q.notes)+'</p>':'')+'<p class="intrusion-note">Dados consultados: '+esc(q.verifiedOn)+'.</p></details>';}
- if(/^https:\/\//.test(q.source))body+='<a class="intrusion-note" href="'+esc(q.source)+'" target="_blank" rel="noopener">Manual do fabricante ↗</a>';
+ if(root.SIGSProductLinks)body+=root.SIGSProductLinks.markup(d,q.source);else if(/^https:\/\//.test(q.source))body+='<a class="intrusion-note" href="'+esc(q.source)+'" target="_blank" rel="noopener">Manual do fabricante ↗</a>';
  body+='<p class="intrusion-note">Divisão, grupo, Hub e zona organizam o projeto SIGS. Confirmar a compatibilidade e configurar os equipamentos na aplicação Ajax.</p>';
  box.innerHTML=body;box.querySelectorAll('[data-intrusion]').forEach(el=>{el.disabled=root.SIGS_V6?.currentStatus==='ARCHIVED';el.onchange=()=>set(el.dataset.intrusion,el.type==='checkbox'?el.checked:el.value);});
  const directed=detector&&q.fov<355;for(const id of ['rot-row','rot-btns'])if($(id))$(id).style.display=directed?'':'none';

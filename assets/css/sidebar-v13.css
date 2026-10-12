@@ -18,3 +18,5 @@
 .sigs-premium #rp[data-collapsed=true]{width:44px!important;flex-basis:44px!important}
 #rp[data-collapsed=true]>:not(.s13-inspector-head),#rp[data-collapsed=true] .s13-inspector-head b{display:none!important}
 #rp[data-collapsed=true] .s13-inspector-head{justify-content:center;padding:6px 4px}
+
+.s13-product-row{margin-bottom:8px}.s13-product-row .s13-device{margin-bottom:2px}.sigs-product-link{display:inline-block;font-size:11px;color:var(--acc,#60a5fa);padding:4px 2px;text-decoration:underline;text-underline-offset:2px}.s13-product-row>.sigs-product-link{margin-left:12px}.sigs-product-link:focus-visible{outline:2px solid currentColor;outline-offset:3px}

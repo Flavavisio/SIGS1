@@ -11,7 +11,7 @@ function render(){
  box.innerHTML='<details><summary>Gravadores Ajax NVR H e Superior <small>('+rows.length+' modelos)</small></summary>'+
  '<p>Referências oficiais para consulta. Modelos com limites técnicos por confirmar não entram ainda na recomendação automática e não são adicionados automaticamente ao orçamento.</p>'+
  rows.map(d=>'<article><div class="nvr-h-icon">▣</div><div class="nvr-h-body"><strong>'+escape(d.name)+'</strong><span>'+escape(d.verified.join(' · '))+'</span>'+
- '<small>Por confirmar: '+escape(d.pending.join(', '))+'.</small><a href="'+escape(d.sourceURL)+'" target="_blank" rel="noopener noreferrer">Ficha Ajax ↗</a></div></article>').join('')+
+ '<small>Por confirmar: '+escape(d.pending.join(', '))+'.</small>'+(root.SIGSProductLinks?root.SIGSProductLinks.markup(d):'<a href="'+escape(d.sourceURL)+'" target="_blank" rel="noopener noreferrer">Ficha Ajax ↗</a>')+'</div></article>').join('')+
  '<p class="nvr-h-warning">Para dimensionar os modelos Superior com PoE, confirmar o orçamento total em watts, a potência por porta e a largura de banda. A indicação «16 PoE» não significa 16 câmaras alimentadas com qualquer consumo.</p></details>';
 }
 function install(){

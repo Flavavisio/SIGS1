@@ -57,7 +57,7 @@ function sync(p,d){
  const c=capabilities(d),a=active(p,d),locked=root.SIGS_V6?.currentStatus==='ARCHIVED';
  ['people','vehicles'].forEach(t=>{const el=root.document.getElementById('p-analytics-'+t);el.checked=a[t];el.disabled=!c[t]||locked;el.closest('label').classList.toggle('unavailable',!c[t]);});
  const status=root.document.getElementById('analytics-model');status.textContent=c.people||c.vehicles?(c.label||'Analítica documentada'):'Analítica de pessoas/carros por confirmar para este modelo.';
- const source=root.document.getElementById('analytics-source');source.hidden=!/^https:\/\//.test(c.source||'');if(!source.hidden){source.href=c.source;source.textContent='Ficha / guia do fabricante';}
+ const source=root.document.getElementById('analytics-source');const destination=root.SIGSProductLinks?root.SIGSProductLinks.resolve(d,c.source):c.source;source.hidden=!/^https:\/\//.test(destination||'');if(!source.hidden){source.href=destination;source.textContent=root.SIGSProductLinks?root.SIGSProductLinks.label(destination):'Ficha / guia do fabricante';}
  if(root.SIGSAnalyticsRange)root.SIGSAnalyticsRange.sync(p,d);
 }
 root.sigsSetAnalytics=function(target,value){

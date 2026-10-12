@@ -168,7 +168,7 @@ function sync(p,d){
  if(!root.S.scale.ok){host.textContent='Defina a escala para representar os alcances em metros no FOV.';return;}
  for(const target of targets){const r=calculate(p,d,target),row=root.document.createElement('div');row.className='analytics-reach-row '+target;const title=root.document.createElement('b');title.textContent=(target==='people'?'Pessoas':'Carros')+' · '+(r.available?r.min.toFixed(1)+'–'+r.max.toFixed(1)+' m':r.status);row.appendChild(title);
   if(r.available){const detail=root.document.createElement('small');detail.textContent=r.label+' · alvo '+r.targetWidth+' × '+r.targetHeight+' m · altura projetada '+Math.round(r.pixels)+' px · imagem considerada '+Math.round(r.width)+' × '+Math.round(r.height);row.appendChild(detail);}
-  for(const note of r.notes||[]){const text=root.document.createElement('small');text.textContent=note;row.appendChild(text);}if(r.source){const link=root.document.createElement('a');link.href=r.source;link.target='_blank';link.rel='noopener noreferrer';link.textContent='Fonte do alcance de referência';row.appendChild(link);}host.appendChild(row);
+  for(const note of r.notes||[]){const text=root.document.createElement('small');text.textContent=note;row.appendChild(text);}if(r.source){const link=root.document.createElement('a');link.href=root.SIGSProductLinks?root.SIGSProductLinks.resolve(d,r.source):r.source;link.target='_blank';link.rel='noopener noreferrer';link.textContent=root.SIGSProductLinks?root.SIGSProductLinks.label(link.href):'Fonte do alcance de referência';row.appendChild(link);}host.appendChild(row);
  }
 }
 // Direct dragging of the person/car markers printed at the analytical range limits.
