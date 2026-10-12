@@ -2,6 +2,13 @@
 
 Aplicação de projeto para CCTV, intrusão e incêndio. Esta pasta contém o código completo, os testes e as migrações Supabase.
 
+## Atualização V111
+
+- O círculo potencial a 360° das speed domes acompanha também a pré-visualização sem escala, tal como o FOV direcional. Depois de calibrar a planta, usa os limites no solo e a zona cega.
+- Abrange PTZ óticas e speed domes térmicas/duplo espectro com política de lente PTZ; câmaras térmicas fixas continuam sem círculo de rotação.
+- Contorno e preenchimento mais visíveis, mantendo-os abaixo da intensidade do FOV atual. A câmara selecionada identifica o círculo com “360°”.
+- Verificação no renderizador completo, com contexto de canvas nativo, modelos reais Uniview/Hikvision/térmica, focal inicial/máxima, planta calibrada/sem escala e controlo da camada de cobertura: `node tests/ptz-render-integration-v111.test.cjs`.
+
 ## Atualização V110
 
 - Corrige o critério inconsistente das estimativas de analítica: a pessoa usava altura em píxeis e o carro a maior dimensão, favorecendo a pessoa em muitas óticas/resoluções. Ambos usam agora a área da caixa projetada, com as dimensões frontais configuradas, enquadramento completo e limites de iluminação.

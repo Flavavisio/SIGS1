@@ -6,10 +6,12 @@ vm.runInNewContext(fs.readFileSync('assets/js/ptz-coverage-v109.js','utf8'),{win
 w.sigsDrawPTZOverview(p,d);
 const alpha=(x,y)=>ctx.getImageData(x,y,1,1).data[3];
 assert(alpha(300,300)===0,'Near blind area remains transparent');
-for(const [x,y] of [[360,300],[240,300],[300,360],[300,240]])assert(alpha(x,y)>0&&alpha(x,y)<20,'All pan directions receive only a faint potential sweep');
+for(const [x,y] of [[360,300],[240,300],[300,360],[300,240]])assert(alpha(x,y)>0&&alpha(x,y)<30,'All pan directions receive only a faint potential sweep');
 assert.equal(alpha(450,300),0,'Potential sweep respects ground reach');
 assert.equal(w.SIGSPTZOverview.geometry(p,d).radius,125);
 w.S.zoom=2;assert.equal(w.SIGSPTZOverview.geometry(p,d).radius,250);
+w.S.scale.ok=false;assert.equal(w.SIGSPTZOverview.geometry(p,d).radius,300,'Uncalibrated plans show the same preview range as the directional FOV');assert.equal(w.SIGSPTZOverview.geometry(p,d).blind,0);w.S.scale.ok=true;
+w.SIGSLensModel={policy:d=>({kind:d.mechanicalPTZ?'ptz':'fixed'})};assert(w.SIGSPTZOverview.isPTZ({type:'thermal_bi',mechanicalPTZ:true}));assert(!w.SIGSPTZOverview.isPTZ({type:'thermal_bi'}));assert(!w.SIGSPTZOverview.isPTZ({type:'nvr',mechanicalPTZ:true}));
 assert.equal(w.SIGSPTZOverview.geometry(p,{type:'bullet'}),null);p.visible=false;assert.equal(w.SIGSPTZOverview.geometry(p,d),null);p.visible=true;
 w.S.layers.cov=0;assert.equal(w.SIGSPTZOverview.geometry(p,d),null);w.S.layers.cov=1;w.MOD='alarm';assert.equal(w.SIGSPTZOverview.geometry(p,d),null);
 // Execute the actual render loop: all faint PTZ areas precede all directional cones and icons.
