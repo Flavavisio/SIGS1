@@ -5,11 +5,11 @@ const w={MOD:'cctv',S:{scale:{ok:true,ppm:5},zoom:1,layers:{cov:1}},ctx,syncP(){
 vm.runInNewContext(fs.readFileSync('assets/js/ptz-coverage-v109.js','utf8'),{window:w});
 w.sigsDrawPTZOverview(p,d);
 const alpha=(x,y)=>ctx.getImageData(x,y,1,1).data[3];
-assert(alpha(300,300)===0,'Near blind area remains transparent');
-for(const [x,y] of [[360,300],[240,300],[300,360],[300,240]])assert(alpha(x,y)>0&&alpha(x,y)<30,'All pan directions receive only a faint potential sweep');
-assert.equal(alpha(450,300),0,'Potential sweep respects ground reach');
-assert.equal(w.SIGSPTZOverview.geometry(p,d).radius,125);
-w.S.zoom=2;assert.equal(w.SIGSPTZOverview.geometry(p,d).radius,250);
+assert(alpha(300,300)>0,'Potential movement fills the full disk; current blind zone belongs to the directional cone');
+for(const [x,y] of [[360,300],[240,300],[300,360],[300,240]])assert(alpha(x,y)>0&&alpha(x,y)<40,'All pan directions receive the lighter full potential disk');
+assert.equal(alpha(470,300),0,'Potential sweep respects optical range');
+assert.equal(w.SIGSPTZOverview.geometry(p,d).radius,150);
+w.S.zoom=2;assert.equal(w.SIGSPTZOverview.geometry(p,d).radius,300);
 w.S.scale.ok=false;assert.equal(w.SIGSPTZOverview.geometry(p,d).radius,300,'Uncalibrated plans show the same preview range as the directional FOV');assert.equal(w.SIGSPTZOverview.geometry(p,d).blind,0);w.S.scale.ok=true;
 w.SIGSLensModel={policy:d=>({kind:d.mechanicalPTZ?'ptz':'fixed'})};assert(w.SIGSPTZOverview.isPTZ({type:'thermal_bi',mechanicalPTZ:true}));assert(!w.SIGSPTZOverview.isPTZ({type:'thermal_bi'}));assert(!w.SIGSPTZOverview.isPTZ({type:'nvr',mechanicalPTZ:true}));
 assert.equal(w.SIGSPTZOverview.geometry(p,{type:'bullet'}),null);p.visible=false;assert.equal(w.SIGSPTZOverview.geometry(p,d),null);p.visible=true;
@@ -19,4 +19,4 @@ const text=fs.readFileSync('assets/js/block-03.js','utf8'),render=text.slice(tex
 const order=[],placed=[{id:1},{id:2}],environment={cv:{width:600,height:600},ctx:{clearRect(){}},bg:{clearRect(){},fillRect(){}},S:{placed,layers:{cov:1,dev:1}},gD:()=>d,sigsDrawPTZOverview:p=>order.push('potential'+p.id),drawCov:p=>order.push('direction'+p.id),drawIcon:p=>order.push('icon'+p.id)};
 vm.runInNewContext(render+'render();',environment);assert.deepEqual(order,['potential1','potential2','direction1','direction2','icon1','icon2']);
 assert(text.includes('maxZoom:23,maxNativeZoom:19'),'Leaflet fallback also supports overzoom');
-console.log('PASS PTZ: faint 360° potential sweep, blind/reach limits, zoom, visibility/module guards and directional FOV/icon drawing order.');
+console.log('PASS PTZ: full lighter 360° potential disk, optical range, zoom, visibility/module guards and directional FOV/icon drawing order.');

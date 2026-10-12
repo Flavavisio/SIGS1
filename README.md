@@ -2,6 +2,12 @@
 
 Aplicação de projeto para CCTV, intrusão e incêndio. Esta pasta contém o código completo, os testes e as migrações Supabase.
 
+## Atualização V112
+
+- A área potencial das speed domes passa a ser um disco completo de 360° até ao alcance ótico usado no projeto. A inclinação atual já não o reduz a um anel estreito: direção, inclinação e zona cega continuam a limitar o cone atual, desenhado por cima.
+- Em Aparência, “FOV 360°” permite ajustar a opacidade de 0 a 100%, independentemente da opacidade do cone. Predefinição 12%, mais visível que a versão anterior; acompanha a cor da câmara. A preferência é guardada por câmara como `ptz360Opacity`, com um desfazer por gesto e proteção dos projetos arquivados.
+- Teste com o renderizador completo e canvas nativo cobre o disco inteiro em modelos PTZ óticos e térmicos, focal inicial/máxima, plantas com/sem escala, alterações de inclinação, controlo de opacidade e persistência: `node tests/ptz-render-integration-v111.test.cjs`.
+
 ## Atualização V111
 
 - O círculo potencial a 360° das speed domes acompanha também a pré-visualização sem escala, tal como o FOV direcional. Depois de calibrar a planta, usa os limites no solo e a zona cega.
