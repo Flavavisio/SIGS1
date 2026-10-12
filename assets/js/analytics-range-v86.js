@@ -41,7 +41,7 @@ function profile(p,d,target){
   if((p.instTilt??30)<=0||(p.instTilt??30)>45)notes.push('Rever inclinação: o guia recomenda cerca de 30°, até 45°.');
   return {min:Math.max(from,(p.instHeight||3)/2),max:to,referenceMin:from,referenceMax:to,method:'documented',label:'Tabela Ajax · '+(s.mode==='day'?'dia':'noite')+' · sensibilidade '+(maximum?'10':'3'),source:ajaxGuide,notes};
  }
- return {min:.05,max:500,method:'estimate',label:'Estimativa geométrica · critério SIGS',notes:['Mínimo de '+s.minPixels+' px de altura do alvo. Critério de projeto ajustável; não é um limite IA publicado para este modelo.']};
+ return {min:.05,max:500,method:'estimate',label:'Estimativa geométrica · critério SIGS',notes:['Mínimo de '+s.minPixels+' px equivalentes, pelo mesmo critério de área projetada para pessoas e carros. Critério de projeto ajustável; não é um limite IA publicado para este modelo.','A pessoa usa altura e largura; o carro usa altura e largura frontal. O enquadramento completo e a iluminação podem limitar ambos antes do alcance estimado.']};
 }
 function geometry(p,d,target,options={}){
  const s=settings(p,d),pr=profile(p,d,target);if(!pr)return null;if(pr.unavailable)return {invalid:pr.unavailable,notes:pr.notes,source:pr.source};
@@ -71,36 +71,48 @@ function projectAt(g,distance){
  for(const y of [0,g.H])for(const side of [-1,1]){const depth=z*c+(g.h-y)*s;if(depth<=.001)return {valid:false,pixels:0};points.push({x:(x+side*g.W/2)/depth,y:((y-g.h)*c+z*s)/depth});}
  const verticalPixels=(Math.max(...points.map(p=>p.y))-Math.min(...points.map(p=>p.y)))*g.height/(2*g.tanV);
  const horizontalPixels=(Math.max(...points.map(p=>p.x))-Math.min(...points.map(p=>p.x)))*g.width/(2*g.tanH);
- // Critério SIGS: para veículos consideram-se as duas dimensões, não apenas a altura.
- // Isto NÃO substitui um limite de analítica publicado pelo fabricante.
- const pixels=g.target==='vehicles'?Math.max(verticalPixels,horizontalPixels):verticalPixels;
+ // One projected-area criterion for BOTH targets. The reference aspect 1.75/.5
+ // calibrates the equivalent-pixel scale to the previous frontal person default.
+ // This is a SIGS planning assumption, never a manufacturer AI threshold.
+ const pixelArea=verticalPixels*horizontalPixels,pixels=Math.sqrt(pixelArea*3.5);
  const framed=points.every(p=>Math.abs(p.x)<=g.tanH&&Math.abs(p.y)<=g.tanV);
- return {valid:framed&&(g.pr.method!=='estimate'||pixels>=g.s.minPixels),pixels,framed};
+ return {valid:framed&&(g.pr.method!=='estimate'||pixels>=g.s.minPixels),pixels,verticalPixels,horizontalPixels,pixelArea,framed};
 }
 function calculate(p,d,target,options={}){
  const g=geometry(p,d,target,options);if(!g)return {available:false,status:'Analítica por confirmar.'};if(g.invalid)return {available:false,status:g.invalid,notes:g.notes,source:g.source};
- const key=JSON.stringify([target,g.s,g.pr,g.width,g.height,g.fov,g.tanV,g.tilt,g.h,g.angle,g.min,g.max]);if(cache.has(key))return cache.get(key);
- // Intersect the exact linear framing inequalities and the quadratic pixel-size bound.
+ const key=JSON.stringify([target,g.W,g.H,g.s,g.pr,g.width,g.height,g.fov,g.tanV,g.tilt,g.h,g.angle,g.min,g.max]);if(cache.has(key))return cache.get(key);
+ // Intersect exact framing inequalities, then the common projected-area size bound.
  let near=g.min,far=g.max,possible=far>near;const a=Math.cos(g.angle)*Math.cos(g.tilt),sin=Math.sin(g.tilt),cos=Math.cos(g.tilt);
  function bound(coefficient,right){if(Math.abs(coefficient)<1e-12){if(right<0)possible=false;}else if(coefficient>0)far=Math.min(far,right/coefficient);else near=Math.max(near,right/coefficient);}
  for(const y of [0,g.H])for(const side of [-1,1]){const b=(g.h-y)*sin,offset=side*g.W/2,vertical=(y-g.h)*cos,z=Math.cos(g.angle)*sin;
   bound(-a,b-.001);bound(Math.sin(g.angle)-g.tanH*a,g.tanH*b-offset);bound(-Math.sin(g.angle)-g.tanH*a,g.tanH*b+offset);bound(z-g.tanV*a,g.tanV*b-vertical);bound(-z-g.tanV*a,g.tanV*b+vertical);
  }
  if(g.pr.method==='estimate'&&possible&&far>near){
-  // Limite de tamanho do alvo em pixels, calculado com dimensões reais da pessoa/carro.
-  // Depois das desigualdades de enquadramento, procura-se a maior distância útil.
-  if(projectAt(g,near).pixels<g.s.minPixels)possible=false;
-  else if(projectAt(g,far).pixels<g.s.minPixels){
-   let lo=near,hi=far;
-   for(let i=0;i<27;i++){const mid=(lo+hi)/2;if(projectAt(g,mid).pixels>=g.s.minPixels)lo=mid;else hi=mid;}
-   far=lo;
+  // Projection size can grow first near a steeply tilted camera, then shrink.
+  // Locate its maximum before bracketing BOTH threshold crossings; do not reject
+  // the whole interval merely because the closest framed target is too small.
+  const size=distance=>projectAt(g,distance).pixels,ratio=(Math.sqrt(5)-1)/2;
+  let lo,hi,peak=near;
+  if(size(near)<g.s.minPixels){
+   lo=near;hi=far;let x1=hi-ratio*(hi-lo),x2=lo+ratio*(hi-lo),v1=size(x1),v2=size(x2);
+   for(let i=0;i<42;i++){
+    if(v1<v2){lo=x1;x1=x2;v1=v2;x2=lo+ratio*(hi-lo);v2=size(x2);}
+    else{hi=x2;x2=x1;v2=v1;x1=hi-ratio*(hi-lo);v1=size(x1);}
+   }
+   peak=[near,far,(lo+hi)/2].reduce((best,x)=>size(x)>size(best)?x:best,near);
+  }
+  if(size(peak)<g.s.minPixels)possible=false;
+  else{
+   if(size(near)<g.s.minPixels){lo=near;hi=peak;for(let i=0;i<35;i++){const mid=(lo+hi)/2;if(size(mid)>=g.s.minPixels)hi=mid;else lo=mid;}near=hi;}
+   if(size(far)<g.s.minPixels){lo=peak;hi=far;for(let i=0;i<35;i++){const mid=(lo+hi)/2;if(size(mid)>=g.s.minPixels)lo=mid;else hi=mid;}far=lo;}
   }
  }
  let result;
  if(!possible||!(far>near+1e-6))result={available:false,status:'Sem intervalo útil: rever lente, altura, inclinação ou critério.',method:g.pr.method,notes:g.notes};
  else{
   if(g.pr.method!=='documented'&&far>=499.99)g.notes.push('Limite de simulação SIGS: 500 m.');
-  result={available:true,min:near,max:far,pixels:projectAt(g,far).pixels,method:g.pr.method,label:g.pr.label,source:g.pr.source,notes:g.notes,fov:g.fov,width:g.width,height:g.height,targetHeight:g.H,targetWidth:g.W,mode:g.s.mode};
+  const projected=projectAt(g,far);
+  result={available:true,min:near,max:far,pixels:projected.pixels,verticalPixels:projected.verticalPixels,horizontalPixels:projected.horizontalPixels,pixelArea:projected.pixelArea,pixelMetric:'projected-area',method:g.pr.method,label:g.pr.label,source:g.pr.source,notes:g.notes,fov:g.fov,width:g.width,height:g.height,targetHeight:g.H,targetWidth:g.W,mode:g.s.mode};
  }
  if(cache.size>16384)cache.clear();cache.set(key,result);return result;
 }
@@ -169,6 +181,7 @@ function draw(ctx,p,d,fov,range){
  });ctx.restore();
 }
 function sync(p,d){
+ const reset=root.document?.getElementById('analytics-reset-targets');if(reset){reset.hidden=!p.analytics?.markerPositions||!Object.keys(p.analytics.markerPositions).length;reset.disabled=root.SIGS_V6?.currentStatus==='ARCHIVED';}
  const host=root.document?.getElementById('analytics-reach');if(!host)return;host.textContent='';const s=settings(p,d),active=A.active(p,d),locked=root.SIGS_V6?.currentStatus==='ARCHIVED';
  root.document.querySelectorAll('[data-analytics-mode]').forEach(button=>{const selected=button.dataset.analyticsMode===s.mode;button.setAttribute('aria-pressed',String(selected));button.classList.toggle('selected',selected);button.disabled=locked;});
  const conditions=root.document.getElementById('analytics-conditions');if(conditions)conditions.textContent=d.type==='thermal_bi'&&(d.thermalRangeBasis==='manufacturer-human-vca'||d.analytics?.channel==='thermal')?'Analítica no canal térmico, de dia e de noite. Alcances SIP publicados por alvo; validar o contraste térmico e as condições de ensaio do fabricante.':s.mode==='day'?'Dia: boa iluminação, alvo completo e sem contraluz ou obstáculos.':ajaxFamily(d)?'Noite: referências Ajax e estimativa dos carros pela proporção dia/noite. Além da iluminação IR integrada, é necessária luz suficiente no alvo.':'Noite: iluminação IR ou luz suficiente no alvo; o alcance fica limitado à iluminação indicada. Evitar reflexos e objetos próximos dos LEDs.';
@@ -178,7 +191,7 @@ function sync(p,d){
  const targets=['people','vehicles'].filter(t=>active[t]);if(!targets.length){host.textContent='Ative um alvo para calcular o alcance.';return;}
  if(!root.S.scale.ok){host.textContent='Defina a escala para representar os alcances em metros no FOV.';return;}
  for(const target of targets){const r=calculate(p,d,target),row=root.document.createElement('div');row.className='analytics-reach-row '+target;const title=root.document.createElement('b');title.textContent=(target==='people'?'Pessoas':'Carros')+' · '+(r.available?r.min.toFixed(1)+'–'+r.max.toFixed(1)+' m':r.status);row.appendChild(title);
-  if(r.available){const detail=root.document.createElement('small');detail.textContent=r.label+' · alvo '+r.targetWidth+' × '+r.targetHeight+' m · altura projetada '+Math.round(r.pixels)+' px · imagem considerada '+Math.round(r.width)+' × '+Math.round(r.height);row.appendChild(detail);}
+  if(r.available){const detail=root.document.createElement('small');detail.textContent=r.label+' · alvo '+r.targetWidth+' × '+r.targetHeight+' m · alvo na imagem '+Math.round(r.horizontalPixels)+' × '+Math.round(r.verticalPixels)+' px'+(r.method==='estimate'?' · detalhe equivalente '+Math.round(r.pixels)+' px':'')+' · imagem considerada '+Math.round(r.width)+' × '+Math.round(r.height);row.appendChild(detail);}
   for(const note of r.notes||[]){const text=root.document.createElement('small');text.textContent=note;row.appendChild(text);}if(r.source){const link=root.document.createElement('a');link.href=root.SIGSProductLinks?root.SIGSProductLinks.resolve(d,r.source):r.source;link.target='_blank';link.rel='noopener noreferrer';link.textContent=root.SIGSProductLinks?root.SIGSProductLinks.label(link.href):'Fonte do alcance de referência';row.appendChild(link);}host.appendChild(row);
  }
 }
@@ -225,10 +238,10 @@ function registerMarkerDragging(){
  function finish(e){
   if(!markerDrag||markerDrag.pointerId!==e.pointerId)return;
   e.preventDefault();e.stopImmediatePropagation();
-  markerDrag=null;ignoreClickUntil=Date.now()+250;
+  const p=markerDrag.p;markerDrag=null;ignoreClickUntil=Date.now()+250;
   try{cv.releasePointerCapture(e.pointerId)}catch(_){}
   cv.style.touchAction='';cv.style.cursor='';
-  root.saveCurrentFloor?.();root.sigsV6MarkDirty?.();root.render?.();
+  root.saveCurrentFloor?.();root.sigsV6MarkDirty?.();if(root.S.selId===p.id)A.sync(p,root.gD(p.libId));root.render?.();
  }
  cv.addEventListener('pointerup',finish,true);
  cv.addEventListener('pointercancel',finish,true);
@@ -245,6 +258,10 @@ root.sigsSetAnalyticsSetting=function(key,value){
  const limits={minPixels:[8,1000],peopleHeight:[.3,3],peopleWidth:[.15,2],vehiclesHeight:[.5,5],vehiclesWidth:[.5,5]};
  if(key==='mode'){if(!['day','night'].includes(value))return;}else if(key==='ajaxSensitivity'){if(!ajaxFamily(d)||!['default','maximum'].includes(value))return;}else{value=Number(value);if(!limits[key]||!Number.isFinite(value)||value<limits[key][0]||value>limits[key][1]){sync(p,d);return;}}
  if(settings(p,d)[key]===value)return;root.pushUndo();p.analytics={...p.analytics,[key]:value};root.saveCurrentFloor?.();root.sigsV6MarkDirty?.();A.sync(p,d);root._calcBlindSpot?.(p.instHeight||3,p.instTilt??30);root.render();
+};
+root.sigsResetAnalyticsTargets=function(){
+ const p=root.fP(root.S.selId);if(!p||root.MOD!=='cctv'||root.SIGS_V6?.currentStatus==='ARCHIVED'||!p.analytics?.markerPositions)return;
+ root.pushUndo();delete p.analytics.markerPositions;root.saveCurrentFloor?.();root.sigsV6MarkDirty?.();A.sync(p,root.gD(p.libId));root.render();
 };
 root.SIGSAnalyticsRange={ajaxTable,ajaxFamily,settings,profile,geometry,projectAt,calculate,outerRange,draw,sync};A.draw=draw;
 if(typeof module!=='undefined'&&module.exports)module.exports=root.SIGSAnalyticsRange;

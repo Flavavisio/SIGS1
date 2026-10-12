@@ -2,6 +2,14 @@
 
 Aplicação de projeto para CCTV, intrusão e incêndio. Esta pasta contém o código completo, os testes e as migrações Supabase.
 
+## Atualização V110
+
+- Corrige o critério inconsistente das estimativas de analítica: a pessoa usava altura em píxeis e o carro a maior dimensão, favorecendo a pessoa em muitas óticas/resoluções. Ambos usam agora a área da caixa projetada, com as dimensões frontais configuradas, enquadramento completo e limites de iluminação.
+- Escala equivalente `sqrt(altura_px * largura_px * 3.5)`: a razão de referência `1.75 / 0.5` conserva o limiar predefinido de 108 px para a pessoa frontal de referência em projeção isotrópica. É uma hipótese de projeto SIGS; não é um limiar de IA publicado nem uma validação do desempenho do equipamento.
+- O intervalo procura os dois cruzamentos do limiar de área: perto de uma câmara muito inclinada, o alvo pode primeiro crescer na imagem. Alcances publicados Ajax/térmicos e a proporção noturna/zoom Ajax mantêm os próprios limites de referência.
+- O painel distingue dimensões projetadas de detalhe equivalente. “Repor alvos no alcance calculado” remove apenas posições manuais, com desfazer, gravação e proteção de projetos arquivados.
+- Testes: `node tests/analytics-target-comparison-v110.test.cjs`, `node tests/analytics-range-v86.test.cjs`, `node tests/ajax-analytics-v95.test.cjs`, `node tests/analytics-clarity-v94.test.cjs` e os testes de arrasto V107/V108.
+
 ## Atualização V109
 
 - Satélite MapLibre até zoom 22; compatibilidade Leaflet até 23. A ampliação reutiliza os mosaicos nativos até 19 e mantém a escala métrica da captura.

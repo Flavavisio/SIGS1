@@ -1,11 +1,11 @@
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict'),{JSDOM}=require('jsdom'),{createCanvas}=require('@napi-rs/canvas');
 const read=p=>fs.readFileSync(p,'utf8'),env={};env.window=env;vm.createContext(env);
 for(const p of ['assets/js/lens-model-v45.js','assets/js/engineering-model-v39.js','assets/js/analytics-v85.js','assets/js/analytics-range-v86.js'])vm.runInContext(read(p),env);
-const M=env.SIGSAnalyticsRange,hik={id:'h',model:'DS-2CD2043G2-I',brand:'hikvision',type:'bullet',fov:90,lensType:'fixed',focalLength:2.8,range:40,mp:2,resW:1920,resH:1080},p={libId:'h',instHeight:3,instTilt:0,rotation:0,analytics:{people:true,vehicles:true,mode:'day',minPixels:108}},near=(a,b,t=.001)=>assert(Math.abs(a-b)<t,`${a} != ${b}`);
+const M=env.SIGSAnalyticsRange,hik={id:'h',model:'DS-2CD2043G2-I',brand:'hikvision',type:'bullet',fov:90,lensType:'fixed',focalLength:2.8,range:40,mp:2,resW:1920,resH:1080},p={libId:'h',x:0,y:0,instHeight:3,instTilt:0,rotation:0,analytics:{people:true,vehicles:true,mode:'day',minPixels:108}},near=(a,b,t=.001)=>assert(Math.abs(a-b)<t,`${a} != ${b}`);
 // At zero tilt the projected target height is f * H / distance: independent closed-form oracle.
 let r=M.calculate(p,hik,'people');assert(r.available);near(r.min,3/(1080/1920));near(r.max,1920*1.75/(2*108));near(r.pixels,108);assert.equal(r.method,'estimate');assert(r.notes.some(s=>s.includes('não é um limite IA')));
 const stricter=M.calculate({...p,analytics:{...p.analytics,minPixels:216}},hik,'people');near(stricter.max,r.max/2);
-const larger=M.calculate({...p,analytics:{...p.analytics,peopleHeight:2}},hik,'people');near(larger.max,r.max*2/1.75);
+const larger=M.calculate({...p,analytics:{...p.analytics,peopleHeight:2}},hik,'people');near(larger.max,r.max*Math.sqrt(2/1.75));
 const higherResolution=M.calculate(p,{...hik,mp:8,resW:3840,resH:2160},'people');near(higherResolution.max,r.max*2);
 const vf={...hik,lensType:'motorized',baseLens:2.8,lensMin:2.8,lensMax:12,fovWide:90,fovTele:30};const wide=M.calculate({...p,instHeight:3,instTilt:0,lens:2.8},vf,'people'),tele=M.calculate({...p,instHeight:3,instTilt:0,lens:12},vf,'people');assert(wide.available&&tele.available);assert(tele.fov<wide.fov);assert(tele.max>wide.max);
 const steep=M.calculate({...p,instTilt:80},hik,'people');assert(steep.available);assert(steep.max<r.max,'Steep tilt restricts complete-target framing');

@@ -6,7 +6,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="SIGS Studio — ferramenta profissional de design de sistemas CCTV e intrusão: plantas, cobertura de câmaras, DORI, cálculo de armazenamento, PoE e orçamento.">
-<meta name="sigs-release" content="20261012-update109">
+<meta name="sigs-release" content="20261012-analytics110">
 <meta name="theme-color" content="#050810">
 <title>SIGS Studio</title>
 
@@ -21,7 +21,7 @@
 <link rel="stylesheet" href="assets/css/proposal-v10.css?v=20261011-intrusion88">
 <link rel="stylesheet" href="assets/css/workflow-v12.css?v=20261007-0700">
 <link rel="stylesheet" href="assets/css/sidebar-v13.css?v=20261012-links106">
-<link rel="stylesheet" href="assets/css/analytics-v85.css?v=20261011-analytics89">
+<link rel="stylesheet" href="assets/css/analytics-v85.css?v=20261012-analytics110">
 <link rel="stylesheet" href="assets/css/brand-v23.css?v=20261007-0700"><link rel="icon" type="image/svg+xml" href="assets/brand/sigs-favicon.svg"><link rel="stylesheet" href="assets/css/recommendations-v24.css?v=20261007-0700"><link rel="stylesheet" href="assets/css/activity-v42.css?v=20261009-activation68">
 <link rel="stylesheet" href="assets/css/disk-layout-v65.css?v=20261009-simple67"></head>
 <body class="sigs-locked sigs-premium">
@@ -583,8 +583,9 @@
             </div><p id="analytics-conditions" class="sigs-analytics-note" aria-live="polite"></p></div>
             <label class="analytics-mode" id="analytics-ajax-sensitivity" hidden>Sensibilidade Ajax<select data-analytics-setting="ajaxSensitivity" onchange="sigsSetAnalyticsSetting('ajaxSensitivity',this.value)"><option value="default">Predefinida · 3 (recomendada)</option><option value="maximum">Máxima · 10</option></select></label>
             <div id="analytics-reach" aria-live="polite"></div>
+            <button id="analytics-reset-targets" type="button" class="studio-button" hidden onclick="sigsResetAnalyticsTargets()">Repor alvos no alcance calculado</button>
             <details class="analytics-criteria"><summary>Critérios de dimensionamento</summary><div class="analytics-criteria-grid">
-              <label id="analytics-pixel-row">Mín. altura do alvo · px<input data-analytics-setting="minPixels" type="number" min="8" max="1000" step="1" value="108" onchange="sigsSetAnalyticsSetting('minPixels',this.value)"></label>
+              <label id="analytics-pixel-row">Detalhe mínimo · px equivalentes<input data-analytics-setting="minPixels" type="number" min="8" max="1000" step="1" value="108" onchange="sigsSetAnalyticsSetting('minPixels',this.value)"></label>
               <label>Pessoa · altura (m)<input data-analytics-setting="peopleHeight" type="number" min="0.3" max="3" step="0.05" value="1.75" onchange="sigsSetAnalyticsSetting('peopleHeight',this.value)"></label>
               <label>Pessoa · largura (m)<input data-analytics-setting="peopleWidth" type="number" min="0.15" max="2" step="0.05" value="0.5" onchange="sigsSetAnalyticsSetting('peopleWidth',this.value)"></label>
               <label>Carro · altura (m)<input data-analytics-setting="vehiclesHeight" type="number" min="0.5" max="5" step="0.1" value="1.5" onchange="sigsSetAnalyticsSetting('vehiclesHeight',this.value)"></label>
@@ -1259,7 +1260,7 @@
 <script src="assets/js/disk-model-v64.js?v=20261009-disk64"></script>
 <script src="assets/js/catalog-activation-v68.js?v=20261009-activation68"></script>
 <script src="assets/js/analytics-v85.js?v=20261012-links106"></script>
-<script src="assets/js/analytics-range-v86.js?v=20261012-marker107"></script>
+<script src="assets/js/analytics-range-v86.js?v=20261012-analytics110"></script>
 <link rel="stylesheet" href="assets/css/intrusion-v87.css?v=20261011-intrusion88">
 <script src="assets/data/intrusion-images-v88.js?v=20261011-intrusion88"></script>
 <script src="assets/data/intrusion-catalog-v88.js?v=20261011-intrusion88"></script>

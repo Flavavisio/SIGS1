@@ -21,6 +21,7 @@
 .analytics-criteria-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;font-size:10px;color:var(--txt2)}
 #analytics-pixel-row{grid-column:1/-1}
 #analytics-pixel-row[hidden]{display:none}
+#analytics-reset-targets[hidden]{display:none!important}
 #analytics-reach{font-size:10px;line-height:1.5;color:var(--txt2);margin-top:7px}
 
 .analytics-mode-buttons{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:6px}.analytics-mode-buttons button{display:flex;align-items:center;justify-content:center;gap:7px;padding:9px 7px;border:1px solid var(--bdr2);border-radius:7px;background:var(--bg2);color:var(--txt2);font:inherit;font-size:12px;cursor:pointer}.analytics-mode-buttons svg{width:20px;height:20px;flex-shrink:0}.analytics-mode-buttons [data-analytics-mode="day"] svg{color:#fbbf24}.analytics-mode-buttons [data-analytics-mode="night"] svg{color:#a5b4fc}.analytics-mode-buttons button.selected{border-color:var(--acc);background:var(--bg4);color:var(--txt);font-weight:700}.analytics-mode-buttons button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}.analytics-mode-buttons button:disabled{opacity:.55;cursor:default}
