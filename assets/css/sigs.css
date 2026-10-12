@@ -1117,6 +1117,7 @@ body.presenting #plegend{display:block}
 #plegend .pl-foot{margin-top:11px;padding-top:10px;border-top:1px solid rgba(255,255,255,.08);font-family:var(--m);font-size:10px;color:rgba(255,255,255,.42)}
 #bgcv,#maincv{position:absolute;top:0;left:0;display:block}
 #bgcv{pointer-events:none}
+#maincv{touch-action:none}
 
 /* ── RIGHT PANEL ── */
 #rp{

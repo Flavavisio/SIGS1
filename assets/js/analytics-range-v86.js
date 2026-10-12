@@ -118,6 +118,18 @@ function markerPosition(p,target,r,fov,activeCount,index){
  const dist=r?.available?r.max:0,rot=(Number(p.rotation)||0)*Math.PI/180;
  return {x:Number(p.x)+Math.sin(rot+angle)*dist*factor,y:Number(p.y)-Math.cos(rot+angle)*dist*factor,custom:false};
 }
+function markerLayout(p,d,target,fov,range,count,index){
+ const angle=(count===2?(index?1:-1)*Math.min(8,fov/8):0)*Math.PI/180;
+ const result=calculate(p,d,target,{fov,rangeLimit:range,angle});
+ return {result,position:markerPosition(p,target,result,fov,count,index)};
+}
+function markerCoverage(p,d){
+ if(d.type==='thermal_bi')return {fov:d.thermalFov||d.fov||30,range:outerRange(p,d,d.thermalRange||d.thermalDetectionRange||d.range||100)};
+ const L=root.SIGSLensModel,lens=L?L.effective(p,d):p.lens||2.8;
+ const fov=typeof root.lFOV==='function'?root.lFOV(d.fov,lens,L?L.policy(d).base:undefined,d):L?L.fov(p,d):d.fov||90;
+ const base=typeof root.lRange==='function'?root.lRange(d.range,lens,p,d):d.range||0;
+ return {fov,range:outerRange(p,d,base)};
+}
 function markerAssessment(p,d,target,position,fov,range){
  const ppm=root.S.scale.ppm,dx=(position.x-p.x)/ppm,dy=(position.y-p.y)/ppm;
  const distance=Math.hypot(dx,dy),bearing=Math.atan2(dx,-dy),rotation=(Number(p.rotation)||0)*Math.PI/180;
@@ -147,8 +159,7 @@ function draw(ctx,p,d,fov,range){
   // Each azimuth has its own projection limit: the contour is not an assumed circular AI radius.
   const contours=Array.from({length:37},(_,j)=>{const angle=-half+half*2*j/36;return {angle,result:calculate(p,d,target,{fov,rangeLimit:range,angle})};});
   for(const boundary of ['min','max']){ctx.save();if(boundary==='min')ctx.globalAlpha*=.45;let open=false;ctx.beginPath();for(const {angle,result:r} of contours){if(!r.available){open=false;continue;}const x=Math.sin(angle)*r[boundary]*factor,y=-Math.cos(angle)*r[boundary]*factor;if(open)ctx.lineTo(x,y);else ctx.moveTo(x,y);open=true;}ctx.stroke();ctx.restore();}
-  const angle=targets.length===2?(i?1:-1)*Math.min(8,fov/8)*Math.PI/180:0,r=calculate(p,d,target,{fov,rangeLimit:range,angle});if(!r.available)return;
-  const position=markerPosition(p,target,r,fov,targets.length,i);
+  const {result:r,position}=markerLayout(p,d,target,fov,range,targets.length,i);if(!r.available)return;
   const dx=(position.x-p.x)*root.S.zoom,dy=(position.y-p.y)*root.S.zoom,rot=(Number(p.rotation)||0)*Math.PI/180;
   const x=dx*Math.cos(rot)+dy*Math.sin(rot),y=-dx*Math.sin(rot)+dy*Math.cos(rot);
   const a=markerAssessment(p,d,target,position,fov,range);
@@ -175,17 +186,15 @@ function sync(p,d){
 // Pointer capture enables both mouse and touch; positions are persisted with the camera.
 let markerDrag=null,ignoreClickUntil=0;
 function markerHit(event){
- if(!root.S?.scale?.ok||root.MOD!=='cctv'||root.S.tool||root.SIGS_V6?.currentStatus==='ARCHIVED')return null;
+ if(!root.S?.scale?.ok||root.MOD!=='cctv'||root.S.mapOpen||(root.S.layers&&!root.S.layers.cov)||(root.S.tool&&root.S.tool!=='place')||root.SIGS_V6?.currentStatus==='ARCHIVED')return null;
  const pt=root.ep(event),cameras=[...root.S.placed].reverse();
  for(const p of cameras){
   const d=root.gD(p.libId);if(!d||p.visible===false)continue;
   const active=A.active(p,d),targets=['people','vehicles'].filter(t=>active[t]);
-  const fov=root.SIGSLensModel?.fov(p,d)||d.fov||90;
-  const range=outerRange(p,d,d.range||90);
+  const {fov,range}=markerCoverage(p,d);
   for(let i=targets.length-1;i>=0;i--){
-   const target=targets[i],r=calculate(p,d,target,{fov,rangeLimit:range});
+   const target=targets[i],{result:r,position}=markerLayout(p,d,target,fov,range,targets.length,i);
    if(!r.available)continue;
-   const position=markerPosition(p,target,r,fov,targets.length,i);
    const point=root.w2s(position.x,position.y);
    if(Math.hypot(pt.x-point.x,pt.y-point.y)<=23)return {p,target,position};
   }
@@ -196,7 +205,7 @@ function registerMarkerDragging(){
  const cv=root.cv;if(!cv||cv.dataset.analyticsMarkersDrag==='1')return;
  cv.dataset.analyticsMarkersDrag='1';
  cv.addEventListener('pointerdown',e=>{
-  if(e.button!==0||markerDrag)return;const hit=markerHit(e);if(!hit)return;
+  if(e.button!==0||e.altKey||e.isPrimary===false||e.defaultPrevented||markerDrag)return;const hit=markerHit(e);if(!hit)return;
   e.preventDefault();e.stopImmediatePropagation();
   root.pushUndo?.();
   hit.p.analytics=hit.p.analytics||{};
@@ -223,7 +232,12 @@ function registerMarkerDragging(){
  }
  cv.addEventListener('pointerup',finish,true);
  cv.addEventListener('pointercancel',finish,true);
- cv.addEventListener('click',e=>{if(Date.now()<ignoreClickUntil){e.preventDefault();e.stopImmediatePropagation()}},true);
+ cv.addEventListener('lostpointercapture',finish,true);
+ // The canvas parent still handles legacy mouse events for camera editing.
+ // Consume compatibility events for this gesture so they cannot place another camera.
+ for(const name of ['mousedown','mousemove','mouseup','click'])cv.addEventListener(name,e=>{
+  if(markerDrag||Date.now()<ignoreClickUntil){e.preventDefault();e.stopImmediatePropagation();}
+ },true);
 }
 if(root.document){if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',registerMarkerDragging);else registerMarkerDragging();}
 root.sigsSetAnalyticsSetting=function(key,value){
