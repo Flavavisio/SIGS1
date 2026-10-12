@@ -200,6 +200,8 @@ function render(){
   bg.fillStyle='#101824'; bg.fillRect(0,0,W,H);
   if(S.layers.grid)drawGrid();
   if(S.fp&&S.fp.img&&S.layers.fp)drawFP();
+  // Potential PTZ pan coverage sits below every current directional FOV.
+  if(S.layers.cov&&typeof sigsDrawPTZOverview==='function')S.placed.forEach(function(p){var d=gD(p.libId);if(d&&p.visible!==false)sigsDrawPTZOverview(p,d);});
   if(S.layers.cov)S.placed.forEach(function(p){var d=gD(p.libId);if(d&&p.visible!==false)drawCov(p,d);});
   if(S.layers.dev)S.placed.forEach(function(p){var d=gD(p.libId);if(d)drawIcon(p,d);});
   if(S.layers.meas)drawMeas();
@@ -1533,10 +1535,10 @@ function openMap(){
         var mapDiv=document.getElementById('leafmap');
         S.lmap=L.map(mapDiv,{zoomControl:true,attributionControl:true}).setView([38.7166,-9.1392],14);
         var osm=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'});
-        var sat=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'© Esri World Imagery'});
+        var sat=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:23,maxNativeZoom:19,attribution:'© Esri World Imagery'});
         var hybrid=L.layerGroup([
-          L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19}),
-          L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',{maxZoom:19})
+          L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:23,maxNativeZoom:19}),
+          L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',{maxZoom:23,maxNativeZoom:19})
         ]);
         S.mapBaseLayers=[osm,sat,hybrid];
         S.satelliteLayer=sat;

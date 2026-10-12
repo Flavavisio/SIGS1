@@ -44,7 +44,7 @@
     if(!w.maplibregl){reset();return;}
     try{
       map=new maplibregl.Map({container:'leafmap',style:style(),center:[-9.1392,38.7166],zoom:13,
-        minZoom:1,maxZoom:18,bearing:0,pitch:0,dragRotate:false,pitchWithRotate:false,
+        minZoom:1,maxZoom:22,bearing:0,pitch:0,dragRotate:false,pitchWithRotate:false,
         touchPitch:false,pixelRatio:2,maxCanvasSize:[4096,4096],canvasContextAttributes:{preserveDrawingBuffer:true},attributionControl:false});
       S.mlmap=map;
       map.touchZoomRotate.disableRotation();

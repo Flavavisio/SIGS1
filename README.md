@@ -2,6 +2,15 @@
 
 Aplicação de projeto para CCTV, intrusão e incêndio. Esta pasta contém o código completo, os testes e as migrações Supabase.
 
+## Atualização V109
+
+- Satélite MapLibre até zoom 22; compatibilidade Leaflet até 23. A ampliação reutiliza os mosaicos nativos até 19 e mantém a escala métrica da captura.
+- PTZ: área potencial de rotação a 360° em preenchimento suave, por baixo do FOV da direção atual. Respeita a escala, focal, alcance no solo, zona cega e visibilidade; não representa visão simultânea nem substitui a análise de obstáculos do FOV atual.
+- A app verifica publicações de dois em dois minutos, ao regressar à janela e ao recuperar ligação. Alterações à versão HTML, à lista de scripts/estilos ou aos seus validadores HTTP mostram “Nova atualização” / “Instalar”, sem recarregar automaticamente.
+- Instalar atualiza a cache dos recursos, guarda o projeto aberto e retoma-o na mesma conta. Falhas de descarga/gravação impedem o recarregamento. Rascunhos locais são preservados na sessão; falta de espaço impede instalar até guardar/fechar o projeto.
+- Em próximas publicações, atualizar `meta[name="sigs-release"]` e o parâmetro `v` dos recursos alterados assegura deteção imediata e carregamento consistente. A verificação de ETag/Last-Modified também deteta alterações a recursos com URLs iguais.
+- Testes: `node tests/app-update-v109.test.cjs`, `node tests/ptz-coverage-v109.test.cjs`, `node tests/maplibre-v56.test.cjs`.
+
 ## Atualização V32
 
 - Registo público em registo.html: plano, pessoa/empresa, contacto, email e palavra-passe. Links no index e no login.

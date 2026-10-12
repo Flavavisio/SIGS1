@@ -1,0 +1,7 @@
+#sigs-app-update{position:fixed;z-index:100000;right:18px;bottom:18px;max-width:min(390px,calc(100vw - 36px));padding:16px;background:#111c30;color:#eef3ff;border:1px solid #4169e1;border-radius:12px;box-shadow:0 12px 42px #0008;font:13px/1.5 Arial,sans-serif}
+#sigs-app-update[hidden]{display:none}
+#sigs-app-update strong{display:block;font-size:15px;margin-bottom:4px}
+#sigs-app-update p{margin:4px 0 12px;color:#b9c9e3}
+#sigs-app-update button{padding:9px 18px;border:0;border-radius:7px;background:#4169e1;color:#fff;font:600 13px Arial,sans-serif;cursor:pointer}
+#sigs-app-update button:disabled{opacity:.7;cursor:wait}
+#sigs-app-update button:focus-visible{outline:2px solid #fff;outline-offset:3px}
