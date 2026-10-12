@@ -9,7 +9,9 @@
 <meta name="theme-color" content="#050810">
 <title>SIGS Studio</title>
 
-<link rel="stylesheet" href="assets/css/sigs.css?v=20261012-marker107">
+<link rel="stylesheet" href="assets/css/sigs.css?v=20261012-fov108">
+<link rel="stylesheet" href="assets/vendor/maplibre-gl-5.6.0/maplibre-gl.css">
+<link rel="stylesheet" href="assets/css/maplibre-v56.css?v=20261012-fov108">
 <script src="assets/js/block-01.js?v=20261007-0700"></script>
 <script src="assets/js/block-02.js?v=20261007-0700"></script>
 
@@ -438,10 +440,12 @@
         <div id="mapbar">
           <input id="mapsrch" type="text" placeholder="🔍  Pesquisar morada, localidade...">
           <button class="mbtn mba" onclick="doSearch()">Pesquisar</button>
+          <button id="sigs-map-names" class="mbtn mba" aria-pressed="false" onclick="sigsMapToggleNames()">Nomes das ruas</button>
           <button class="mbtn mbg" onclick="captureMapTiles()">📸 Capturar como Planta</button>
           <button class="mbtn mbr" onclick="closeMap()">✕ Fechar</button>
+          <div id="sigs-map-status" role="status" aria-live="polite">Satélite · procura uma morada ou enquadra a área</div>
         </div>
-        <div id="leafmap"></div>
+        <div id="leafmap" aria-label="Mapa de satélite"></div>
       </div>
 
       <div id="hud">
@@ -519,7 +523,7 @@
             <!-- Tilt slider -->
             <div class="fr" style="margin-bottom:2px">
               <span class="fl">Inclinação</span>
-              <input class="fi" id="p-tilt" type="range" min="0" max="90" step="1" value="30" oninput="updInstall()">
+              <input class="fi" id="p-tilt" type="range" min="0" max="90" step="0.1" value="30" oninput="updInstall()">
               <span id="p-tiltv" style="font-family:var(--m);font-size:12px;font-weight:700;color:var(--acc4);width:36px;text-align:right;flex-shrink:0">30°</span>
             </div>
             <div style="display:flex;justify-content:space-between;margin-bottom:8px;padding:0 2px">
@@ -1334,5 +1338,8 @@
 <script src="assets/js/network-v60.js?v=20261011-uniview91"></script>
 <script src="assets/js/multidisciplinary-v104.js?v=20261012-multi104fix2"></script>
 <script src="assets/js/proposal-link-v105.js?v=20261012-proposal105"></script>
+<script src="assets/vendor/maplibre-gl-5.6.0/maplibre-gl.js"></script>
+<script src="assets/js/maplibre-v56.js?v=20261012-fov108"></script>
+<script src="assets/js/camera-fov-v108.js?v=20261012-fov108"></script>
 </body>
 </html>

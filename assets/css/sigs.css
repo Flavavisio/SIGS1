@@ -2048,3 +2048,5 @@ body.light .sigs-v6-dialog{background:#fff}@media(max-width:720px){.sigs-v6-grid
 /* SIGS V7 — Engineering */
 .sigs-v7-engineering-note{margin:8px 9px;padding:8px 9px;border:1px solid rgba(16,185,129,.22);border-radius:8px;background:rgba(16,185,129,.055);font:8px/1.5 var(--f);color:var(--txt3)}
 .sigs-v7-engineering-note b{color:#10b981}
+
+.fov-drag-help{font-size:10px;color:var(--txt2);line-height:1.6;padding:8px;border:1px solid var(--bdr2);border-radius:7px}

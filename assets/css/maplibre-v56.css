@@ -1,0 +1,11 @@
+/* The map viewer uses the inspector's width while open. ResizeObserver keeps its canvas aligned. */
+body.sigs-map-open #rp,body.sigs-map-open .studio-dock,body.sigs-map-open #hud{display:none!important}
+#mapbar{flex-wrap:wrap;gap:7px;padding:10px!important}
+#mapsrch{min-width:180px;flex:1}
+#sigs-map-status{flex:0 0 100%;font-size:11px;line-height:1.5;color:var(--txt2);overflow-wrap:anywhere}
+#sigs-map-names[aria-pressed=true]{border-color:var(--acc);background:var(--bg3)}
+#leafmap .maplibregl-ctrl-attrib{font-size:10px;background:rgba(255,255,255,.92);color:#263445;max-width:100%}
+#leafmap .maplibregl-ctrl-attrib a{color:#263445}
+#leafmap .maplibregl-ctrl-scale{font-size:10px}
+#leafmap .maplibregl-canvas{outline:none}
+@media(max-width:640px){#mapsrch{flex-basis:100%}#mapbar .mbtn{flex:1;padding:8px 6px;font-size:10px}#sigs-map-status{font-size:10px}}
