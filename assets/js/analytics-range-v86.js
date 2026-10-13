@@ -64,7 +64,17 @@ function geometry(p,d,target,options={}){
  if(!pr.thermal&&root.SIGSLensModel&&!root.SIGSLensModel.policy(d).documented)notes.push('Ótica do catálogo por confirmar: validar FOV e lente no equipamento.');
  if(s.mode==='night'&&!pr.thermal){const light=Math.max(N(d.range,0),N(d.whiteRange,0));if(ajaxFamily(d)){notes.push('Iluminação integrada: '+light+' m. Para usar o alcance estimado além desta distância, é necessária luz suficiente no alvo; validar no local.');}else{if(!(light>0))return {invalid:'Alcance noturno de iluminação por confirmar.'};max=Math.min(max,light);notes.push('Noite: limitado também ao alcance de iluminação indicado ('+light+' m).');}}
  if(N(options.rangeLimit,0))max=Math.min(max,options.rangeLimit);
- return {s,pr:effectiveProfile,target,width,height,fov,tanH,tanV,tilt,h,angle,H,W,min:pr.min,max,notes};
+ let pixelThreshold=pr.method==='estimate'?s.minPixels:0;
+ const ref=pr.thermal&&d.thermalVcaReference?.[target];
+ if(ref&&ref.height>0&&ref.width>0&&pr.max>0){
+  // Calibrate each target against its OWN published thermal VCA reference.
+  // Projected size may reduce the useful interval but never extend that cap.
+  pixelThreshold=Math.sqrt(width*ref.width/(2*tanH*pr.max)*height*ref.height/(2*tanV*pr.max)*3.5);
+  effectiveProfile.label='Referência VCA · projeção SIGS';
+  notes.push('Alvo de referência: '+ref.height+' × '+ref.width+' m. A projeção SIGS reduz o alcance se o alvo for menor ou perder dimensão projetada; nunca ultrapassa a referência VCA publicada. Não é um novo ensaio do fabricante.');
+  if(target==='vehicles')notes.push('Os 4 m do alvo de ensaio são a dimensão horizontal projetada. Para um carro de frente, ajuste esta dimensão à largura efetivamente visível.');
+ }
+ return {s,pr:effectiveProfile,target,width,height,fov,tanH,tanV,tilt,h,angle,H,W,pixelThreshold,min:pr.min,max,notes};
 }
 function projectAt(g,distance){
  const x=Math.sin(g.angle)*distance,z=Math.cos(g.angle)*distance,c=Math.cos(g.tilt),s=Math.sin(g.tilt),points=[];
@@ -76,24 +86,25 @@ function projectAt(g,distance){
  // This is a SIGS planning assumption, never a manufacturer AI threshold.
  const pixelArea=verticalPixels*horizontalPixels,pixels=Math.sqrt(pixelArea*3.5);
  const framed=points.every(p=>Math.abs(p.x)<=g.tanH&&Math.abs(p.y)<=g.tanV);
- return {valid:framed&&(g.pr.method!=='estimate'||pixels>=g.s.minPixels),pixels,verticalPixels,horizontalPixels,pixelArea,framed};
+ const threshold=g.pixelThreshold??(g.pr.method==='estimate'?g.s.minPixels:0);
+ return {valid:framed&&pixels>=threshold,pixels,verticalPixels,horizontalPixels,pixelArea,framed};
 }
 function calculate(p,d,target,options={}){
  const g=geometry(p,d,target,options);if(!g)return {available:false,status:'Analítica por confirmar.'};if(g.invalid)return {available:false,status:g.invalid,notes:g.notes,source:g.source};
- const key=JSON.stringify([target,g.W,g.H,g.s,g.pr,g.width,g.height,g.fov,g.tanV,g.tilt,g.h,g.angle,g.min,g.max]);if(cache.has(key))return cache.get(key);
+ const key=JSON.stringify([target,g.W,g.H,g.s,g.pr,g.width,g.height,g.fov,g.tanV,g.tilt,g.h,g.angle,g.pixelThreshold,g.min,g.max]);if(cache.has(key))return cache.get(key);
  // Intersect exact framing inequalities, then the common projected-area size bound.
  let near=g.min,far=g.max,possible=far>near;const a=Math.cos(g.angle)*Math.cos(g.tilt),sin=Math.sin(g.tilt),cos=Math.cos(g.tilt);
  function bound(coefficient,right){if(Math.abs(coefficient)<1e-12){if(right<0)possible=false;}else if(coefficient>0)far=Math.min(far,right/coefficient);else near=Math.max(near,right/coefficient);}
  for(const y of [0,g.H])for(const side of [-1,1]){const b=(g.h-y)*sin,offset=side*g.W/2,vertical=(y-g.h)*cos,z=Math.cos(g.angle)*sin;
   bound(-a,b-.001);bound(Math.sin(g.angle)-g.tanH*a,g.tanH*b-offset);bound(-Math.sin(g.angle)-g.tanH*a,g.tanH*b+offset);bound(z-g.tanV*a,g.tanV*b-vertical);bound(-z-g.tanV*a,g.tanV*b+vertical);
  }
- if(g.pr.method==='estimate'&&possible&&far>near){
+ if(g.pixelThreshold>0&&possible&&far>near){
   // Projection size can grow first near a steeply tilted camera, then shrink.
   // Locate its maximum before bracketing BOTH threshold crossings; do not reject
   // the whole interval merely because the closest framed target is too small.
   const size=distance=>projectAt(g,distance).pixels,ratio=(Math.sqrt(5)-1)/2;
   let lo,hi,peak=near;
-  if(size(near)<g.s.minPixels){
+  if(size(near)<g.pixelThreshold){
    lo=near;hi=far;let x1=hi-ratio*(hi-lo),x2=lo+ratio*(hi-lo),v1=size(x1),v2=size(x2);
    for(let i=0;i<42;i++){
     if(v1<v2){lo=x1;x1=x2;v1=v2;x2=lo+ratio*(hi-lo);v2=size(x2);}
@@ -101,10 +112,10 @@ function calculate(p,d,target,options={}){
    }
    peak=[near,far,(lo+hi)/2].reduce((best,x)=>size(x)>size(best)?x:best,near);
   }
-  if(size(peak)<g.s.minPixels)possible=false;
+  if(size(peak)<g.pixelThreshold)possible=false;
   else{
-   if(size(near)<g.s.minPixels){lo=near;hi=peak;for(let i=0;i<35;i++){const mid=(lo+hi)/2;if(size(mid)>=g.s.minPixels)hi=mid;else lo=mid;}near=hi;}
-   if(size(far)<g.s.minPixels){lo=peak;hi=far;for(let i=0;i<35;i++){const mid=(lo+hi)/2;if(size(mid)>=g.s.minPixels)lo=mid;else hi=mid;}far=lo;}
+   if(size(near)<g.pixelThreshold){lo=near;hi=peak;for(let i=0;i<35;i++){const mid=(lo+hi)/2;if(size(mid)>=g.pixelThreshold)hi=mid;else lo=mid;}near=hi;}
+   if(size(far)<g.pixelThreshold){lo=peak;hi=far;for(let i=0;i<35;i++){const mid=(lo+hi)/2;if(size(mid)>=g.pixelThreshold)lo=mid;else hi=mid;}far=lo;}
   }
  }
  let result;
@@ -184,7 +195,7 @@ function sync(p,d){
  const reset=root.document?.getElementById('analytics-reset-targets');if(reset){reset.hidden=!p.analytics?.markerPositions||!Object.keys(p.analytics.markerPositions).length;reset.disabled=root.SIGS_V6?.currentStatus==='ARCHIVED';}
  const host=root.document?.getElementById('analytics-reach');if(!host)return;host.textContent='';const s=settings(p,d),active=A.active(p,d),locked=root.SIGS_V6?.currentStatus==='ARCHIVED';
  root.document.querySelectorAll('[data-analytics-mode]').forEach(button=>{const selected=button.dataset.analyticsMode===s.mode;button.setAttribute('aria-pressed',String(selected));button.classList.toggle('selected',selected);button.disabled=locked;});
- const conditions=root.document.getElementById('analytics-conditions');if(conditions)conditions.textContent=d.type==='thermal_bi'&&(d.thermalRangeBasis==='manufacturer-human-vca'||d.analytics?.channel==='thermal')?'Analítica no canal térmico, de dia e de noite. Alcances SIP publicados por alvo; validar o contraste térmico e as condições de ensaio do fabricante.':s.mode==='day'?'Dia: boa iluminação, alvo completo e sem contraluz ou obstáculos.':ajaxFamily(d)?'Noite: referências Ajax e estimativa dos carros pela proporção dia/noite. Além da iluminação IR integrada, é necessária luz suficiente no alvo.':'Noite: iluminação IR ou luz suficiente no alvo; o alcance fica limitado à iluminação indicada. Evitar reflexos e objetos próximos dos LEDs.';
+ const conditions=root.document.getElementById('analytics-conditions');if(conditions)conditions.textContent=d.type==='thermal_bi'&&(d.thermalRangeBasis==='manufacturer-human-vca'||d.analytics?.channel==='thermal')?'Canal térmico, de dia e de noite. Referências VCA por alvo; validar contraste térmico, dimensão e orientação do alvo e condições de instalação. O IR e o zoom do canal visível não aumentam o alcance térmico.':s.mode==='day'?'Dia: boa iluminação, alvo completo e sem contraluz ou obstáculos.':ajaxFamily(d)?'Noite: referências Ajax e estimativa dos carros pela proporção dia/noite. Além da iluminação IR integrada, é necessária luz suficiente no alvo.':'Noite: iluminação IR ou luz suficiente no alvo; o alcance fica limitado à iluminação indicada. Evitar reflexos e objetos próximos dos LEDs.';
  const sensitivity=root.document.getElementById('analytics-ajax-sensitivity');if(sensitivity)sensitivity.hidden=!ajaxFamily(d);
  root.document.querySelectorAll('[data-analytics-setting]').forEach(el=>{el.value=s[el.dataset.analyticsSetting];el.disabled=locked;});
  const hasEstimate=['people','vehicles'].some(t=>A.capabilities(d)[t]&&profile(p,d,t)?.method==='estimate');root.document.getElementById('analytics-pixel-row').hidden=!hasEstimate;

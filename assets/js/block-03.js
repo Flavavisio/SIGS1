@@ -434,11 +434,11 @@ function _drawRadarCov(p,dev,s){
 
 function _drawThermalBiCov(p,dev,s){
   var thermalFov=dev.thermalFov||dev.fov||30;
-  var thermalRange=dev.thermalRange||dev.thermalDetectionRange||dev.range||100;
+  var thermalRange=dev.thermalCoverageUnavailable?0:dev.thermalRange||dev.thermalDetectionRange||dev.range||100;
   if(typeof SIGSAnalyticsRange!=='undefined')thermalRange=SIGSAnalyticsRange.outerRange(p,dev,thermalRange);
   var variableVisible=typeof SIGSLensModel!=='undefined'&&SIGSLensModel.policy(dev).adjustable;
   var visibleFov=variableVisible?SIGSLensModel.fov(p,dev):dev.visibleFov||dev.fov||30;
-  var visibleRange=dev.visibleRange||dev.range||150;
+  var visibleRange=Number.isFinite(dev.visibleRange)?dev.visibleRange:dev.range||150;
   var rot=p.rotation*Math.PI/180;
   var opa=p.opacity!==undefined?p.opacity:0.22;
 
@@ -455,17 +455,17 @@ function _drawThermalBiCov(p,dev,s){
 
   var tRpx=thermalRange*S.scale.ppm*S.zoom;
   var vRpx=visibleRange*S.scale.ppm*S.zoom;
-  if(tRpx<=0&&!S.scale.ok){tRpx=thermalRange*2; vRpx=visibleRange*2;}
+  if(tRpx<=0&&!S.scale.ok&&!dev.thermalCoverageUnavailable){tRpx=thermalRange*2; vRpx=visibleRange*2;}
 
   ctx.save(); ctx.translate(s.x,s.y); ctx.rotate(rot);
 
   // ── Visible (blue) drawn first, behind ──
   ctx.save();sigsClipBlind(ctx,p,visibleFov,variableVisible?SIGSLensModel.verticalFov(p,dev):dev.visibleVerticalFov);
-  _drawSector(ctx,vRpx,visibleFov,'rgba('+vRgb+','+opa+')','rgba('+vRgb+',0.75)',1.5);ctx.restore();
+  if(vRpx>0)_drawSector(ctx,vRpx,visibleFov,'rgba('+vRgb+','+opa+')','rgba('+vRgb+',0.75)',1.5);ctx.restore();
 
   // ── Thermal cone (user colour) on top ──
   sigsClipBlind(ctx,p,thermalFov,dev.thermalVerticalFov);
-  _drawSector(ctx,tRpx,thermalFov,'rgba('+tRgb+','+(opa*1.2)+')','rgba('+tRgb+',0.88)',2);
+  if(tRpx>0)_drawSector(ctx,tRpx,thermalFov,'rgba('+tRgb+','+(opa*1.2)+')','rgba('+tRgb+',0.88)',2);
   if(typeof SIGSAnalytics!=='undefined')SIGSAnalytics.draw(ctx,p,dev,thermalFov,thermalRange);
 
 

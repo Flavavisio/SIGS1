@@ -1,0 +1,314 @@
+[
+  {
+    "model": "DS-2TD2628-3/QA",
+    "url": "https://www.visiotechsecurity.com/pt/produtos/cctv-ip-1/solucões-ip-278/proteccão-perimetral-280/ds-2td2628-3_qa-detail",
+    "checked": "2026-10-13",
+    "specs": {
+      "Resolução do sensor térmico": "256x192",
+      "Resolução ótica do sensor": "4 Megapixel (2688x1520)",
+      "Lente": "3.6 mm (Term) / 4.3 mm (Opt)",
+      "DORI": "Pessoa: 150 m (D), 38 m (R), 19 m (I) Veiculo: 460 m (D), 112 m (R), 56 m (I)",
+      "Intervalos VCA": "Pessoa: 28.8 m Veiculo: 75.6 m Medição de temperatura (Objeto 0.2x0.2m)): 11.7 m Medição de temperatura (Objeto 1x1m)): 58.3 m Deteção de incêndio (Objeto 0.2x0.2m)): 43.2 m",
+      "Ângulo de visão": "Térmico: 50° (H), 37.3° (V) Óptico: 84° (H), 43.1° (V)",
+      "Alimentação": "AC 24 V, 0.8 A, 8.5 W max. DC 12 V, 0.7 A, 8.5 W max. PoE IEEE802.3af"
+    }
+  },
+  {
+    "model": "DS-2TD2628-10/QA",
+    "url": "https://www.visiotechsecurity.com/pt/produtos/cctv-ip-1/solucões-ip-278/proteccão-perimetral-280/ds-2td2628-10_qa-detail",
+    "checked": "2026-10-13",
+    "specs": {
+      "Resolução do sensor térmico": "256x192",
+      "Resolução ótica do sensor": "4 Megapixel (2688x1520)",
+      "Lente": "9.7 mm (Term) / 8 mm (Opt)",
+      "DORI": "Pessoa: 404 m (D), 101 m (R), 50 m (I) Veiculo: 1239 m (D), 310 m (R), 155 m (I)",
+      "Intervalos VCA": "Pessoa: 77.6 m Veiculo: 203.7 m Medição de temperatura (Objeto 0.2x0.2m)): 32.3 m Medição de temperatura (Objeto 1x1m)): 161.7 m Deteção de incêndio (Objeto 0.2x0.2m)): 116.4 m",
+      "Ângulo de visão": "Térmico: 18° (H), 13.5° (V) Óptico: 39.4° (H), 22.1° (V)",
+      "Alimentação": "AC 24 V, 0.8 A, 8.5 W max. DC 12 V, 0.7 A, 8.5 W max. PoE IEEE802.3af"
+    }
+  },
+  {
+    "model": "DS-2TD1228T-2/QA(B)",
+    "url": "https://www.visiotechsecurity.com/pt/produtos/cctv-ip-1/solucões-ip-278/proteccão-perimetral-280/ds-2td1228t-2_qa(b)-detail",
+    "checked": "2026-10-13",
+    "specs": {
+      "Resolução do sensor térmico": "256x192",
+      "Resolução ótica do sensor": "4 Megapixel (2688x1520)",
+      "Lente": "2.1 mm (Term) / 2.2 mm (Opt)",
+      "DORI": "Pessoa: 88 m (D), 22 m (R), 11 m (I) Veiculo: 268 m (D), 67 m (R), 34 m (I)",
+      "Intervalos VCA": "Pessoa: 16.8 m Veiculo: 50.4 m Medição de temperatura (Objeto 1x1m)): 35 m Deteção de incêndio (Objeto 0.2 x 0.2 m): 25.2 m Deteção de fumo (Objeto 0.5 x 0.5 m): 6.6 m Deteção de fumo: 31.5 m Medição de temperatura (Objeto 1x1m)): 58.3 m Deteção de incêndio (Objeto 0.2x0.2m)): 43.2m",
+      "Ângulo de visão": "Térmico: 90° (H), 65.4° (V) Óptico: 117.8° (H), 70.4° (V)",
+      "Alimentação": "DC 12 V PoE IEEE802.3af"
+    }
+  },
+  {
+    "model": "DS-2TD2628T-3/QA",
+    "url": "https://www.visiotechsecurity.com/pt/produtos/cctv-ip-1/solucões-ip-278/proteccão-perimetral-280/ds-2td2628t-3_qa-detail",
+    "checked": "2026-10-13",
+    "specs": {
+      "Resolução do sensor térmico": "256x192",
+      "Resolução ótica do sensor": "4 Megapixel (2688x1520)",
+      "Lente": "3.6 mm (Term) / 4.3 mm (Opt)",
+      "DORI": "Pessoa: 150 m (D), 38 m (R), 19 m (I) Veiculo: 460 m (D), 112 m (R), 56 m (I)",
+      "Intervalos VCA": "Pessoa: 28.4 m Veiculo: 75.6 m Medição de temperatura (Objeto 0.2x0.2m)): 11.7 m Medição de temperatura (Objeto 1x1m)): 58.3 m Deteção de incêndio (Objeto 0.2x0.2m)): 43.2 m Deteção de fumo (objeto 0.5x0.5m)): 12 m Deteção de fumo: 5.4 m",
+      "Ângulo de visão": "Térmico: 50° (H), 37.3° (V) Óptico: 84° (H), 43.1° (V)",
+      "Alimentação": "AC 24 V, 0.8 A, 8.5 W max. DC 12 V, 0.7 A, 8.5 W max. PoE IEEE802.3af"
+    }
+  },
+  {
+    "model": "DS-2TD2617-6/QA",
+    "url": "https://www.visiotechsecurity.com/pt/produtos/cctv-ip-1/solucões-ip-278/proteccão-perimetral-280/ds-2td2617-6_qa-detail",
+    "checked": "2026-10-13",
+    "specs": {
+      "Resolução do sensor térmico": "160x120",
+      "Resolução ótica do sensor": "4 Megapixel (2688x1520)",
+      "Lente": "6.2 mm (Term) / 8 mm (Opt)",
+      "DORI": "Pessoa: 182 m (D), 46 m (R), 23 m (I) Veiculo: 559 m (D), 140 m (R), 70 m (I)",
+      "Intervalos VCA": "Pessoa: 30 m Veiculo: 85 m Medição de temperatura (Objeto 0.2x0.2m)): 13.6 m Medição de temperatura (Objeto 1x1m)): 68 m Deteção de incêndio (Objeto 0.2x0.2m)): 62 m",
+      "Ângulo de visão": "Térmico: 25° (H), 18.7° (V) Óptico: 39.42° (H), 22.14° (V)",
+      "Alimentação": "DC 12 V, 0.5 A, 6 W max. PoE IEEE802.3af"
+    }
+  },
+  {
+    "model": "DS-2TD2628-7/QA/GLT",
+    "url": "https://www.visiotechsecurity.com/pt/produtos/cctv-ip-1/solucões-ip-278/proteccão-perimetral-280/ds-2td2628-7_qa_glt-detail",
+    "checked": "2026-10-13",
+    "specs": {
+      "Resolução do sensor térmico": "256x192",
+      "Resolução ótica do sensor": "4 Megapixel (2688x1520)",
+      "Lente": "6.9 mm (Term) / 6.3 mm (Opt)",
+      "DORI": "Pessoa: 287 m (D), 72 m (R), 36 m (I) Veiculo: 881 m (D), 220 m (R), 110 m (I)",
+      "Intervalos VCA": "Pessoa: 55.2 m Veiculo: 144.9 m Medição de temperatura (Objeto 0.2x0.2m)): 23.3 m Medição de temperatura (Objeto 1x1m)): 116.7 m Deteção de incêndio (Objeto 0.2x0.2m)): 82.8 m",
+      "Ângulo de visão": "Térmico: 24.9° (H), 18.7° (V) Óptico: 53° (H), 28° (V)",
+      "Alimentação": "DC 12 V, 0.83 A, 10 W max. PoE IEEE802.3af"
+    }
+  },
+  {
+    "model": "DS-2TD1228T-3/QA(B)",
+    "url": "https://www.visiotechsecurity.com/pt/produtos/cctv-ip-1/solucões-ip-278/proteccão-perimetral-280/ds-2td1228t-3_qa(b)-detail",
+    "checked": "2026-10-13",
+    "specs": {
+      "Resolução do sensor térmico": "256x192",
+      "Resolução ótica do sensor": "4 Megapixel (2688x1520)",
+      "Lente": "3.6 mm (Term) / 4.3 mm (Opt)",
+      "Ângulo de visão": "Térmico: 50° (H), 37.3° (V) Óptico: 84° (H), 43.1° (V)",
+      "DORI": "Pessoa: 150 m (D), 38 m (R), 19 m (I) Veiculo: 460 m (D), 112 m (R), 56 m (I)",
+      "Intervalos VCA": "Pessoa: 28.4 m Veiculo: 75.6 m Medição da temperatura (Objeto 1x1 m): 58.3 m Medição da temperatura (Objeto 0.2 x 0.2 m): 11.7 m Deteção de incêndio (Objeto 0.2 x 0.2 m): 43.2 m Deteção de fumo (Objeto 0.5 x 0.5 m): 12.9 m Deteção de fumo: 5.4 m",
+      "Alimentação": "CC 12 V, 500 mA, máx. 6 W PoE IEEE802.3af"
+    }
+  },
+  {
+    "model": "DS-2TD1228-3/QA",
+    "url": "https://www.visiotechsecurity.com/pt/produtos/cctv-ip-1/solucões-ip-278/proteccão-perimetral-280/ds-2td1228-3_qa-detail",
+    "checked": "2026-10-13",
+    "specs": {
+      "Resolução do sensor térmico": "256x192",
+      "Resolução ótica do sensor": "4 Megapixel (2688x1520)",
+      "Lente": "3.6 mm (Term) / 4.3 mm (Opt)",
+      "DORI": "Pessoa: 150 m (D), 38 m (R), 19 m (I) Veiculo: 460 m (D), 112 m (R), 56 m (I)",
+      "Intervalos VCA": "Pessoa: 28.4 m Veiculo: 75.6 m Medição de temperatura (Objeto 0.2x0.2m)): 11.7 m Medição de temperatura (Objeto 1x1m)): 58.3 m Deteção de incêndio (Objeto 0.2x0.2m)): 43.2m",
+      "Ângulo de visão": "Térmico: 50° (H), 37.3° (V) Óptico: 84° (H), 43.1° (V)",
+      "Alimentação": "DC 12 V, 0.5 A, 6 W max. PoE IEEE802.3af"
+    }
+  },
+  {
+    "model": "DS-2TD2628T-7/QA",
+    "url": "https://www.visiotechsecurity.com/pt/produtos/cctv-ip-1/solucões-ip-278/proteccão-perimetral-280/ds-2td2628t-7_qa-detail",
+    "checked": "2026-10-13",
+    "specs": {
+      "Resolução do sensor térmico": "256x192",
+      "Resolução ótica do sensor": "4 Megapixel (2688x1520)",
+      "Lente": "6.9 mm (Term) / 6.3 mm (Opt)",
+      "DORI": "Pessoa: 287 m (D), 72 m (R), 36 m (I) Veiculo: 881 m (D), 220 m (R), 110 m (I)",
+      "Intervalos VCA": "Pessoa: 55.2 m Veiculo: 144.9 m Medição de temperatura (Objeto 0.2x0.2m)): 23.3 m Medição de temperatura (Objeto 1x1m)): 116.7 m Deteção de incêndio (Objeto 0.2x0.2m)): 82.8 m",
+      "Ângulo de visão": "Térmico: 24.9° (H), 18.7° (V) Óptico: 53° (H), 28° (V)",
+      "Alimentação": "AC 24 V, 0.8 A, 8.5 W max. DC 12 V, 0.7 A, 8.5 W max. PoE IEEE802.3af"
+    }
+  },
+  {
+    "model": "DS-2TD1228-7/QA",
+    "url": "https://www.visiotechsecurity.com/pt/produtos/cctv-ip-1/solucões-ip-278/proteccão-perimetral-280/ds-2td1228-7_qa-detail",
+    "checked": "2026-10-13",
+    "specs": {
+      "Resolução do sensor térmico": "256x192",
+      "Resolução ótica do sensor": "4 Megapixel (2688x1520)",
+      "Lente": "6.9 mm (Term) / 6.4 mm (Opt)",
+      "DORI": "Pessoa: 287 m (D), 72 m (R), 36 m (I) Veiculo: 881 m (D), 220 m (R), 110 m (I)",
+      "Intervalos VCA": "Pessoa: 55.2 m Veiculo: 144.9 m Medição de temperatura (Objeto 0.2x0.2m)): 23.3 m Medição de temperatura (Objeto 1x1m)): 116.7 m Deteção de incêndio (Objeto 0.2x0.2m)): 82.8 m Deteção de fumo: 10.35 m",
+      "Ângulo de visão": "Térmico: 24.9° (H), 18.7° (V) Óptico: 53° (H), 28° (V)",
+      "Alimentação": "DC 12 V, 0.5 A, 6 W max. PoE IEEE802.3af"
+    }
+  },
+  {
+    "model": "HM-TD3028T-2/Q(B)",
+    "url": "https://www.visiotechsecurity.com/pt/produtos/cctv-ip-1/solucões-ip-278/proteccão-perimetral-280/hm-td3028t-2_q(b)-detail",
+    "checked": "2026-10-13",
+    "specs": {
+      "Resolução do sensor térmico": "256x192",
+      "Resolução ótica do sensor": "2688x1520",
+      "Lente": "2.1 mm (Term) / 1.4 mm (Opt)",
+      "Ângulo de visão": "Térmico: 90° (H), 64.2° (V) Óptico: 96.9° (H), 77.2° (V)",
+      "Gama VCA": "Medição de temperatura (Objeto 0.2x0.2m)): 7 m Medição de temperatura (Objeto 0.5x0.5m)): 17.5 m",
+      "Alimentação": "DC 12 V, 5 W max. PoE IEEE802.3af"
+    }
+  },
+  {
+    "model": "DS-2TD1217-2/QA",
+    "url": "https://www.visiotechsecurity.com/pt/produtos/cctv-ip-1/solucões-ip-278/proteccão-perimetral-280/ds-2td1217-2_qa-detail",
+    "checked": "2026-10-13",
+    "specs": {
+      "Resolução do sensor térmico": "160x120",
+      "Resolução ótica do sensor": "4 Megapixel (2688x1520)",
+      "Lente": "1.8 mm (Term) / 2 mm (Opt)",
+      "Intervalos VCA": "Pessoa: 10 m Veiculo: 30 m",
+      "Ângulo de visão": "Térmico: 90° (H), 66.4° (V) Óptico: 119.3° (H), 93.3° (V)",
+      "Alimentação": "DC 12 V, 0.5 A, 6 W max. PoE IEEE802.3af"
+    }
+  },
+  {
+    "model": "DS-2TD2608-1/QA",
+    "url": "https://www.visiotechsecurity.com/pt/produtos/cctv-ip-1/solucões-ip-278/proteccão-perimetral-280/ds-2td2608-1_qa-detail",
+    "checked": "2026-10-13",
+    "specs": {
+      "Resolução do sensor térmico": "96x72",
+      "Resolução ótica do sensor": "4 Megapixel (2688x1520)",
+      "Lente": "Térmica: 1.35 mm Óptica: 4 mm",
+      "Ângulo de visão": "Térmico: 50° (H), 37.5° (V) Óptico: 94° (H), 50° (V)",
+      "DORI": "Pessoa: 56 m (D), 14 m (R), 7 m (I) Veiculo: 173 m (D), 43 m (R), 22 m (I)",
+      "Intervalos VCA": "Pessoa: 11 m Veiculo: 33 m",
+      "Alimentação": "DC 12 V, 0.7 A, 8.5 W max. PoE IEEE802.3af"
+    }
+  },
+  {
+    "model": "DS-2TD2608-2/QA",
+    "url": "https://www.visiotechsecurity.com/pt/produtos/cctv-ip-1/solucões-ip-278/proteccão-perimetral-280/ds-2td2608-2_qa-detail",
+    "checked": "2026-10-13",
+    "specs": {
+      "Resolução do sensor térmico": "96x72",
+      "Resolução ótica do sensor": "4 Megapixel (2688x1520)",
+      "Lente": "Térmica: 2.6 mm Óptica: 6 mm",
+      "Ângulo de visão": "Térmico: 25° (H), 18.75° (V) Óptico: 56° (H), 30° (V)",
+      "DORI": "Pessoa: 108 m (D), 27 m (R), 14 m (I) Veiculo: 332 m (D), 83 m (R), 42 m (I)",
+      "Intervalos VCA": "Pessoa: 21 m Veiculo: 63 m",
+      "Alimentação": "DC 12 V, 0.7 A, 8.5 W max. PoE IEEE802.3af"
+    }
+  },
+  {
+    "model": "DS-2TD2628-7/QA",
+    "url": "https://www.visiotechsecurity.com/pt/produtos/cctv-ip-1/solucões-ip-278/proteccão-perimetral-280/ds-2td2628-7_qa-detail",
+    "checked": "2026-10-13",
+    "specs": {
+      "Resolução do sensor térmico": "256x192",
+      "Resolução ótica do sensor": "4 Megapixel (2688x1520)",
+      "Lente": "6.9 mm (Term) / 6.3 mm (Opt)",
+      "DORI": "Pessoa: 287 m (D), 72 m (R), 36 m (I) Veiculo: 881 m (D), 220 m (R), 110 m (I)",
+      "Intervalos VCA": "Pessoa: 55.2 m Veiculo: 144.9 m Medição de temperatura (Objeto 0.2x0.2m)): 23.3 m Medição de temperatura (Objeto 1x1m)): 116.7 m Deteção de incêndio (Objeto 0.2x0.2m)): 82.8 m",
+      "Ângulo de visão": "Térmico: 24.9° (H), 18.7° (V) Óptico: 53° (H), 28° (V)",
+      "Alimentação": "AC 24 V, 0.8 A, 8.5 W max. DC 12 V, 0.7 A, 8.5 W max. PoE IEEE802.3af"
+    },
+    "manufacturerOverrides": {
+      "visibleLens": 6.4,
+      "source": "https://assets.hikvision.com/prd/public/all/doc/m000056169/DS-2TD2628-7_QA_Datasheet_en-US_20231007.pdf"
+    }
+  },
+  {
+    "model": "DS-2TD2628-10/QA/GLT",
+    "url": "https://www.visiotechsecurity.com/pt/produtos/cctv-ip-1/solucões-ip-278/proteccão-perimetral-280/ds-2td2628-10_qa_glt-detail",
+    "checked": "2026-10-13",
+    "specs": {
+      "Resolução do sensor térmico": "256x192",
+      "Resolução ótica do sensor": "4 Megapixel (2688x1520)",
+      "Lente": "9.7 mm (Term) / 8 mm (Opt)",
+      "DORI": "Pessoa: 404 m (D), 101 m (R), 50 m (I) Veiculo: 1239 m (D), 310 m (R), 155 m (I)",
+      "Intervalos VCA": "Pessoa: 77.6 m Veiculo: 203.7 m Medição de temperatura (Objeto 0.2x0.2m)): 32.3 m Medição de temperatura (Objeto 1x1m)): 161.7 m",
+      "Ângulo de visão": "Térmico: 18° (H), 13.5° (V) Óptico: 39.4° (H), 22.1° (V)",
+      "Alimentação": "DC 12 V, 830 mA, 10 W max. PoE IEEE802.3af"
+    }
+  },
+  {
+    "model": "HM-TD3028T-3/Q(B)",
+    "url": "https://www.visiotechsecurity.com/pt/produtos/cctv-ip-1/solucões-ip-278/proteccão-perimetral-280/hm-td3028t-3_q(b)-detail",
+    "checked": "2026-10-13",
+    "specs": {
+      "Resolução do sensor térmico": "256x192",
+      "Resolução ótica do sensor": "2688x1520",
+      "Lente": "3.6 mm (Term) / 1.4 mm (Opt)",
+      "Ângulo de visão": "Térmico: 50° (H), 37.2° (V) Óptico: 96.9° (H), 77.2° (V)",
+      "Gama VCA": "Medição de temperatura (Objeto 0.2x0.2m)): 12 m Medição de temperatura (Objeto 0.5x0.5m)): 30 m",
+      "Alimentação": "DC 12 V, 5 W max. PoE IEEE802.3af"
+    }
+  },
+  {
+    "model": "DS-2TD1228-2/QA",
+    "url": "https://www.visiotechsecurity.com/pt/produtos/cctv-ip-1/solucões-ip-278/proteccão-perimetral-280/ds-2td1228-2_qa-detail",
+    "checked": "2026-10-13",
+    "specs": {
+      "Resolução do sensor térmico": "256x192",
+      "Resolução ótica do sensor": "4 Megapixel (2688x1520)",
+      "Lente": "2.1 mm (Term) / 2.2 mm (Opt)",
+      "DORI": "Pessoa: 88 m (D), 22 m (R), 11 m (I) Veiculo: 268 m (D), 67 m (R), 34 m (I)",
+      "Intervalos VCA": "Pessoa: 16.8 m Veiculo: 50.4 m Medição de temperatura (Objeto 0.2x0.2m)): 7 m Medição de temperatura (Objeto 1x1m)): 35 m Deteção de incêndio (Objeto 0.2x0.2m)): 21.6 m",
+      "Ângulo de visão": "Térmico: 90° (H), 65.4° (V) Óptico: 117.8° (H), 70.4° (V)",
+      "Alimentação": "DC 12 V, 0.5 A, 6 W max. PoE IEEE802.3af"
+    }
+  },
+  {
+    "model": "DS-2TD4228T-7/S2",
+    "url": "https://www.visiotechsecurity.com/pt/produtos/cctv-ip-1/solucões-ip-278/proteccão-perimetral-280/ds-2td4228t-7_s2-detail",
+    "checked": "2026-10-13",
+    "specs": {
+      "Resolução do sensor térmico": "256x192",
+      "Resolução ótica do sensor": "4 Megapixel (2688x1520)",
+      "Lente": "7 mm (Term) 4.8~153 mm (Opt), zoom ótico 32x",
+      "Ângulo de visão": "Térmico: 25° (H), 18.8° (V) Óptico: 58.8~2.18° (H), 34.4~1.2° (V)",
+      "DORI": "Pessoa: 292 m (D), 73 m (R), 36 m (I) Veiculo: 894 m (D), 224 m (R), 112 m (I)",
+      "Intervalos VCA": "Pessoa: 56 m Veiculo: 168 m Medição de temperatura (Objeto 0.5x0.5m)): 58 m Medição de temperatura (Objeto 0.2x0.2m)): 23 m Deteção de incêndio (Objeto 2x2m)): 583 m Deteção de incêndio (Objeto 1x1m)): 292 m",
+      "Intervalo Pan/Tilt": "Horizontal: rotação contínua 0~360°, Vertical: -5°~90° autoflip",
+      "Alimentação": "AC 24 V, 30 W max. DC 36 V, 30 W max. DC 48 V, 30 W max. Hi-PoE"
+    }
+  },
+  {
+    "model": "DS-2TD2528T-3/Q(C)",
+    "url": "https://www.visiotechsecurity.com/pt/produtos/cctv-ip-1/solucões-ip-278/proteccão-perimetral-280/ds-2td2528t-3_q(c)-detail",
+    "checked": "2026-10-13",
+    "specs": {
+      "Resolução do sensor térmico": "256x192",
+      "Resolução ótica do sensor": "4 Megapixel (2688x1520)",
+      "Lente": "Térmica: 3.6 mm Óptica: 4.3 mm",
+      "Ângulo de visão": "Térmico: 50° (H), 37.3° (V) Óptico: 83.7° (H), 43° (V)",
+      "DORI": "Pessoa: 125 m (D), 31 m (R), 16 m (I) Veiculo: 383 m (D), 96 m (R), 48 m (I)",
+      "Intervalos VCA": "Pessoa: 24 m Veiculo: 72 m Medição da temperatura (objeto 0.2x0.2 m): 10 m Medição da temperatura (objeto 0.5x0.5 m): 25 m Detecção de incêndio: (objeto 0.2x0.2 m): 30 m Deteção de fumo (objeto 0.5x0.5 m): 12 m Deteção de fumo: 4.5 m",
+      "Alimentação": "AC 100~240 V, 8 W max. PoE IEEE802.3af"
+    }
+  },
+  {
+    "model": "DS-2TD4137-25/WY(B)",
+    "url": "https://www.visiotechsecurity.com/pt/produtos/cctv-ip-1/solucões-ip-278/proteccão-perimetral-280/ds-2td4137-25_wy(b)-detail",
+    "checked": "2026-10-13",
+    "specs": {
+      "Resolução do sensor térmico": "384x288",
+      "Resolução ótica do sensor": "4 Megapixel (2688x1520)",
+      "Lente": "Térmico: 25 mm Óptico: 6~240 mm (Zoom 40X))",
+      "Ângulo de visão": "Térmico: 14.9° (H), 11.2° (V) Óptico: 56.6~1.8° (H), 33.7~1° (V)",
+      "DORI": "Pessoa: 735 m (D), 184 m (R), 92 m (I) Veiculo: 2255 m (D), 564 m (R), 282 m (I)",
+      "Intervalos VCA": "Pessoa: 175 m Veiculo: 525 m Medição de temperatura (Objeto 2x2m)): 585 m Medição de temperatura (Objeto 1x1m)): 295 m Deteção de incêndio (Objeto 2x2m)): 1470 m Deteção de incêndio (Objeto 1x1m)): 735 m",
+      "Intervalo Pan/Tilt": "Horizontal: 0~360°, Vertical: -20°~90° autoflip",
+      "Alimentação": "AC 24 V, 65 W max. DC 36 V, 65 W max. DC 48 V, 65 W max. Hi-PoE"
+    }
+  },
+  {
+    "model": "DS-2TD4228T-10/S2",
+    "url": "https://www.visiotechsecurity.com/pt/produtos/cctv-ip-1/solucões-ip-278/proteccão-perimetral-280/ds-2td4228t-10_s2-detail",
+    "checked": "2026-10-13",
+    "specs": {
+      "Resolução do sensor térmico": "256x192",
+      "Resolução ótica do sensor": "4 Megapixel (2688x1520)",
+      "Lente": "10 mm (Term) 4.8~153 mm (Opt), zoom ótico 32x",
+      "Ângulo de visão": "Térmico: 18.1° (H), 13.6° (V) Óptico: 58.8~2.18° (H), 34.4~1.2° (V)",
+      "DORI": "Pessoa: 417 m (D), 104 m (R), 52 m (I) Veiculo: 1278 m (D), 319 m (R), 160 m (I)",
+      "Intervalos VCA": "Pessoa: 80 m Veiculo: 240 m Medição de temperatura (Objeto 0.5x0.5m)): 83 m Medição de temperatura (Objeto 0.2x0.2m)): 33 m Deteção de incêndio (Objeto 2x2m)): 833 m Deteção de incêndio (Objeto 1x1m)): 417 m",
+      "Intervalo Pan/Tilt": "Horizontal: rotação contínua 0~360°, Vertical: -5°~90° autoflip",
+      "Alimentação": "AC 24 V, 30 W max. DC 36 V, 30 W max. DC 48 V, 30 W max. Hi-PoE"
+    }
+  }
+]
