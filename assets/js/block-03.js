@@ -69,7 +69,7 @@ if(typeof CCTV_LIB==='undefined'||typeof AJAX_LIB==='undefined'||typeof FIRE_LIB
 // ════════════════════════════════════════
 var S = {
   lib:[], placed:[], meas:[],
-  selId:null, multiSel:[], tool:null, activeLib:null,
+  selId:null, multiSel:[], tool:null, activeLib:null, repeatPlacement:false, pointerType:'mouse',
   scale:{ok:false,ppm:10,mpp:0.1},
   fp:null, pan:{x:0,y:0}, zoom:1,
   layers:{fp:1,dev:1,cov:1,meas:1,grid:1},
@@ -103,7 +103,8 @@ function startModule(mod) {
     if(idx>=0) base[idx]=cd; else base.push(cd);
   });
   S.lib = mod==='alarm'&&window.SIGSIntrusionCatalog88?SIGSIntrusionCatalog88.enrich(base):base;
-  S.placed=[]; S.meas=[]; S.selId=null; S.multiSel=[]; S.activeLib=null; S.devN=0;
+  S.placed=[]; S.meas=[]; S.selId=null; S.multiSel=[]; S.activeLib=null; S.devN=0; S.repeatPlacement=false;
+  var repeatBox=document.getElementById('repeat-placement');if(repeatBox)repeatBox.checked=false;
   S.fp=null; S.scale={ok:false,ppm:10,mpp:0.1}; S.zoom=1; S.pan={x:0,y:0};
   S.undoStack=[]; S.redoStack=[]; updateUndoUI();
   initFloors();
@@ -178,6 +179,7 @@ var bgcv=document.getElementById('bgcv');
 var cv=document.getElementById('maincv');
 var bg=bgcv.getContext('2d');
 var ctx=cv.getContext('2d');
+cv.addEventListener('pointerdown',function(e){S.pointerType=e.pointerType||'mouse';},true);
 
 function resize(){
   var w=cw.clientWidth||800, h=cw.clientHeight||600;
@@ -605,8 +607,10 @@ function onDown(e){
   if(e.button!==0)return;
   if(S.tool==='meas'||S.tool==='scale'||S.tool==='nvr')return;
   var w=s2w(pos.x,pos.y);
-  var hit=hitT(w.x,w.y);
+  var hit=hitT(w.x,w.y,e);
   if(hit){
+    sigsExitPlacementForEdit();
+    if(window.SIGS_V6&&SIGS_V6.currentStatus==='ARCHIVED'){select(hit.id);return;}
     if(e.ctrlKey||e.metaKey){
       // Ctrl+click: toggle item in multiSel
       var idx=S.multiSel.indexOf(hit.id);
@@ -678,20 +682,20 @@ function onMove(e){
   if(S.dragFP&&S.fp){S.fp.x=w.x-S.dragOff.x;S.fp.y=w.y-S.dragOff.y;render();return;}
   // Update rubber-band
   if(S.rubberBand&&S.rubberBand.active){S.rubberBand.x2=w.x;S.rubberBand.y2=w.y;render();return;}
-  if(!S.drag&&!S.panning&&S.tool!=='meas'&&S.tool!=='scale')cw.style.cursor=hitT(w.x,w.y)?'grab':tCur();
+  if(!S.drag&&!S.panning&&S.tool!=='meas'&&S.tool!=='scale')cw.style.cursor=hitT(w.x,w.y,e)?'grab':tCur();
   var p1=S.tool==='meas'?S.mp1:(S.tool==='scale'?S.sp1:null);
   if(p1){S.tmpLine={x1:p1.x,y1:p1.y,x2:w.x,y2:w.y,col:S.tool==='scale'?'#00e888':'#FFD700'};hint(S.scale.ok?(d2(p1.x,p1.y,w.x,w.y)*S.scale.mpp).toFixed(2)+' m':d2(p1.x,p1.y,w.x,w.y).toFixed(0)+' px');render();}
 }
 function onClick(e){
   if(S.mapOpen)return;
   if(e.button!==0||S.panning||S.drag||S.dragFP)return;
-  // If we just placed a device this mousedown cycle, skip — prevents double placement
-  if(S.justPlaced){S.justPlaced=false;return;}
   var pos=ep(e),w=s2w(pos.x,pos.y);
-  if(S.tool==='place'&&S.activeLib){placeDevice(w.x,w.y);return;}
   if(S.tool==='meas'){handleMeas(w);return;}
   if(S.tool==='scale'){handleScale(w);return;}
-  if(!hitT(w.x,w.y))deselect();
+  var hit=hitT(w.x,w.y,e);
+  if(hit){sigsExitPlacementForEdit();if(!e.ctrlKey&&!e.metaKey)select(hit.id);return;}
+  if(S.tool==='place'&&S.activeLib){placeDevice(w.x,w.y);return;}
+  deselect();
 }
 function onCtxMenu(e){e.preventDefault();if(S.mapOpen)return;var pos=ep(e),w=s2w(pos.x,pos.y),hit=hitT(w.x,w.y);if(hit){select(hit.id);var m=document.getElementById('ctx');m.style.left=e.clientX+'px';m.style.top=e.clientY+'px';m.style.display='block';}}
 document.addEventListener('click',function(){document.getElementById('ctx').style.display='none';document.getElementById('ctx-lib').style.display='none';});
@@ -709,13 +713,14 @@ function onWheel(e){
 // TOOLS
 // ════════════════════════════════════════
 function setTool(t){
-  S.tool=t; S.mp1=null; S.sp1=null; S.tmpLine=null;
+  S.tool=t; S.mp1=null; S.sp1=null; S.tmpLine=null; S.justPlaced=false;
   ['place','meas','scale'].forEach(function(n){var el=document.getElementById('t-'+n);if(el)el.classList.toggle('on',n===t);});
   cw.style.cursor=tCur();
   var msgs={place:S.activeLib?'Clique na planta para posicionar: '+S.activeLib.name:'Selecione primeiro da lista','meas':'Clique ponto inicial da medição','scale':'Clique 1.º ponto de referência'};
   if(msgs[t])hint(msgs[t]); render();
 }
 function tCur(){return{place:'crosshair',meas:'crosshair',scale:'crosshair'}[S.tool]||'default';}
+function sigsExitPlacementForEdit(){if(S.tool==='place')setTool(null);}
 
 // ════════════════════════════════════════
 // MEASURE / SCALE
@@ -762,6 +767,7 @@ function nextNum(pre){
   return used.size+1;
 }
 function placeDevice(x,y){
+  if(window.SIGS_V6&&SIGS_V6.currentStatus==='ARCHIVED'){sigsExitPlacementForEdit();return;}
   if(S.activeLib&&!sigsCatalogDeviceAllowed(S.activeLib))return;
   var dev=S.activeLib; if(!dev)return;
   var prefixes={dome:'CAM',bullet:'CAM',ptz:'CAM',fisheye:'CAM',radar:'RAD',thermal_bi:'THM',hub:'HUB',repeater:'REX',pir_outdoor:'PIR',pir_indoor:'PIR',door:'DR',glass:'GL',combi:'CB',siren_ext:'SIR',siren_int:'SIR',keypad:'KP',remote:'BTN',relay:'RLY'};
@@ -772,12 +778,27 @@ function placeDevice(x,y){
   if(MOD==='alarm'&&typeof SIGSIntrusion!=='undefined'){pc.intrusion=SIGSIntrusion.settings({},dev);pc.instHeight=pc.intrusion.height;['lens','mp','codec','days','instTilt'].forEach(function(k){delete pc[k];});}
   pushUndo();
   S.placed.push(pc);
-  S.justPlaced=true; // block next onClick from placing another
+  S.justPlaced=false;
+  if(!S.repeatPlacement)sigsExitPlacementForEdit();
   select(pc.id); render(); updateStats();
-  hint(S.activeLib.name+' → clique para colocar outro | Esc para sair');
+  hint(S.repeatPlacement?S.activeLib.name+' → clique numa área livre para colocar outro | Esc para sair':pc.label+' selecionado para editar. Usa Colocar para adicionar outro.');
   notify(pc.label+' colocado ✓');
 }
-function hitT(wx,wy){for(var i=S.placed.length-1;i>=0;i--){var p=S.placed[i];if(d2(wx,wy,p.x,p.y)<20/S.zoom)return p;}return null;}
+function hitT(wx,wy,event){
+  if(S.layers&&S.layers.dev===0)return null;
+  var point=w2s(wx,wy),touch=(event&&event.pointerType||S.pointerType)==='touch',pad=touch?10:6;
+  var radius=touch?34:(MOD==='alarm'?32:28),body=null,label=null,bodyDistance=Infinity,labelDistance=Infinity;
+  ctx.save();ctx.font='bold 10px sans-serif';
+  for(var i=S.placed.length-1;i>=0;i--){
+    var p=S.placed[i],d=gD(p.libId);if(!d)continue;
+    var at=w2s(p.x,p.y),distance=Math.hypot(point.x-at.x,point.y-at.y),size=MOD==='alarm'?22:13;
+    if(distance<=radius&&distance<bodyDistance){body=p;bodyDistance=distance;}
+    if(p.label){var left=at.x+size+4,width=ctx.measureText(p.label).width+8;
+      if(point.x>=left-pad&&point.x<=left+width+pad&&point.y>=at.y-9-pad&&point.y<=at.y+6+pad&&distance<labelDistance){label=p;labelDistance=distance;}
+    }
+  }
+  ctx.restore();return body||label;
+}
 function gD(id){for(var i=0;i<S.lib.length;i++)if(S.lib[i].id===id)return S.lib[i];return null;}
 function fP(id){for(var i=0;i<S.placed.length;i++)if(S.placed[i].id===id)return S.placed[i];return null;}
 

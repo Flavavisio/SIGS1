@@ -2,6 +2,14 @@
 
 Aplicação de projeto para CCTV, intrusão e incêndio. Esta pasta contém o código completo, os testes e as migrações Supabase.
 
+## Atualização V113
+
+- Colocar um equipamento regressa por defeito à edição, mantendo o modelo disponível no botão Colocar. “Colocar vários equipamentos” permite ativar a colocação contínua explicitamente; clicar num equipamento existente sai sempre desse modo para editar.
+- Seleção tem prioridade sobre colocação, incluindo no clique final após largar o rato. A área do ícone aumenta e o nome CAM01/DEV01 também é selecionável, independentemente do zoom. Entre ícones próximos é escolhido o centro mais próximo, com prioridade dos ícones sobre etiquetas.
+- Rato/toque/caneta partilham a área de seleção. Pequena oscilação num toque não move a câmara nem cria um registo de movimento em Desfazer. O arrasto continua disponível em plantas ainda sem escala; os controlos de focal/inclinação continuam dependentes de escala.
+- Preserva a prioridade dos alvos de analítica e dos controlos FOV, as ferramentas de desenho/medição e a proteção dos projetos arquivados.
+- Teste com HTML real, renderizador completo e eventos de ponteiro/rato: `node tests/device-selection-v113.test.cjs`.
+
 ## Atualização V112
 
 - A área potencial das speed domes passa a ser um disco completo de 360° até ao alcance ótico usado no projeto. A inclinação atual já não o reduz a um anel estreito: direção, inclinação e zona cega continuam a limitar o cone atual, desenhado por cima.

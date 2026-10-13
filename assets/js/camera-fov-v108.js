@@ -3,7 +3,8 @@
 const cameraTypes=['bullet','dome','turret','ptz','thermal_bi','cube','doorbell'];
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),rad=Math.PI/180;
 let drag=null,suppressUntil=0,hideControls=false;
-function editable(){return root.MOD==='cctv'&&root.S?.scale?.ok&&!root.S.mapOpen&&(!root.S.tool||root.S.tool==='place')&&root.SIGS_V6?.currentStatus!=='ARCHIVED';}
+function interactable(){return root.MOD==='cctv'&&root.S&&!root.S.mapOpen&&(!root.S.tool||root.S.tool==='place')&&root.SIGS_V6?.currentStatus!=='ARCHIVED';}
+function editable(){return interactable()&&root.S.scale?.ok;}
 function eligible(d){return d&&cameraTypes.includes(d.type);}
 function optics(p,d){
  const L=root.SIGSLensModel,q=L.policy(d),lens=L.effective(p,d),fov=L.fov(p,d),vertical=L.verticalFov(p,d);
@@ -68,30 +69,33 @@ function install(){
  const render=root.render;root.render=function(){const r=render.apply(this,arguments);draw();return r;};
  const png=root.exportPNG;if(typeof png==='function')root.exportPNG=function(){hideControls=true;try{return png.apply(this,arguments);}finally{hideControls=false;root.render();}};
  owner.addEventListener('pointerdown',e=>{
-  if(e.target!==cv||!editable()||e.button!==0||e.isPrimary===false||e.altKey||e.ctrlKey||e.metaKey||e.defaultPrevented||drag)return;
+  if(e.target!==cv||!interactable()||e.button!==0||e.isPrimary===false||e.altKey||e.ctrlKey||e.metaKey||e.defaultPrevented||drag)return;
   const pos=root.ep(e),s=selected();let candidate=null;
   if(s)candidate=layout(s.p,s.d).map(h=>({...h,...s})).find(h=>{const at=root.w2s(h.x,h.y);return Math.hypot(at.x-pos.x,at.y-pos.y)<=17;});
+  if(!candidate&&root.SIGSAnalyticsRange?.markerHit?.(e))return;
   if(!candidate&&root.S.layers?.dev!==0&&!(root.S.multiSel?.length>1)){
-   const p=[...root.S.placed].reverse().find(p=>eligible(root.gD(p.libId))&&Math.hypot(root.w2s(p.x,p.y).x-pos.x,root.w2s(p.x,p.y).y-pos.y)<=20);
-   if(p)candidate={kind:'move',p,d:root.gD(p.libId)};
+   const world=root.s2w(pos.x,pos.y),p=root.hitT?root.hitT(world.x,world.y,e):[...root.S.placed].reverse().find(p=>eligible(root.gD(p.libId))&&Math.hypot(root.w2s(p.x,p.y).x-pos.x,root.w2s(p.x,p.y).y-pos.y)<=20);
+   if(p&&eligible(root.gD(p.libId)))candidate={kind:'move',p,d:root.gD(p.libId)};
   }
-  if(!candidate)return;e.preventDefault();e.stopImmediatePropagation();root.pushUndo?.();
-  const world=root.s2w(pos.x,pos.y),p=candidate.p;
-  drag={...candidate,pointerId:e.pointerId,floor:root.FLOORS?.[root.FLOOR_CUR],before:{x:p.x,y:p.y,rotation:p.rotation,instTilt:p.instTilt,lens:p.lens},offset:{x:world.x-p.x,y:world.y-p.y}};
+  if(!candidate)return;e.preventDefault();e.stopImmediatePropagation();if(candidate.kind!=='move')root.pushUndo?.();
+  else root.sigsExitPlacementForEdit?.();
+  const p=candidate.p;
+  drag={...candidate,started:false,down:{x:e.clientX,y:e.clientY},zoom:root.S.zoom,threshold:e.pointerType==='touch'?8:5,pointerId:e.pointerId,floor:root.FLOORS?.[root.FLOOR_CUR],before:{x:p.x,y:p.y,rotation:p.rotation,instTilt:p.instTilt,lens:p.lens}};
   root.select?.(p.id);try{cv.setPointerCapture(e.pointerId);}catch(_){}cv.style.cursor='grabbing';root.render();
  },true);
- function current(){return drag&&editable()&&root.S.placed.includes(drag.p)&&root.FLOORS?.[root.FLOOR_CUR]===drag.floor;}
+ function current(){return drag&&(drag.kind==='move'?interactable():editable())&&root.S.placed.includes(drag.p)&&root.FLOORS?.[root.FLOOR_CUR]===drag.floor;}
  function finish(e,cancel=false){
   if(!drag||e.pointerId!==drag.pointerId)return;e.preventDefault();e.stopImmediatePropagation();
   const valid=current(),old=drag;drag=null;
   if(cancel||!valid)Object.keys(old.before).forEach(k=>{if(old.before[k]===undefined)delete old.p[k];else old.p[k]=old.before[k];});
   suppressUntil=Date.now()+300;try{cv.releasePointerCapture(e.pointerId);}catch(_){}cv.style.cursor='';
-  if(valid){root.syncP?.();root.saveCurrentFloor?.();root.sigsV6MarkDirty?.();}root.render();
+  if(valid){root.syncP?.();if(!cancel&&(old.kind!=='move'||old.started)){root.saveCurrentFloor?.();root.sigsV6MarkDirty?.();}}root.render();
  }
  owner.addEventListener('pointermove',e=>{
   if(!drag||e.pointerId!==drag.pointerId)return;if(!current()){finish(e,true);return;}e.preventDefault();e.stopImmediatePropagation();
   const pos=root.ep(e),point=root.s2w(pos.x,pos.y);
-  if(drag.kind==='move'){drag.p.x=point.x-drag.offset.x;drag.p.y=point.y-drag.offset.y;}
+  if(drag.kind==='move'&&!drag.started){if(Math.hypot(e.clientX-drag.down.x,e.clientY-drag.down.y)<=drag.threshold)return;root.pushUndo?.();drag.started=true;}
+  if(drag.kind==='move'){drag.p.x=drag.before.x+(e.clientX-drag.down.x)/drag.zoom;drag.p.y=drag.before.y+(e.clientY-drag.down.y)/drag.zoom;}
   else update(drag.p,drag.d,drag.kind,point,drag.distanceOffset||0);
   root.syncP?.();root.render();
  },true);

@@ -263,6 +263,6 @@ root.sigsResetAnalyticsTargets=function(){
  const p=root.fP(root.S.selId);if(!p||root.MOD!=='cctv'||root.SIGS_V6?.currentStatus==='ARCHIVED'||!p.analytics?.markerPositions)return;
  root.pushUndo();delete p.analytics.markerPositions;root.saveCurrentFloor?.();root.sigsV6MarkDirty?.();A.sync(p,root.gD(p.libId));root.render();
 };
-root.SIGSAnalyticsRange={ajaxTable,ajaxFamily,settings,profile,geometry,projectAt,calculate,outerRange,draw,sync};A.draw=draw;
+root.SIGSAnalyticsRange={ajaxTable,ajaxFamily,settings,profile,geometry,projectAt,calculate,outerRange,draw,sync,markerHit};A.draw=draw;
 if(typeof module!=='undefined'&&module.exports)module.exports=root.SIGSAnalyticsRange;
 })(typeof window!=='undefined'?window:globalThis);
