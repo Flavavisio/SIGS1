@@ -438,7 +438,7 @@ function _drawThermalBiCov(p,dev,s){
   if(typeof SIGSAnalyticsRange!=='undefined')thermalRange=SIGSAnalyticsRange.outerRange(p,dev,thermalRange);
   var variableVisible=typeof SIGSLensModel!=='undefined'&&SIGSLensModel.policy(dev).adjustable;
   var visibleFov=variableVisible?SIGSLensModel.fov(p,dev):dev.visibleFov||dev.fov||30;
-  var visibleRange=Number.isFinite(dev.visibleRange)?dev.visibleRange:dev.range||150;
+  var visibleRange=dev.visibleCoverageUnavailable?0:Number.isFinite(dev.visibleRange)?dev.visibleRange:dev.range||150;
   var rot=p.rotation*Math.PI/180;
   var opa=p.opacity!==undefined?p.opacity:0.22;
 
@@ -464,8 +464,9 @@ function _drawThermalBiCov(p,dev,s){
   if(vRpx>0)_drawSector(ctx,vRpx,visibleFov,'rgba('+vRgb+','+opa+')','rgba('+vRgb+',0.75)',1.5);ctx.restore();
 
   // ── Thermal cone (user colour) on top ──
-  sigsClipBlind(ctx,p,thermalFov,dev.thermalVerticalFov);
+  ctx.save();sigsClipBlind(ctx,p,thermalFov,dev.thermalVerticalFov);
   if(tRpx>0)_drawSector(ctx,tRpx,thermalFov,'rgba('+tRgb+','+(opa*1.2)+')','rgba('+tRgb+',0.88)',2);
+  ctx.restore();
   if(typeof SIGSAnalytics!=='undefined')SIGSAnalytics.draw(ctx,p,dev,thermalFov,thermalRange);
 
 
@@ -477,7 +478,7 @@ function _drawThermalBiCov(p,dev,s){
     var angTL=((-hfTL/2)-90)*Math.PI/180;
     var lxT=Math.cos(angTL)*tRpx*0.75, lyT=Math.sin(angTL)*tRpx*0.75;
     ctx.font='bold 8px sans-serif'; ctx.fillStyle='rgba('+tRgb+',.95)';
-    ctx.fillText('🌡'+thermalRange+'m',lxT+2,lyT-2);
+    ctx.fillText('🌡'+thermalRange.toFixed(1)+'m'+(dev.thermalRangeBasis==='manufacturer-human-vca'?(Math.abs(thermalRange-dev.thermalRange)<.001?' · VCA ref.':' · alcance atual'):dev.thermalDetectionRangeBasis==='manufacturer-johnson-dori'?' · DORI':''),lxT+2,lyT-2);
     if(vRpx>tRpx+10){
       var hfVL=visibleFov/2;
       var angVL=((-hfVL/2)-90)*Math.PI/180;
@@ -803,11 +804,13 @@ function placeDevice(x,y){
   if(window.SIGS_V6&&SIGS_V6.currentStatus==='ARCHIVED'){sigsExitPlacementForEdit();return;}
   if(S.activeLib&&!sigsCatalogDeviceAllowed(S.activeLib))return;
   var dev=S.activeLib; if(!dev)return;
+  var placementHeight=dev.height||3;
+  var thermalAim=dev.type==='thermal_bi'&&typeof window.SIGSAnalyticsRange?.thermalAim==='function'?SIGSAnalyticsRange.thermalAim({instHeight:placementHeight},dev):null;
   var prefixes={dome:'CAM',bullet:'CAM',ptz:'CAM',fisheye:'CAM',radar:'RAD',thermal_bi:'THM',hub:'HUB',repeater:'REX',pir_outdoor:'PIR',pir_indoor:'PIR',door:'DR',glass:'GL',combi:'CB',siren_ext:'SIR',siren_int:'SIR',keypad:'KP',remote:'BTN',relay:'RLY'};
   var pre=(prefixes[dev.type]||'DEV');
   var n=nextNum(pre);
   S.devN++; // keep for save-format compatibility
-  var pc={id:uid(),libId:dev.id,x:x,y:y,rotation:0,label:pre+(n<10?'0':'')+n,color:dev.color,opacity:0.22,visible:true,lens:typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).initial:2.8,afov:dev.fov,arange:dev.range,zone:1,mp:dev.mp||4,codec:(String(dev.brand||'').toLowerCase().includes('unv')||String(dev.brand||'').toLowerCase().includes('uniview'))?'ultra265b':'h265',days:30,recordFps:dev.recordFps||null,instHeight:dev.height||3,instTilt:30};
+  var pc={id:uid(),libId:dev.id,x:x,y:y,rotation:0,label:pre+(n<10?'0':'')+n,color:dev.color,opacity:0.22,visible:true,lens:typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).initial:2.8,afov:dev.fov,arange:dev.range,zone:1,mp:dev.mp||4,codec:(String(dev.brand||'').toLowerCase().includes('unv')||String(dev.brand||'').toLowerCase().includes('uniview'))?'ultra265b':'h265',days:30,recordFps:dev.recordFps||null,instHeight:placementHeight,instTilt:dev.type==='thermal_bi'?(thermalAim?thermalAim.tilt:0):30};
   if(MOD==='alarm'&&typeof SIGSIntrusion!=='undefined'){pc.intrusion=SIGSIntrusion.settings({},dev);pc.instHeight=pc.intrusion.height;['lens','mp','codec','days','instTilt'].forEach(function(k){delete pc[k];});}
   pushUndo();
   S.placed.push(pc);
@@ -873,7 +876,7 @@ function syncP(){
       if(isRadar){
         document.getElementById('pinfo').textContent='Radar · '+dev.radarFov+'° · '+dev.radarRange+'m';
       } else {
-        document.getElementById('pinfo').innerHTML='<span style="color:#ef4444">🌡 Térmica: '+(window.SIGSHikvisionCCTV92&&SIGSHikvisionCCTV92.lookup(dev)?SIGSHikvisionCCTV92.rangeLabel(dev):window.SIGSUniviewCCTV91&&SIGSUniviewCCTV91.lookup(dev)?SIGSUniviewCCTV91.rangeLabel(dev):dev.thermalRange+'m')+' · '+dev.thermalFov+'°</span>  <span style="color:#3b82f6">📷 Visível: '+dev.visibleRange+'m · '+dev.visibleFov+'°</span>';
+        document.getElementById('pinfo').innerHTML='<span style="color:#ef4444">🌡 Térmica: '+(window.SIGSHikvisionCCTV92&&SIGSHikvisionCCTV92.lookup(dev)?SIGSHikvisionCCTV92.rangeLabel(dev):window.SIGSUniviewCCTV91&&SIGSUniviewCCTV91.lookup(dev)?SIGSUniviewCCTV91.rangeLabel(dev):dev.thermalRange>0?dev.thermalRange+'m · VCA ref.':'VCA por confirmar')+' · '+dev.thermalFov+'°</span>  <span style="color:#3b82f6">📷 Visível: '+(dev.visibleRange>0?dev.visibleRange+'m':'alcance por confirmar')+' · '+(dev.visibleFov>0?dev.visibleFov+'°':'FOV por confirmar')+'</span>';
       }
     } else {
       if(lensPanel) lensPanel.style.display='';

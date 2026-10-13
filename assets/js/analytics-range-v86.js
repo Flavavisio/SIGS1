@@ -23,7 +23,7 @@ function profile(p,d,target){
  const s=settings(p,d),c=A.capabilities(d);if(!c[target])return null;
  if(d.type==='thermal_bi'&&target==='people'&&d.thermalRangeBasis==='manufacturer-human-vca')return {min:.05,max:N(d.thermalRange,0),method:'documented',label:'Referência VCA do fabricante',source:d.sourceURL,thermal:true,notes:['Alcance de referência para pessoa de 1,8 × 0,5 m; confirmar condições e tamanho do alvo.']};
  if(d.type==='thermal_bi'&&target==='vehicles'&&d.thermalVehicleRangeBasis==='manufacturer-vehicle-vca')return {min:.05,max:N(d.thermalVehicleRange,0),method:'documented',label:'Referência VCA térmica · veículos',source:d.sourceURL,thermal:true,notes:['Alvo de ensaio do fabricante: '+(d.thermalVehicleRangeTarget||'confirmar na ficha')+'. Confirmar dimensão do alvo e condições da instalação.']};
- if(d.type==='thermal_bi'&&d.analytics?.channel==='thermal')return {unavailable:'Alcance SIP térmico para '+(target==='people'?'pessoas':'carros')+' não publicado nesta ficha.',notes:['A deteção geral / DORI não substitui um alcance confirmado para a analítica. Confirmar no local.'],source:d.sourceURL};
+ if(d.type==='thermal_bi'&&d.analytics?.channel==='thermal')return {unavailable:'Alcance de analítica térmica para '+(target==='people'?'pessoas':'carros')+' não publicado nesta ficha.',notes:['A deteção geral / DORI não substitui um alcance confirmado para a analítica. Confirmar no local.'],source:d.sourceURL};
  if((ajaxFamily(d)||String(d.brand||'').toLowerCase()==='ajax')&&!d.custom){
   const family=ajaxFamily(d),table=ajaxTable[family],r=table?.[target]?.[s.mode];
   if(!table)return {unavailable:'Alcance Ajax por confirmar para esta referência.',notes:['Sem correspondência verificada com a tabela do fabricante.'],source:ajaxGuide};
@@ -52,6 +52,7 @@ function geometry(p,d,target,options={}){
  const tanH=Math.tan(fov*Math.PI/360),tanV=pr.thermal&&d.thermalVerticalFov?Math.tan(d.thermalVerticalFov*Math.PI/360):root.SIGSLensModel?.verticalFov(p,d)?Math.tan(root.SIGSLensModel.verticalFov(p,d)*Math.PI/360):tanH*height/width;
  const tilt=Number(p.instTilt??30)*Math.PI/180,h=N(p.instHeight,3),angle=Number(options.angle||0),H=s[target+'Height'],W=s[target+'Width'];
  let max=pr.max;const notes=pr.notes.slice();
+ if(pr.thermal&&d.thermalSourceNote)notes.push(d.thermalSourceNote);
  let method=pr.method,label=pr.label;
  // SIGS assumption: apply the family reference at the initial catalogue focal setting.
  // Optical magnification beyond it is a SIGS estimate, never another Ajax measurement.
@@ -119,13 +120,26 @@ function calculate(p,d,target,options={}){
   }
  }
  let result;
- if(!possible||!(far>near+1e-6))result={available:false,status:'Sem intervalo útil: rever lente, altura, inclinação ou critério.',method:g.pr.method,notes:g.notes};
+ const referenceMax=g.pr.thermal?g.pr.max:null;
+ if(!possible||!(far>near+1e-6))result={available:false,status:'Sem intervalo útil: rever lente, altura, inclinação ou critério.',method:g.pr.method,referenceMax,notes:g.notes};
  else{
   if(g.pr.method!=='documented'&&far>=499.99)g.notes.push('Limite de simulação SIGS: 500 m.');
   const projected=projectAt(g,far);
-  result={available:true,min:near,max:far,pixels:projected.pixels,verticalPixels:projected.verticalPixels,horizontalPixels:projected.horizontalPixels,pixelArea:projected.pixelArea,pixelMetric:'projected-area',method:g.pr.method,label:g.pr.label,source:g.pr.source,notes:g.notes,fov:g.fov,width:g.width,height:g.height,targetHeight:g.H,targetWidth:g.W,mode:g.s.mode};
+  result={available:true,min:near,max:far,referenceMax,pixels:projected.pixels,verticalPixels:projected.verticalPixels,horizontalPixels:projected.horizontalPixels,pixelArea:projected.pixelArea,pixelMetric:'projected-area',method:g.pr.method,label:g.pr.label,source:g.pr.source,notes:g.notes,fov:g.fov,width:g.width,height:g.height,targetHeight:g.H,targetWidth:g.W,mode:g.s.mode};
  }
  if(cache.size>16384)cache.clear();cache.set(key,result);return result;
+}
+function thermalAim(p,d,target){
+ if(d?.type!=='thermal_bi')return null;
+ const s=settings(p,d),enabled=A.active(p,d),selected=target?[target]:['people','vehicles'].filter(t=>enabled[t]);
+ const targets=selected.length?selected:['people','vehicles'];
+ const candidates=targets.map(t=>({target:t,pr:profile(p,d,t)})).filter(c=>c.pr?.thermal&&c.pr.max>0&&!c.pr.unavailable);
+ if(!candidates.length)return null;
+ // Aim at the centre of the furthest documented target on level ground. This
+ // is a starting orientation, never a change to the manufacturer's VCA range.
+ const best=candidates.sort((a,b)=>b.pr.max-a.pr.max)[0],height=s[best.target+'Height'];
+ const tilt=Math.max(0,Math.min(90,Math.atan2(N(p.instHeight,d.height||3)-height/2,best.pr.max)*180/Math.PI));
+ return {tilt:Math.round(tilt*10)/10,target:best.target,distance:best.pr.max};
 }
 function outerRange(p,d,base){
  const active=A.active(p,d),fov=d.type==='thermal_bi'?d.thermalFov:(root.SIGSLensModel?root.SIGSLensModel.fov(p,d):d.fov);let max=base;
@@ -187,13 +201,15 @@ function draw(ctx,p,d,fov,range){
   const x=dx*Math.cos(rot)+dy*Math.sin(rot),y=-dx*Math.sin(rot)+dy*Math.cos(rot);
   const a=markerAssessment(p,d,target,position,fov,range);
   const size=22;
-  ctx.save();ctx.translate(x,y);ctx.rotate(-(p.rotation||0)*Math.PI/180);ctx.setLineDash([]);ctx.fillStyle='rgba(8,17,35,.9)';ctx.beginPath();ctx.arc(0,0,size*.72,0,Math.PI*2);ctx.fill();A.glyph(ctx,target,size);ctx.font='bold 10px Arial';ctx.fillStyle=color;ctx.textAlign='center';ctx.fillText(a.distance.toFixed(1)+' m',0,size+7);
+  ctx.save();ctx.translate(x,y);ctx.rotate(-(p.rotation||0)*Math.PI/180);ctx.setLineDash([]);ctx.fillStyle='rgba(8,17,35,.9)';ctx.beginPath();ctx.arc(0,0,size*.72,0,Math.PI*2);ctx.fill();A.glyph(ctx,target,size);ctx.font='bold 10px Arial';ctx.fillStyle=color;ctx.textAlign='center';ctx.fillText(a.distance.toFixed(1)+' m'+(d.type==='thermal_bi'?(position.custom?' · posicionado':r.referenceMax>0?' · atual':''):''),0,size+7);
   if(position.custom){ctx.font='bold 10px Arial';ctx.fillStyle=a.ok===true?'#4ade80':a.ok===false?'#fb7185':'#fde68a';ctx.fillText(a.reason,0,size+20);}ctx.restore();
  });ctx.restore();
 }
 function sync(p,d){
  const reset=root.document?.getElementById('analytics-reset-targets');if(reset){reset.hidden=!p.analytics?.markerPositions||!Object.keys(p.analytics.markerPositions).length;reset.disabled=root.SIGS_V6?.currentStatus==='ARCHIVED';}
  const host=root.document?.getElementById('analytics-reach');if(!host)return;host.textContent='';const s=settings(p,d),active=A.active(p,d),locked=root.SIGS_V6?.currentStatus==='ARCHIVED';
+ const aim=thermalAim(p,d),aimButton=root.document.getElementById('analytics-thermal-aim');
+ if(aimButton){aimButton.hidden=!aim;aimButton.disabled=locked;aimButton.textContent=aim?'Apontar para alcance VCA · '+aim.tilt.toFixed(1)+'°':'Apontar para alcance VCA';}
  root.document.querySelectorAll('[data-analytics-mode]').forEach(button=>{const selected=button.dataset.analyticsMode===s.mode;button.setAttribute('aria-pressed',String(selected));button.classList.toggle('selected',selected);button.disabled=locked;});
  const conditions=root.document.getElementById('analytics-conditions');if(conditions)conditions.textContent=d.type==='thermal_bi'&&(d.thermalRangeBasis==='manufacturer-human-vca'||d.analytics?.channel==='thermal')?'Canal térmico, de dia e de noite. Referências VCA por alvo; validar contraste térmico, dimensão e orientação do alvo e condições de instalação. O IR e o zoom do canal visível não aumentam o alcance térmico.':s.mode==='day'?'Dia: boa iluminação, alvo completo e sem contraluz ou obstáculos.':ajaxFamily(d)?'Noite: referências Ajax e estimativa dos carros pela proporção dia/noite. Além da iluminação IR integrada, é necessária luz suficiente no alvo.':'Noite: iluminação IR ou luz suficiente no alvo; o alcance fica limitado à iluminação indicada. Evitar reflexos e objetos próximos dos LEDs.';
  const sensitivity=root.document.getElementById('analytics-ajax-sensitivity');if(sensitivity)sensitivity.hidden=!ajaxFamily(d);
@@ -201,11 +217,17 @@ function sync(p,d){
  const hasEstimate=['people','vehicles'].some(t=>A.capabilities(d)[t]&&profile(p,d,t)?.method==='estimate');root.document.getElementById('analytics-pixel-row').hidden=!hasEstimate;
  const targets=['people','vehicles'].filter(t=>active[t]);if(!targets.length){host.textContent='Ative um alvo para calcular o alcance.';return;}
  if(!root.S.scale.ok){host.textContent='Defina a escala para representar os alcances em metros no FOV.';return;}
- for(const target of targets){const r=calculate(p,d,target),row=root.document.createElement('div');row.className='analytics-reach-row '+target;const title=root.document.createElement('b');title.textContent=(target==='people'?'Pessoas':'Carros')+' · '+(r.available?r.min.toFixed(1)+'–'+r.max.toFixed(1)+' m':r.status);row.appendChild(title);
+ for(const target of targets){const r=calculate(p,d,target),row=root.document.createElement('div');row.className='analytics-reach-row '+target;const title=root.document.createElement('b');title.textContent=(target==='people'?'Pessoas':'Carros')+' · '+(r.referenceMax>0?'Referência VCA: '+r.referenceMax.toFixed(1)+' m':r.available?r.min.toFixed(1)+'–'+r.max.toFixed(1)+' m':r.status);row.appendChild(title);
+  if(r.referenceMax>0){const current=root.document.createElement('small');current.textContent=r.available?'Orientação atual: '+r.min.toFixed(1)+'–'+r.max.toFixed(1)+' m · altura '+(p.instHeight||3)+' m · inclinação '+(p.instTilt??30)+'°.':'Orientação atual: sem enquadramento completo do alvo. Reveja a inclinação ou use «Apontar para alcance VCA».';row.appendChild(current);if(!r.available||r.max<r.referenceMax*.9){const reason=root.document.createElement('small');reason.textContent='O valor atual é limitado pelo enquadramento e pela dimensão projetada do alvo; não altera o alcance VCA publicado para a câmara.';row.appendChild(reason);}}
   if(r.available){const detail=root.document.createElement('small');detail.textContent=r.label+' · alvo '+r.targetWidth+' × '+r.targetHeight+' m · alvo na imagem '+Math.round(r.horizontalPixels)+' × '+Math.round(r.verticalPixels)+' px'+(r.method==='estimate'?' · detalhe equivalente '+Math.round(r.pixels)+' px':'')+' · imagem considerada '+Math.round(r.width)+' × '+Math.round(r.height);row.appendChild(detail);}
   for(const note of r.notes||[]){const text=root.document.createElement('small');text.textContent=note;row.appendChild(text);}if(r.source){const link=root.document.createElement('a');link.href=root.SIGSProductLinks?root.SIGSProductLinks.resolve(d,r.source):r.source;link.target='_blank';link.rel='noopener noreferrer';link.textContent=root.SIGSProductLinks?root.SIGSProductLinks.label(link.href):'Fonte do alcance de referência';row.appendChild(link);}host.appendChild(row);
  }
 }
+root.sigsAimThermalVCA=function(){
+ const p=root.fP(root.S.selId),d=p&&root.gD(p.libId);if(!p||root.MOD!=='cctv'||root.SIGS_V6?.currentStatus==='ARCHIVED')return;
+ const aim=thermalAim(p,d);if(!aim||p.instTilt===aim.tilt)return;
+ root.pushUndo();p.instTilt=aim.tilt;root.saveCurrentFloor?.();root.sigsV6MarkDirty?.();root.syncP?.();root.render();
+};
 // Direct dragging of the person/car markers printed at the analytical range limits.
 // Pointer capture enables both mouse and touch; positions are persisted with the camera.
 let markerDrag=null,ignoreClickUntil=0;
@@ -274,6 +296,6 @@ root.sigsResetAnalyticsTargets=function(){
  const p=root.fP(root.S.selId);if(!p||root.MOD!=='cctv'||root.SIGS_V6?.currentStatus==='ARCHIVED'||!p.analytics?.markerPositions)return;
  root.pushUndo();delete p.analytics.markerPositions;root.saveCurrentFloor?.();root.sigsV6MarkDirty?.();A.sync(p,root.gD(p.libId));root.render();
 };
-root.SIGSAnalyticsRange={ajaxTable,ajaxFamily,settings,profile,geometry,projectAt,calculate,outerRange,draw,sync,markerHit};A.draw=draw;
+root.SIGSAnalyticsRange={ajaxTable,ajaxFamily,settings,profile,geometry,projectAt,calculate,thermalAim,outerRange,draw,sync,markerHit};A.draw=draw;
 if(typeof module!=='undefined'&&module.exports)module.exports=root.SIGSAnalyticsRange;
 })(typeof window!=='undefined'?window:globalThis);
