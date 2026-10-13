@@ -1018,6 +1018,64 @@ const patches=[
         "width": 4
       }
     }
+  },
+  {
+    "model": "SF-IPTB256A-3D5",
+    "datasheetURL": "https://s3.eu-west-1.amazonaws.com/files.visiotech.es/files/pdf/SF-IPTB256A-3D5_EN.pdf",
+    "thermalAnalyticsStatus": "available-range-unpublished",
+    "thermalSourceNote": "PDF oficial revisto: confirma classificação térmica de pessoas/carros, mas não publica alcances VCA por alvo. As distâncias DRI/DORI são referências de imagem e não alcances certificados da analítica.",
+    "sourceChecked": "2026-10-13"
+  },
+  {
+    "model": "SF-IPTB256A-7D5",
+    "datasheetURL": "https://s3.eu-west-1.amazonaws.com/files.visiotech.es/files/pdf/SF-IPTB256A-7D5_EN.pdf",
+    "thermalAnalyticsStatus": "available-range-unpublished",
+    "thermalSourceNote": "PDF oficial revisto: confirma classificação térmica de pessoas/carros, mas não publica alcances VCA por alvo. As distâncias DRI/DORI são referências de imagem e não alcances certificados da analítica.",
+    "sourceChecked": "2026-10-13"
+  },
+  {
+    "model": "SF-IPTB384A-9D5",
+    "datasheetURL": "https://s3.eu-west-1.amazonaws.com/files.visiotech.es/files/pdf/SF-IPTB384A-9D5_EN.pdf",
+    "thermalAnalyticsStatus": "available-range-unpublished",
+    "thermalSourceNote": "PDF oficial revisto: confirma classificação térmica de pessoas/carros, mas não publica alcances VCA por alvo. As distâncias DRI/DORI são referências de imagem e não alcances certificados da analítica.",
+    "sourceChecked": "2026-10-13"
+  },
+  {
+    "model": "SF-IPTB384A-19D5",
+    "datasheetURL": "https://s3.eu-west-1.amazonaws.com/files.visiotech.es/files/pdf/SF-IPTB384A-19D5_EN.pdf",
+    "thermalAnalyticsStatus": "available-range-unpublished",
+    "thermalSourceNote": "PDF oficial revisto: confirma classificação térmica de pessoas/carros, mas não publica alcances VCA por alvo. As distâncias DRI/DORI são referências de imagem e não alcances certificados da analítica.",
+    "sourceChecked": "2026-10-13"
+  },
+  {
+    "model": "SF-IPTB384A-25D5",
+    "datasheetURL": "https://s3.eu-west-1.amazonaws.com/files.visiotech.es/files/pdf/SF-IPTB384A-25D5_EN.pdf",
+    "thermalAnalyticsStatus": "available-range-unpublished",
+    "thermalSourceNote": "PDF oficial revisto: confirma classificação térmica de pessoas/carros, mas não publica alcances VCA por alvo. As distâncias DRI/DORI são referências de imagem e não alcances certificados da analítica.",
+    "sourceChecked": "2026-10-13"
+  },
+  {
+    "model": "TIC2621SR-F3-4F4AC-VD",
+    "datasheetURL": "https://ubox-eu.oss-eu-central-1.aliyuncs.com/datacenter/doc/e55ed2f9-7ec1-4b3b-847b-5f801c22a585/95098154-bcfc-43c6-ac21-670ad645d616.pdf",
+    "thermalAnalyticsStatus": "available-range-unpublished",
+    "thermalSourceNote": "PDF oficial revisto: confirma classificação térmica de pessoas/carros, mas não publica alcances VCA por alvo. As distâncias DRI/DORI são referências de imagem e não alcances certificados da analítica.",
+    "sourceChecked": "2026-10-13"
+  },
+  {
+    "model": "HM-TD3028T-2/Q(B)",
+    "datasheetURL": "https://webassets.hikmicrotech.com/global/asset/93cebb3fafe94219b9ff2c34499f4858.pdf",
+    "thermalAnalyticsStatus": "classification-not-documented",
+    "thermalSourceNote": "Ficha oficial HIKMICRO de termografia: não documenta classificação de pessoas/carros. A tabela de alcance refere medição de temperatura de objetos, não VCA.",
+    "sourceChecked": "2026-10-13",
+    "thermalRangeConditions": "Ficha oficial HIKMICRO de termografia: não documenta classificação de pessoas/carros. A tabela de alcance refere medição de temperatura de objetos, não VCA."
+  },
+  {
+    "model": "HM-TD3028T-3/Q(B)",
+    "datasheetURL": "https://webassets.hikmicrotech.com/global/asset/81cab55638e247d79a9cf5d5078582e0.pdf",
+    "thermalAnalyticsStatus": "classification-not-documented",
+    "thermalSourceNote": "Ficha oficial HIKMICRO de termografia: não documenta classificação de pessoas/carros. A tabela de alcance refere medição de temperatura de objetos, não VCA.",
+    "sourceChecked": "2026-10-13",
+    "thermalRangeConditions": "Ficha oficial HIKMICRO de termografia: não documenta classificação de pessoas/carros. A tabela de alcance refere medição de temperatura de objetos, não VCA."
   }
 ],records=[
   {
@@ -1032,7 +1090,10 @@ const patches=[
     "thermalFov": 56.0,
     "thermalVerticalFov": 42.2,
     "sourceURL": "https://www.visiotechsecurity.com/en/products/ip-cctv-1/thermal-411/safire-smart-747/sf-iptb256a-3d5-detail",
-    "datasheetURL": null
+    "datasheetURL": "https://s3.eu-west-1.amazonaws.com/files.visiotech.es/files/pdf/SF-IPTB256A-3D5_EN.pdf",
+    "thermalAnalyticsStatus": "available-range-unpublished",
+    "thermalSourceNote": "PDF oficial revisto: confirma classificação térmica de pessoas/carros, mas não publica alcances VCA por alvo. As distâncias DRI/DORI são referências de imagem e não alcances certificados da analítica.",
+    "sourceChecked": "2026-10-13"
   },
   {
     "model": "SF-IPTB256A-7D5",
@@ -1046,7 +1107,10 @@ const patches=[
     "thermalFov": 24.8,
     "thermalVerticalFov": 18.7,
     "sourceURL": "https://www.visiotechsecurity.com/en/products/ip-cctv-1/thermal-411/safire-smart-747/sf-iptb256a-7d5-detail",
-    "datasheetURL": null
+    "datasheetURL": "https://s3.eu-west-1.amazonaws.com/files.visiotech.es/files/pdf/SF-IPTB256A-7D5_EN.pdf",
+    "thermalAnalyticsStatus": "available-range-unpublished",
+    "thermalSourceNote": "PDF oficial revisto: confirma classificação térmica de pessoas/carros, mas não publica alcances VCA por alvo. As distâncias DRI/DORI são referências de imagem e não alcances certificados da analítica.",
+    "sourceChecked": "2026-10-13"
   },
   {
     "model": "SF-IPTB384A-9D5",
@@ -1060,7 +1124,10 @@ const patches=[
     "thermalFov": 28.4,
     "thermalVerticalFov": 21.5,
     "sourceURL": "https://www.visiotechsecurity.com/en/products/ip-cctv-1/thermal-411/safire-smart-747/sf-iptb384a-9d5-detail",
-    "datasheetURL": null
+    "datasheetURL": "https://s3.eu-west-1.amazonaws.com/files.visiotech.es/files/pdf/SF-IPTB384A-9D5_EN.pdf",
+    "thermalAnalyticsStatus": "available-range-unpublished",
+    "thermalSourceNote": "PDF oficial revisto: confirma classificação térmica de pessoas/carros, mas não publica alcances VCA por alvo. As distâncias DRI/DORI são referências de imagem e não alcances certificados da analítica.",
+    "sourceChecked": "2026-10-13"
   },
   {
     "model": "SF-IPTB384A-19D5",
@@ -1074,7 +1141,10 @@ const patches=[
     "thermalFov": 13.8,
     "thermalVerticalFov": 10.4,
     "sourceURL": "https://www.visiotechsecurity.com/en/products/ip-cctv-1/thermal-411/safire-smart-747/sf-iptb384a-19d5-detail",
-    "datasheetURL": null
+    "datasheetURL": "https://s3.eu-west-1.amazonaws.com/files.visiotech.es/files/pdf/SF-IPTB384A-19D5_EN.pdf",
+    "thermalAnalyticsStatus": "available-range-unpublished",
+    "thermalSourceNote": "PDF oficial revisto: confirma classificação térmica de pessoas/carros, mas não publica alcances VCA por alvo. As distâncias DRI/DORI são referências de imagem e não alcances certificados da analítica.",
+    "sourceChecked": "2026-10-13"
   },
   {
     "model": "SF-IPTB384A-25D5",
@@ -1088,7 +1158,10 @@ const patches=[
     "thermalFov": 10.5,
     "thermalVerticalFov": 7.9,
     "sourceURL": "https://www.visiotechsecurity.com/en/products/ip-cctv-1/thermal-411/safire-smart-747/sf-iptb384a-25d5-detail",
-    "datasheetURL": null
+    "datasheetURL": "https://s3.eu-west-1.amazonaws.com/files.visiotech.es/files/pdf/SF-IPTB384A-25D5_EN.pdf",
+    "thermalAnalyticsStatus": "available-range-unpublished",
+    "thermalSourceNote": "PDF oficial revisto: confirma classificação térmica de pessoas/carros, mas não publica alcances VCA por alvo. As distâncias DRI/DORI são referências de imagem e não alcances certificados da analítica.",
+    "sourceChecked": "2026-10-13"
   },
   {
     "model": "DS-2TD2628-3/QA",
@@ -1326,7 +1399,10 @@ const patches=[
     "thermalFov": 57,
     "thermalVerticalFov": 42,
     "sourceURL": "https://www.uniview.com/Products/Thermal_Cameras/Bullet_Series/Bullet_Series/TIC2621SR-F3-4F4AC-VD/",
-    "datasheetURL": "https://ubox-eu.oss-eu-central-1.aliyuncs.com/datacenter/doc/e55ed2f9-7ec1-4b3b-847b-5f801c22a585/95098154-bcfc-43c6-ac21-670ad645d616.pdf"
+    "datasheetURL": "https://ubox-eu.oss-eu-central-1.aliyuncs.com/datacenter/doc/e55ed2f9-7ec1-4b3b-847b-5f801c22a585/95098154-bcfc-43c6-ac21-670ad645d616.pdf",
+    "thermalAnalyticsStatus": "available-range-unpublished",
+    "thermalSourceNote": "PDF oficial revisto: confirma classificação térmica de pessoas/carros, mas não publica alcances VCA por alvo. As distâncias DRI/DORI são referências de imagem e não alcances certificados da analítica.",
+    "sourceChecked": "2026-10-13"
   },
   {
     "model": "TIC2626S-F25-4F8AC-I3",
@@ -1648,7 +1724,11 @@ const patches=[
     "thermalFov": 90,
     "thermalVerticalFov": 64.2,
     "sourceURL": "https://www.visiotechsecurity.com/pt/produtos/cctv-ip-1/solucões-ip-278/proteccão-perimetral-280/hm-td3028t-2_q(b)-detail",
-    "datasheetURL": null
+    "datasheetURL": "https://webassets.hikmicrotech.com/global/asset/93cebb3fafe94219b9ff2c34499f4858.pdf",
+    "thermalAnalyticsStatus": "classification-not-documented",
+    "thermalSourceNote": "Ficha oficial HIKMICRO de termografia: não documenta classificação de pessoas/carros. A tabela de alcance refere medição de temperatura de objetos, não VCA.",
+    "sourceChecked": "2026-10-13",
+    "thermalRangeConditions": "Ficha oficial HIKMICRO de termografia: não documenta classificação de pessoas/carros. A tabela de alcance refere medição de temperatura de objetos, não VCA."
   },
   {
     "model": "DS-2TD1217-2/QA",
@@ -1718,7 +1798,11 @@ const patches=[
     "thermalFov": 50,
     "thermalVerticalFov": 37.2,
     "sourceURL": "https://www.visiotechsecurity.com/pt/produtos/cctv-ip-1/solucões-ip-278/proteccão-perimetral-280/hm-td3028t-3_q(b)-detail",
-    "datasheetURL": null
+    "datasheetURL": "https://webassets.hikmicrotech.com/global/asset/81cab55638e247d79a9cf5d5078582e0.pdf",
+    "thermalAnalyticsStatus": "classification-not-documented",
+    "thermalSourceNote": "Ficha oficial HIKMICRO de termografia: não documenta classificação de pessoas/carros. A tabela de alcance refere medição de temperatura de objetos, não VCA.",
+    "sourceChecked": "2026-10-13",
+    "thermalRangeConditions": "Ficha oficial HIKMICRO de termografia: não documenta classificação de pessoas/carros. A tabela de alcance refere medição de temperatura de objetos, não VCA."
   },
   {
     "model": "DS-2TD4228T-7/S2",
@@ -1789,7 +1873,7 @@ for(const book of [root.SIGSThermalCatalog,root.SIGSHikvisionCCTV92,root.SIGSUni
  const lookup=book.lookup;if(lookup)book.lookup=d=>{const old=lookup(d);return old&&!d.custom?{...old,...grouped.get(key(d))}:old;};
 }
 root.CCTV_LIB=merge(root.CCTV_LIB);
-if(root.SIGSThermalCatalog){const previous=root.SIGSThermalCatalog.label;root.SIGSThermalCatalog.label=d=>d&&grouped.has(key(d))&&!d.custom?d.thermalResW+'×'+d.thermalResH+' nativo · térmica '+d.thermalLens+' mm · '+(d.thermalRangeBasis==='manufacturer-human-vca'?d.thermalRange+' m pessoas / '+d.thermalVehicleRange+' m carros · VCA':'VCA por confirmar · DORI não é alcance IA'):previous(d);}
+if(root.SIGSThermalCatalog){root.SIGSThermalCatalog.analyticsStatusLabel=d=>d?.thermalAnalyticsStatus==='classification-not-documented'?'Termografia · classificação pessoas/carros não documentada':d?.thermalAnalyticsStatus==='available-range-unpublished'?'VCA: alcance não publicado':'VCA por confirmar';const previous=root.SIGSThermalCatalog.label;root.SIGSThermalCatalog.label=d=>d&&grouped.has(key(d))&&!d.custom?d.thermalResW+'×'+d.thermalResH+' nativo · térmica '+d.thermalLens+' mm · '+(d.thermalRangeBasis==='manufacturer-human-vca'?d.thermalRange+' m pessoas / '+d.thermalVehicleRange+' m carros · VCA':root.SIGSThermalCatalog.analyticsStatusLabel(d)):previous(d);}
 root.SIGSThermalReview118={records,patches:grouped,key,merge};
 if(typeof module!=='undefined'&&module.exports)module.exports=root.SIGSThermalReview118;
 })(typeof window!=='undefined'?window:globalThis);
