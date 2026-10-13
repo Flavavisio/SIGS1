@@ -69,7 +69,7 @@ if(typeof CCTV_LIB==='undefined'||typeof AJAX_LIB==='undefined'||typeof FIRE_LIB
 // ════════════════════════════════════════
 var S = {
   lib:[], placed:[], meas:[],
-  selId:null, multiSel:[], tool:null, activeLib:null, repeatPlacement:false, pointerType:'mouse',
+  selId:null, multiSel:[], tool:null, activeLib:null, repeatPlacement:true, pointerType:'mouse',
   scale:{ok:false,ppm:10,mpp:0.1},
   fp:null, pan:{x:0,y:0}, zoom:1,
   layers:{fp:1,dev:1,cov:1,meas:1,grid:1},
@@ -103,8 +103,8 @@ function startModule(mod) {
     if(idx>=0) base[idx]=cd; else base.push(cd);
   });
   S.lib = mod==='alarm'&&window.SIGSIntrusionCatalog88?SIGSIntrusionCatalog88.enrich(base):base;
-  S.placed=[]; S.meas=[]; S.selId=null; S.multiSel=[]; S.activeLib=null; S.devN=0; S.repeatPlacement=false;
-  var repeatBox=document.getElementById('repeat-placement');if(repeatBox)repeatBox.checked=false;
+  S.placed=[]; S.meas=[]; S.selId=null; S.multiSel=[]; S.activeLib=null; S.devN=0; S.repeatPlacement=true;
+  var repeatBox=document.getElementById('repeat-placement');if(repeatBox)repeatBox.checked=true;
   S.fp=null; S.scale={ok:false,ppm:10,mpp:0.1}; S.zoom=1; S.pan={x:0,y:0};
   S.undoStack=[]; S.redoStack=[]; updateUndoUI();
   initFloors();
