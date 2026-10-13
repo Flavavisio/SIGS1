@@ -3,7 +3,7 @@
 const N=(v,f=0)=>Number.isFinite(Number(v))?Number(v):f;
 const profiles={
  '2014':{name:'IEC 62676-4:2014 · DORI',levels:[['i',250,'Identificação','I','#f43f5e'],['r',125,'Reconhecimento','R','#f59e0b'],['o',62.5,'Observação','O','#10b981'],['d',25,'Deteção','D','#38bdf8']]},
- '2025':{name:'IEC 62676-4:2025',levels:[['scrutinize',1500,'Examinar em detalhe','S','#e11d48'],['validate',500,'Validar','V','#f97316'],['characterize',250,'Caracterizar','C','#f59e0b'],['perceive',125,'Perceber','P','#22c55e'],['discern',80,'Discernir','D','#14b8a6'],['outline',40,'Delinear','OL','#0ea5e9'],['overview',20,'Visão geral','OV','#818cf8']]}
+ '2025':{name:'O₂DCPVS · IEC 62676-4:2025',levels:[['scrutinize',1500,'Examinar em detalhe','S','#e11d48'],['validate',500,'Validar','V','#f97316'],['characterize',250,'Caracterizar','C','#f59e0b'],['perceive',125,'Perceber','P','#22c55e'],['discern',80,'Discernir','D','#14b8a6'],['outline',40,'Delinear','OL','#0ea5e9'],['overview',20,'Visão geral','OV','#818cf8']]}
 };
 function requirement(t={}){if(t.profile==='custom')return {profile:'Critério personalizado',key:'custom',ppm:Math.max(1,N(t.minPPM,250)),name:t.goalName||'Objetivo personalizado'};const profile=profiles[t.profile]||profiles['2025'],l=profile.levels.find(x=>x[0]===t.goal)||profile.levels[2]||profile.levels[0];return {profile:profile.name,key:l[0],ppm:l[1],name:l[2]};}
 function distances(p,d,profile='2025'){const optics=root.SIGSProposalOptics.capture(p,d),width=root.SIGSEngineeringModel.widthPixels(p,d),fov=optics.fov;return (profiles[profile]||profiles['2025']).levels.map(([key,ppm,name,short,color])=>({key,ppm,name,short,color,distance:fov>0&&fov<180?width/(2*ppm*Math.tan(fov*Math.PI/360)):null}));}
