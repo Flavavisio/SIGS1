@@ -219,7 +219,7 @@ function registerMarkerDragging(){
  cv.dataset.analyticsMarkersDrag='1';
  cv.addEventListener('pointerdown',e=>{
   if(e.button!==0||e.altKey||e.isPrimary===false||e.defaultPrevented||markerDrag)return;const hit=markerHit(e);if(!hit)return;
-  e.preventDefault();e.stopImmediatePropagation();
+  e.preventDefault();e.stopImmediatePropagation();root.SIGSCanvasGesture?.claimPointer();
   root.pushUndo?.();
   hit.p.analytics=hit.p.analytics||{};
   hit.p.analytics.markerPositions=hit.p.analytics.markerPositions||{};
@@ -249,7 +249,7 @@ function registerMarkerDragging(){
  // The canvas parent still handles legacy mouse events for camera editing.
  // Consume compatibility events for this gesture so they cannot place another camera.
  for(const name of ['mousedown','mousemove','mouseup','click'])cv.addEventListener(name,e=>{
-  if(markerDrag||Date.now()<ignoreClickUntil){e.preventDefault();e.stopImmediatePropagation();}
+  if(!root.SIGSCanvasGesture&&(markerDrag||Date.now()<ignoreClickUntil)){e.preventDefault();e.stopImmediatePropagation();}
  },true);
 }
 if(root.document){if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',registerMarkerDragging);else registerMarkerDragging();}

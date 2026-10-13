@@ -77,7 +77,7 @@ function install(){
    const world=root.s2w(pos.x,pos.y),p=root.hitT?root.hitT(world.x,world.y,e):[...root.S.placed].reverse().find(p=>eligible(root.gD(p.libId))&&Math.hypot(root.w2s(p.x,p.y).x-pos.x,root.w2s(p.x,p.y).y-pos.y)<=20);
    if(p&&eligible(root.gD(p.libId)))candidate={kind:'move',p,d:root.gD(p.libId)};
   }
-  if(!candidate)return;e.preventDefault();e.stopImmediatePropagation();if(candidate.kind!=='move')root.pushUndo?.();
+  if(!candidate)return;e.preventDefault();e.stopImmediatePropagation();root.SIGSCanvasGesture?.claimPointer();if(candidate.kind!=='move')root.pushUndo?.();
   else root.sigsExitPlacementForEdit?.();
   const p=candidate.p;
   drag={...candidate,started:false,down:{x:e.clientX,y:e.clientY},zoom:root.S.zoom,threshold:e.pointerType==='touch'?8:5,pointerId:e.pointerId,floor:root.FLOORS?.[root.FLOOR_CUR],before:{x:p.x,y:p.y,rotation:p.rotation,instTilt:p.instTilt,lens:p.lens}};
@@ -100,7 +100,7 @@ function install(){
   root.syncP?.();root.render();
  },true);
  owner.addEventListener('pointerup',e=>finish(e),true);owner.addEventListener('pointercancel',e=>finish(e,true),true);owner.addEventListener('lostpointercapture',e=>finish(e),true);
- for(const name of ['mousedown','mousemove','mouseup','click'])cv.addEventListener(name,e=>{if(drag||Date.now()<suppressUntil){e.preventDefault();e.stopImmediatePropagation();}},true);
+ for(const name of ['mousedown','mousemove','mouseup','click'])cv.addEventListener(name,e=>{if(!root.SIGSCanvasGesture&&(drag||Date.now()<suppressUntil)){e.preventDefault();e.stopImmediatePropagation();}},true);
  root.document.addEventListener('keydown',e=>{if(drag&&e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();finish({pointerId:drag.pointerId,preventDefault(){},stopImmediatePropagation(){}},true);}},true);
  const panel=root.document.getElementById('cctv-install');if(panel&&!root.document.getElementById('fov-drag-help')){
   const help=root.document.createElement('p');help.id='fov-drag-help';help.className='fov-drag-help';help.textContent='Na planta: arrasta o ponto rosa para rodar e inclinar. Nas lentes ajustáveis, arrasta os pontos azuis para alterar o zoom.';panel.appendChild(help);

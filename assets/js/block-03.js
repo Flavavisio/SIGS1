@@ -181,6 +181,38 @@ var bg=bgcv.getContext('2d');
 var ctx=cv.getContext('2d');
 cv.addEventListener('pointerdown',function(e){S.pointerType=e.pointerType||'mouse';},true);
 
+// A drag and its release-generated click belong to one gesture, regardless of
+// which canvas (or its parent) receives the click or how late it arrives.
+window.SIGSCanvasGesture=(function(){
+  var pointerOwned=false,blockedClick=false,legacy=null;
+  function reset(){pointerOwned=false;blockedClick=false;legacy=null;}
+  function consume(e){if(!blockedClick)return false;reset();e.preventDefault();e.stopImmediatePropagation();return true;}
+  cw.addEventListener('pointerdown',function(e){if(e.isPrimary!==false&&(e.button===0||e.button===1)){reset();S.pointerType=e.pointerType||'mouse';}},true);
+  cw.addEventListener('mousedown',function(e){if(pointerOwned){e.preventDefault();e.stopImmediatePropagation();}else if(e.button===0||e.button===1)reset();},true);
+  ['mousemove','mouseup'].forEach(function(name){cw.addEventListener(name,function(e){if(pointerOwned){e.preventDefault();e.stopImmediatePropagation();}},true);});
+  cw.addEventListener('click',consume,true);
+  function cancel(){if(!legacy)return;blockedClick=true;S.rubberBand=null;window.onUp({});render();}
+  // Mouse fallback also finishes when the button is released outside the map.
+  window.addEventListener('mousemove',function(e){if(legacy&&!cw.contains(e.target))window.onMove(e);});
+  window.addEventListener('mouseup',function(e){if(legacy&&!cw.contains(e.target))window.onUp(e);});
+  window.addEventListener('blur',cancel);
+  window.addEventListener('pointercancel',function(){if(!pointerOwned)cancel();},true);
+  return {
+    claimPointer:function(){pointerOwned=true;blockedClick=true;legacy=null;},
+    consumeClick:consume,
+    begin:function(e){legacy={x:e.clientX,y:e.clientY,moved:false,threshold:S.pointerType==='touch'?8:5};},
+    move:function(e){
+      if(!legacy)return true;
+      if(!legacy.moved){
+        if(Math.hypot(e.clientX-legacy.x,e.clientY-legacy.y)<=legacy.threshold)return false;
+        if(S.drag||S.dragFP)pushUndo();legacy.moved=true;blockedClick=true;
+      }
+      return true;
+    },
+    end:function(){var moved=legacy&&legacy.moved;legacy=null;return moved;}
+  };
+})();
+
 function resize(){
   var w=cw.clientWidth||800, h=cw.clientHeight||600;
   bgcv.width=cv.width=w; bgcv.height=cv.height=h; render();
@@ -603,7 +635,7 @@ function drawTmp(){
 function onDown(e){
   if(S.mapOpen)return;
   var pos=ep(e);
-  if(e.button===1||(e.button===0&&e.altKey)){S.panning=true;S.panStart={x:e.clientX,y:e.clientY};cw.style.cursor='grabbing';e.preventDefault();return;}
+  if(e.button===1||(e.button===0&&e.altKey)){SIGSCanvasGesture.begin(e);S.panning=true;S.panStart={x:e.clientX,y:e.clientY};cw.style.cursor='grabbing';e.preventDefault();return;}
   if(e.button!==0)return;
   if(S.tool==='meas'||S.tool==='scale'||S.tool==='nvr')return;
   var w=s2w(pos.x,pos.y);
@@ -620,30 +652,29 @@ function onDown(e){
     }
     // If clicking an already-multi-selected item — drag all
     if(S.multiSel.length>1&&S.multiSel.indexOf(hit.id)>=0){
-      S.drag=true; S.dragOff={x:w.x-hit.x,y:w.y-hit.y}; S.dragAnchor={x:hit.x,y:hit.y};
+      SIGSCanvasGesture.begin(e);S.selId=hit.id;S.drag=true; S.dragOff={x:w.x-hit.x,y:w.y-hit.y}; S.dragAnchor={x:hit.x,y:hit.y};
       cw.style.cursor='grabbing'; e.preventDefault(); return;
     }
     // Normal single select + drag
     if(!e.ctrlKey&&!e.metaKey)S.multiSel=[];
-    select(hit.id);S.drag=true;S.dragOff={x:w.x-hit.x,y:w.y-hit.y};cw.style.cursor='grabbing';e.preventDefault();return;
+    select(hit.id);SIGSCanvasGesture.begin(e);S.drag=true;S.dragOff={x:w.x-hit.x,y:w.y-hit.y};cw.style.cursor='grabbing';e.preventDefault();return;
   }
   if(S.tool!=='place'){
     // Floor plan drag — only if click lands strictly inside the fp image
     if(S.fp&&!S.fp.locked){
       var fp=S.fp,fs=w2s(fp.x,fp.y);
       var fpOnFP=pos.x>=fs.x&&pos.x<=fs.x+fp.w*S.zoom&&pos.y>=fs.y&&pos.y<=fs.y+fp.h*S.zoom;
-      if(fpOnFP){S.dragFP=true;S.dragOff={x:w.x-fp.x,y:w.y-fp.y};return;}
+      if(fpOnFP){SIGSCanvasGesture.begin(e);S.dragFP=true;S.dragOff={x:w.x-fp.x,y:w.y-fp.y};return;}
     }
     // No hit and not on FP — start rubber-band
     if(!e.ctrlKey&&!e.metaKey){S.multiSel=[];deselect();}
-    S.rubberBand={x1:w.x,y1:w.y,x2:w.x,y2:w.y,active:true};
+    SIGSCanvasGesture.begin(e);S.rubberBand={x1:w.x,y1:w.y,x2:w.x,y2:w.y,active:true};
     cw.style.cursor='crosshair';
   }
 }
 function onUp(e){
+  var changed=SIGSCanvasGesture.end()&&(S.drag||S.dragFP);
   if(S.panning){S.panning=false;cw.style.cursor=tCur();}
-  if(S.drag){cw.style.cursor=tCur();pushUndo();}
-  if(S.dragFP)pushUndo();
   // Finish rubber-band
   if(S.rubberBand&&S.rubberBand.active){
     var rb=S.rubberBand;
@@ -661,12 +692,14 @@ function onUp(e){
   }
   cw.style.cursor=tCur();
   S.drag=false;S.dragFP=false;updateStats();
+  if(changed){syncP();saveCurrentFloor();if(typeof window.sigsV6MarkDirty==='function')window.sigsV6MarkDirty();}
 }
 function onMove(e){
   if(S.mapOpen)return;
   var pos=ep(e),w=s2w(pos.x,pos.y);
   if(S.scale.ok)document.getElementById('cpill').textContent='X:'+(w.x*S.scale.mpp).toFixed(1)+'m Y:'+(w.y*S.scale.mpp).toFixed(1)+'m';
   else document.getElementById('cpill').textContent='X:'+Math.round(w.x)+' Y:'+Math.round(w.y);
+  if((S.panning||S.drag||S.dragFP||(S.rubberBand&&S.rubberBand.active))&&!SIGSCanvasGesture.move(e))return;
   if(S.panning){S.pan.x+=e.clientX-S.panStart.x;S.pan.y+=e.clientY-S.panStart.y;S.panStart={x:e.clientX,y:e.clientY};render();return;}
   // Move group if multi-selected
   if(S.drag&&S.multiSel.length>1){
@@ -674,7 +707,6 @@ function onMove(e){
     if(anchor){
       var dx=(w.x-S.dragOff.x)-anchor.x, dy=(w.y-S.dragOff.y)-anchor.y;
       S.multiSel.forEach(function(id){var p=fP(id);if(p){p.x+=dx;p.y+=dy;}});
-      anchor.x+=dx;anchor.y+=dy;
     }
     render();return;
   }
@@ -687,6 +719,7 @@ function onMove(e){
   if(p1){S.tmpLine={x1:p1.x,y1:p1.y,x2:w.x,y2:w.y,col:S.tool==='scale'?'#00e888':'#FFD700'};hint(S.scale.ok?(d2(p1.x,p1.y,w.x,w.y)*S.scale.mpp).toFixed(2)+' m':d2(p1.x,p1.y,w.x,w.y).toFixed(0)+' px');render();}
 }
 function onClick(e){
+  if(SIGSCanvasGesture.consumeClick(e))return;
   if(S.mapOpen)return;
   if(e.button!==0||S.panning||S.drag||S.dragFP)return;
   var pos=ep(e),w=s2w(pos.x,pos.y);

@@ -13,7 +13,10 @@ const d=w.SIGSHikvisionCCTV92.rows.find(d=>d.type==='bullet'&&d.analytics?.peopl
 function seed(zoom=1,scaled=true){
  time+=1000;const p={id:'original',libId:d.id,label:'CAM01',x:0,y:0,lens:w.SIGSLensModel.policy(d).initial,rotation:0,instHeight:3,instTilt:5,color:d.color,opacity:.22};
  Object.assign(w.S,{placed:[p],lib:[d],selId:null,multiSel:[],activeLib:d,tool:'place',repeatPlacement:false,pointerType:'mouse',scale:{ok:scaled,ppm:10,mpp:.1},zoom,pan:{x:30,y:20},layers:{dev:1,cov:1,fp:0,grid:0,meas:0},drag:false,panning:false,dragFP:false,rubberBand:null,undoStack:[],redoStack:[],mapOpen:false});
- w.FLOORS=[{id:'floor',placed:w.S.placed,scale:w.S.scale}];w.FLOOR_CUR=0;w.SIGS_V6={currentStatus:'DRAFT'};return p;
+ w.FLOORS=[{id:'floor',placed:w.S.placed,scale:w.S.scale}];w.FLOOR_CUR=0;w.SIGS_V6={currentStatus:'DRAFT'};
+ // Each fixture starts with a fresh physical gesture, independent of a prior
+ // marker drag whose compatibility click was deliberately omitted.
+ w.cw.dispatchEvent(new w.MouseEvent('pointerdown',{bubbles:true,button:0}));return p;
 }
 function event(type,at,pointerType){
  const e=new w.MouseEvent(type,{bubbles:true,cancelable:true,button:0,clientX:at.x+70,clientY:at.y+40});
