@@ -810,7 +810,7 @@ function placeDevice(x,y){
   var pre=(prefixes[dev.type]||'DEV');
   var n=nextNum(pre);
   S.devN++; // keep for save-format compatibility
-  var pc={id:uid(),libId:dev.id,x:x,y:y,rotation:0,label:pre+(n<10?'0':'')+n,color:dev.color,opacity:0.22,visible:true,lens:typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).initial:2.8,afov:dev.fov,arange:dev.range,zone:1,mp:dev.mp||4,codec:(String(dev.brand||'').toLowerCase().includes('unv')||String(dev.brand||'').toLowerCase().includes('uniview'))?'ultra265b':'h265',days:30,recordFps:dev.recordFps||null,instHeight:placementHeight,instTilt:dev.type==='thermal_bi'?(thermalAim?thermalAim.tilt:0):30};
+  var pc={id:uid(),libId:dev.id,x:x,y:y,rotation:0,label:pre+(n<10?'0':'')+n,color:dev.color,opacity:0.22,visible:true,lens:typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).initial:2.8,afov:dev.fov,arange:dev.range,zone:1,mp:dev.mp||4,codec:(String(dev.brand||'').toLowerCase().includes('unv')||String(dev.brand||'').toLowerCase().includes('uniview'))?'ultra265b':'h265',days:30,recordFps:dev.recordFps||null,instHeight:placementHeight,instTilt:dev.type==='thermal_bi'?(thermalAim?thermalAim.tilt:0):MOD==='cctv'&&window.SIGSAnalyticsRange?.initialOpticalTilt?SIGSAnalyticsRange.initialOpticalTilt({instHeight:placementHeight},dev):30};
   if(MOD==='alarm'&&typeof SIGSIntrusion!=='undefined'){pc.intrusion=SIGSIntrusion.settings({},dev);pc.instHeight=pc.intrusion.height;['lens','mp','codec','days','instTilt'].forEach(function(k){delete pc[k];});}
   pushUndo();
   S.placed.push(pc);
