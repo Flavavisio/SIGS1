@@ -1,5 +1,4 @@
-/* Ajax NVR catalogue for SIGS Studio — manufacturer/distributor-verified classic models.
-   NVR H / Superior models deliberately excluded until per-SKU bitrate/drive/PoE specs are verified. */
+/* Ajax NVR catalogue — verified classic and Superior H2G models. */
 (function(root){'use strict';
 const source8='https://s3-eu-west-1.amazonaws.com/files.visiotech.es/files/pdf/AJ-NVR108-W_EN.pdf';
 const source16='https://www.visiotechsecurity.com/en/products/ip-cctv-1/professional-nvrs-12/ajax-738/aj-nvr116-w-detail';
@@ -16,9 +15,19 @@ for(const s of series)for(const [code,color] of [['W','Branco'],['B','Preto']]){
  sourceURL:s.sourceURL,photoURL:null,
  note:'NVR Ajax clássico sem PoE integrado; requer switch PoE ou alimentação individual. Confirma ONVIF/RTSP e eventos de IA antes de encomendar.'});
 }
-const existing=new Set((root.NVR_DB||[]).map(x=>String(x.reference||x.name).toUpperCase()));
-root.NVR_DB=root.NVR_DB||[];
-rows.forEach(d=>{if(!existing.has(d.reference.toUpperCase()))root.NVR_DB.push(d);});
+// Preferred model requested for Ajax cameras. No integrated PoE: use an external switch.
+for(const [code,color] of [['B','Preto'],['W','Branco']]){
+ const reference='AJ-NVR208-HAC2G-AI-S-'+code;
+ rows.push({name:reference,reference,description:'Ajax Superior NVR · 8 canais · '+color,brand:'Ajax',
+  ch:8,maxMP:12,bw:384,hdd:2,maxDiskTB:24,poePorts:0,poeBudget:0,poeMaxPortW:0,
+  hdmi:true,ai:true,lanPorts:2,lanMbps:1000,externalPoE:true,colour:color,recommendationPriority:10,
+  recording:'H.264 / H.265',
+  sourceURL:'https://www.visiotechsecurity.com/pt/produtos/intrus%C3%A3o-8/ajax-cctv-740/nvrs-739/'+reference.toLowerCase()+'-detail',
+  note:'Superior com IA e HDMI, 2 × HDD até 24 TB por disco e 2 × RJ45 Gigabit. Requer switch PoE externo ou alimentação individual.'});
+}
+function merge(catalog){const byRef=new Map((catalog||[]).map(d=>[String(d.reference||d.name).toUpperCase(),d]));
+ rows.forEach(d=>{const key=d.reference.toUpperCase();byRef.set(key,{...byRef.get(key),...d});});return [...byRef.values()];}
+root.NVR_DB=merge(root.NVR_DB);
 // NVR H family references (manufacturer documentation). These are shown in the
 // catalogue but NOT eligible for automatic sizing until per-SKU bandwidth,
 // resolution and, for Superior, PoE budget have been verified.
@@ -38,6 +47,6 @@ nvrH.push({name:'Superior NVR H2DAI16PAC (32-ch)',reference:'Superior NVR H2DAI1
  verified:['HDMI','32 canais','2 discos','16 portas PoE','IA','Alimentação AC'],
  pending:['Capacidade máxima por disco','Banda de entrada','Resolução','Orçamento PoE','Código comercial/cor'],
  status:'specs-pending'});
-root.SIGSAjaxNVR={rows,nvrH,seriesGuide:'https://support.ajax.systems/en/video-surveillance/nvr-h/',classicGuide:'https://support.ajax.systems/en/manuals/nvr/'};
+root.SIGSAjaxNVR={rows,nvrH,merge,seriesGuide:'https://support.ajax.systems/en/video-surveillance/nvr-h/',classicGuide:'https://support.ajax.systems/en/manuals/nvr/'};
 if(typeof module!=='undefined'&&module.exports)module.exports=root.SIGSAjaxNVR;
 })(typeof window!=='undefined'?window:globalThis);

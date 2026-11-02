@@ -13,7 +13,7 @@ function brand(d){
  return '';
 }
 function manufacturer(v,b){try{const h=new URL(v).hostname;return {ajax:/^(?:support\.)?ajax\.systems$/,hikvision:/^(?:www\.)?hikvision\.com$/,uniview:/^(?:www\.)?uniview\.com$/}[b]?.test(h)?safe(v):'';}catch(e){return '';}}
-function catalogs(){return [root.S?.lib,root.CCTV_LIB,root.AJAX_LIB,root.FIRE_LIB,root.NVR_DB,root.SIGSAjaxNVR?.nvrH,root.SIGS_CATALOG?.products].flatMap(x=>Array.isArray(x)?x:[]);}
+function catalogs(){return [root.S?.lib,root.CCTV_LIB,root.AJAX_LIB,root.FIRE_LIB,root.NVR_DB,root.POE_SWITCH_DB,root.SIGSAjaxNVR?.nvrH,root.SIGS_CATALOG?.products].flatMap(x=>Array.isArray(x)?x:[]);}
 function resolve(device,fallback){
  const input=typeof device==='string'?{ref:device}:device||{},ref=key(input.model||input.reference||input.ref||input.name);
  const current=catalogs().find(x=>(key(x.model||x.reference||x.ref||x.name)===ref||key(x.name)===ref)&&!x.custom);

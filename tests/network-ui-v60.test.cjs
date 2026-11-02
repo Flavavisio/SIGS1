@@ -8,6 +8,11 @@ const action=(a,id)=>{const b=[...doc.querySelectorAll('[data-net-action]')].fin
 const change=(group,key,value,id)=>{const el=[...doc.querySelectorAll('[data-net-group]')].find(el=>el.dataset.netGroup===group&&el.dataset.netKey===key&&(!id||el.dataset.netId===id));assert(el,group+':'+key);if(el.type==='checkbox')el.checked=value;else el.value=value;el.onchange();};
 e.SIGSNetwork.open();action('seed');assert.equal(e.SIGS_COMMERCIAL.network.nodes.length,2);assert(e.SIGS_COMMERCIAL.network.enabled);assert.equal(e.SIGS_COMMERCIAL.network.assignments.c1.nvrId,e.SIGS_COMMERCIAL.network.nodes[0].id);assert(e.dirty);
 const recorderId=e.SIGS_COMMERCIAL.network.nodes[0].id,swId=e.SIGS_COMMERCIAL.network.nodes[1].id;
+// A per-switch brand filter is independent from cameras and persisted with the node.
+e.POE_SWITCH_DB.push({...sw,name:'RE8',brand:'Reyee'});
+change('node','brandFilter','Reyee',swId);assert.equal(e.SIGS_COMMERCIAL.network.nodes[1].reference,'');
+let modelSelect=doc.querySelector('[data-net-id="'+swId+'"][data-net-key="reference"]');assert.equal(modelSelect.options.length,2);assert.equal(modelSelect.options[1].value,'RE8');
+change('node','reference','RE8',swId);change('node','brandFilter','Uniview',swId);assert.equal(e.SIGS_COMMERCIAL.network.nodes[1].reference,'');change('node','reference','SW8',swId);
 action('place',swId);e.onClick({button:0,x:100,y:0});assert.equal(e.SIGS_COMMERCIAL.network.nodes[1].x,100);action('place',recorderId);e.onClick({button:0,x:200,y:0});assert.equal(e.SIGS_COMMERCIAL.network.nodes[0].x,200);
 e.SIGSNetwork.open('cameras');action('route-camera','c1');e.onClick({button:0,x:50,y:50});e.SIGSNetwork.finish();assert.equal(e.SIGS_COMMERCIAL.network.assignments.c1.link.routes[0].points.length,3);assert(e.SIGSNetwork.snapshot().cameras[0].length.total>15);
 e.SIGSNetwork.open('links');const linkId=e.SIGS_COMMERCIAL.network.links[0].id;change('link','lengthM','5',linkId);let quote=e.sigsV8Quote();assert.equal(quote.lines.filter(x=>x.type==='switch').length,1);assert.equal(quote.lines.find(x=>x.type==='nvr').ref,'NVR8');assert(quote.lines.find(x=>x.type==='cabo').qty>20);assert(!quote.warnings.some(x=>x.includes('15 m')));

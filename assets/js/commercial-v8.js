@@ -21,8 +21,9 @@ function price(ref,key){
 function rows(){
  saveCurrentFloor();var grouped=new Map(),cams=[],warnings=[];
  function add(r,key){
-  if(grouped.has(r.ref)){grouped.get(r.ref).qty+=r.qty;return;}
-  grouped.set(r.ref,r);price(r.ref,key);
+  var identity=r.priceKey||r.ref;
+  if(grouped.has(identity)){grouped.get(identity).qty+=r.qty;return;}
+  grouped.set(identity,r);price(identity,key);
  }
  FLOORS.forEach(function(fl){(fl.placed||[]).forEach(function(p){
   var d=gD(p.libId);if(!d){warnings.push('Equipamento sem referência no catálogo: '+p.libId);return;}
@@ -47,8 +48,9 @@ function rows(){
   var nvr=rec?rec.nvr:suggestNVR(cams.length,mp,bw)[0],poe=calcPoE(cams.map(function(x){return x.p;})),sw=rec?rec.switch:poe.suggested[0];
   if(rec)warnings=warnings.concat(rec.warnings);
   var values=Array.from(grouped.values());
-  if(nvr&&!values.some(function(r){return r.type==='nvr'||r.ref===nvr.name;}))add({ref:nvr.name,name:'NVR recomendado',type:'nvr',qty:1,unit:'un.',system:true},'__nvr__');
-  if(sw&&!values.some(function(r){return r.type==='switch'||r.ref===sw.name;}))add({ref:sw.name,name:'Switch PoE recomendado',type:'switch',qty:1,unit:'un.',system:true},'__switch__');
+  [nvr,sw].forEach(function(d){if(d&&d.reference&&d.reference!==d.name&&!Object.prototype.hasOwnProperty.call(C.prices,d.reference)&&Object.prototype.hasOwnProperty.call(C.prices,d.name))C.prices[d.reference]=clone(C.prices[d.name]);});
+  if(nvr&&!values.some(function(r){return r.type==='nvr'||r.ref===nvr.name;}))add({ref:nvr.reference||nvr.name,name:nvr.description||'NVR recomendado',type:'nvr',qty:1,unit:'un.',system:true},'__nvr__');
+  if(sw&&!values.some(function(r){return r.type==='switch'||r.ref===sw.name;}))add({ref:sw.reference||sw.name,name:'Switch PoE recomendado',type:'switch',qty:1,unit:'un.',system:true},'__switch__');
   var tb=rec&&rec.disk?rec.disk.capacityTB:nearestHDD(gb),qty=rec&&rec.disk?rec.disk.qty:Math.max(1,Math.ceil(gb/(tb*1024)));
   if(!rec||rec.disk)add({ref:rec&&rec.disk?(rec.disk.device.reference||rec.disk.device.name):sigsHddCatalogRef(tb),name:'Disco '+tb+' TB (capacidade técnica)',type:'hdd',qty:qty,unit:'un.',system:true},'hdd');
   if(nvr&&qty>nvr.hdd)warnings.push('A quantidade de discos calculada excede as baias do NVR recomendado. Reveja o dimensionamento.');
@@ -57,35 +59,50 @@ function rows(){
  }
  FLOORS.forEach(function(fl){(fl.placed||[]).filter(function(p){return p.cableRoute&&p.cableRoute.length>1&&!cams.some(function(x){return x.p===p;});}).forEach(function(p){if(!window.SIGSSiteGeometry)return;var measured=SIGSSiteGeometry.cable(p,fl.scale,fl.cabling);if(!measured){warnings.push('Percurso sem escala: '+(p.label||p.id)+' · '+fl.name);return;}var ref=p.cableRef||'Cabo de instalação (a confirmar)';add({ref:ref,name:ref,type:'cabo',qty:Math.ceil(measured.total),unit:'m',system:true},ref==='Cabo UTP Cat6'?'cable':ref);});});
  if(typeof sigsV10SyncAccessories==='function')sigsV10SyncAccessories();
- C.extras.filter(function(r){return M.num(r.qty)>0;}).forEach(function(r){add({ref:r.ref,name:r.name,type:'adicional',qty:M.num(r.qty),unit:r.unit||'un.',system:false,brand:r.brand,custom:!!r.custom,sourceUrl:r.sourceUrl});});
+ C.extras.filter(function(r){return M.num(r.qty)>0;}).forEach(function(r){add({ref:r.ref,priceKey:r.priceKey,name:r.name,type:r.extraType||'adicional',qty:M.num(r.qty),unit:r.unit||'un.',system:false,brand:r.brand,custom:!!r.custom,sourceUrl:r.sourceUrl});});
  var result=Array.from(grouped.values());window._bomRows=result;return {rows:result,warnings:warnings};
 }
 function quote(){var r=rows(),t=M.calculate(r.rows,C);t.warnings=r.warnings;return t;}
 window.sigsV8Quote=quote;
 function input(field,value,label,extra){return '<label>'+label+'<input data-setting="'+field+'" value="'+e(value)+'" '+(extra||'type="number" min="0" step="0.01"')+'></label>';}
+function extraKey(r){return r.priceKey||r.ref;}
+function extraMarkup(r,i){
+ var p=C.prices[extraKey(r)]||{};
+ function field(k,label,value,attrs){return '<label>'+label+'<input data-extra="'+i+'" data-field="'+k+'" aria-label="'+label+'" value="'+e(value)+'" '+(attrs||'type="text"')+'></label>';}
+ return '<div class="v8-extra">'+field('ref','Referência',r.ref)+field('name','Descrição',r.name)+field('qty','Quantidade',r.qty,'type="number" min="0" step="0.01"')+field('unit','Unidade',r.unit||'un.')+field('cost','Custo un. (€)',M.num(p.cost),'type="number" min="0" step="0.01"')+field('sale','Venda un. (€)',p.sale==null?'':p.sale,'type="number" min="0" step="0.01" placeholder="Calculada pelo custo"')+'<button type="button" data-remove="'+i+'">Remover</button></div>';
+}
+function addExtra(installation){
+ if(archived())return;var key;do{key='MANUAL-'+Date.now()+'-'+Math.random().toString(36).slice(2,10);}while(C.extras.some(function(r){return extraKey(r)===key;}));
+ C.extras.push({ref:installation?'INSTALACAO':'ARTIGO',priceKey:key,custom:true,name:installation?'Instalação e configuração':'Artigo adicional',qty:1,unit:installation?'serviço':'un.',extraType:installation?'instalacao':'adicional'});
+ C.prices[key]={cost:0,sale:null};changed();draw();
+ var inputs=el('m-bom').querySelectorAll('[data-extra="'+(C.extras.length-1)+'"]');if(inputs.length)inputs[installation?inputs.length-1:0].focus();
+}
 function footer(t){return '<div class="v8-summary"><span>Custo interno <b>'+money(t.cost)+'</b></span><span>Resultado <b>'+money(t.profit)+' · '+t.margin+'%</b></span><span>Desconto <b>'+money(t.discount)+'</b></span><span>Subtotal <b>'+money(t.sub)+'</b></span><span>IVA '+e(C.iva)+'% <b>'+money(t.iva)+'</b></span><span class="v8-grand">Total <b>'+money(t.total)+'</b></span></div>'+(t.missing?'<p class="v8-warning">'+t.missing+' linha(s) sem preço de venda. Complete os preços antes de enviar.</p>':'')+t.warnings.map(function(w){return '<p class="v8-warning">'+e(w)+'</p>';}).join('');}
 function draw(){
  var host=el('m-bom');if(!host)return;var t=quote();
- shownSignature=JSON.stringify(t.lines.map(function(r){return [r.ref,r.qty];}));
+ shownSignature=JSON.stringify(t.lines.map(function(r){return [r.priceKey||r.ref,r.ref,r.name,r.qty,r.unit];}));
  host.innerHTML='<div class="modal v8-modal"><div class="mh">Materiais e orçamento</div><p>As quantidades acompanham os equipamentos de todos os pisos. Custos e condições ficam guardados com o projeto.</p>'+
  '<div class="v8-settings">'+input('company',C.company,'Empresa','type="text"')+input('client',C.client,'Cliente','type="text"')+input('reference',C.reference,'Referência da proposta','type="text"')+input('validity',C.validity,'Validade (dias)')+'</div>'+
  '<div class="v8-settings">'+input('margin',C.margin,'Percentagem padrão')+'<label>Cálculo<select data-setting="marginMode"><option value="markup"'+(C.marginMode==='markup'?' selected':'')+'>Acréscimo sobre custo</option><option value="margin"'+(C.marginMode==='margin'?' selected':'')+'>Margem sobre venda</option></select></label>'+input('discount',C.discount,'Desconto (%)')+input('iva',C.iva,'IVA (%)')+'</div>'+
- '<p>O preço de venda vazio é calculado a partir do custo. Um preço de venda preenchido substitui esse cálculo.</p><div class="v8-table"><table><thead><tr><th>Referência / descrição</th><th>Quantidade</th><th>Custo un.</th><th>Venda un.</th><th>Total s/ IVA</th></tr></thead><tbody>'+t.lines.filter(function(r){return r.ref!=='MAO-DE-OBRA';}).map(function(r){var p=C.prices[r.ref]||{};return '<tr><td><b>'+e(r.ref)+'</b><small>'+e(r.name)+'</small>'+(window.SIGSProductLinks?SIGSProductLinks.markup(r):'')+'</td><td>'+r.qty+' '+e(r.unit)+'</td><td><input data-ref="'+e(r.ref)+'" data-price="cost" type="number" min="0" step="0.01" value="'+M.num(p.cost)+'"></td><td><input data-ref="'+e(r.ref)+'" data-price="sale" type="number" min="0" step="0.01" placeholder="'+r.sale.toFixed(2)+'" value="'+e(p.sale==null?'':p.sale)+'"></td><td data-total-ref="'+e(r.ref)+'">'+money(r.net)+'</td></tr>';}).join('')+'</tbody></table></div>'+
- '<div class="v8-settings">'+input('laborHours',C.laborHours,'Mão de obra (horas)')+input('laborCost',C.laborCost,'Custo interno / hora')+input('laborSale',C.laborSale,'Venda / hora')+'</div>'+
- '<details><summary>Materiais adicionais e acessórios</summary><div id="v8-extras">'+C.extras.map(function(r,i){return '<div class="v8-extra"><input data-extra="'+i+'" data-field="ref" aria-label="Referência" value="'+e(r.ref)+'"><input data-extra="'+i+'" data-field="name" aria-label="Descrição" value="'+e(r.name)+'"><input data-extra="'+i+'" data-field="qty" aria-label="Quantidade" type="number" min="0" step="0.01" value="'+r.qty+'"><button data-remove="'+i+'">Remover</button></div>';}).join('')+'</div><button id="v8-add">Adicionar material</button></details>'+
+ '<p>O preço de venda vazio é calculado a partir do custo. Um preço de venda preenchido substitui esse cálculo.</p><div class="v8-table"><table><thead><tr><th>Referência / descrição</th><th>Quantidade</th><th>Custo un.</th><th>Venda un.</th><th>Total s/ IVA</th></tr></thead><tbody>'+t.lines.filter(function(r){return r.ref!=='MAO-DE-OBRA';}).map(function(r){var key=r.priceKey||r.ref,p=C.prices[key]||{};return '<tr data-line-key="'+e(key)+'"><td><b>'+e(r.ref)+'</b><small>'+e(r.name)+'</small>'+(window.SIGSProductLinks?SIGSProductLinks.markup(r):'')+'</td><td data-line-quantity>'+r.qty+' '+e(r.unit)+'</td><td><input data-ref="'+e(key)+'" data-price="cost" type="number" min="0" step="0.01" value="'+M.num(p.cost)+'"></td><td><input data-ref="'+e(key)+'" data-price="sale" type="number" min="0" step="0.01" placeholder="'+r.sale.toFixed(2)+'" value="'+e(p.sale==null?'':p.sale)+'"></td><td data-total-ref="'+e(key)+'">'+money(r.net)+'</td></tr>';}).join('')+'</tbody></table></div>'+
+ '<h3>Mão de obra por hora (opcional)</h3><div class="v8-settings">'+input('laborHours',C.laborHours,'Mão de obra (horas)')+input('laborCost',C.laborCost,'Custo interno / hora')+input('laborSale',C.laborSale,'Venda / hora')+'</div>'+
+ '<section class="v8-manual"><h3>Artigos e instalação</h3><p>Adiciona artigos por referência e valor, ou a instalação com um valor global. Os preços de venda são sem IVA e entram no total da proposta.</p><div class="v8-extra-actions"><button type="button" class="btn ba bsm" id="v8-add">Adicionar artigo</button><button type="button" class="btn ba bsm" id="v8-add-installation">Adicionar instalação</button></div><div id="v8-extras">'+C.extras.map(extraMarkup).join('')+'</div></section>'+
  '<label class="v8-terms">Condições comerciais<textarea data-setting="terms" rows="3">'+e(C.terms)+'</textarea></label><div id="v8-totals">'+footer(t)+'</div><div class="ma"><button class="btn ba bsm" id="v8-print">Proposta / PDF</button><button class="btn ba bsm" id="v8-csv">CSV para cliente</button><button class="btn bsm" onclick="closeM(\'m-bom\')">Fechar</button></div></div>';
  host.querySelectorAll('[data-setting],[data-price],[data-extra]').forEach(function(node){node.disabled=archived();node.addEventListener('input',function(){
   if(archived())return;
   if(node.dataset.setting){var k=node.dataset.setting;C[k]=['company','client','reference','terms','marginMode'].indexOf(k)>=0?node.value:M.num(node.value);if(k==='discount'||k==='iva')C[k]=Math.min(100,C[k]);if(k==='marginMode')C.margin=Math.min(C.marginMode==='margin'?99:500,C.margin);if(k==='margin')C[k]=Math.min(C.marginMode==='margin'?99:500,C[k]);}
   if(node.dataset.price){var ref=node.dataset.ref;C.prices[ref]=C.prices[ref]||{cost:0,sale:null};C.prices[ref][node.dataset.price]=node.dataset.price==='sale'&&node.value===''?null:M.num(node.value);}
-  if(node.dataset.extra){var r=C.extras[Number(node.dataset.extra)];r[node.dataset.field]=node.dataset.field==='qty'?M.num(node.value):node.value;if(node.dataset.field==='qty'&&r.suggestionKey)r.autoQuantity=false;}
+  if(node.dataset.extra){var r=C.extras[Number(node.dataset.extra)],field=node.dataset.field;
+   if(['ref','cost','sale'].indexOf(field)>=0&&!r.priceKey){r.priceKey='MANUAL-'+Date.now()+'-'+Math.random().toString(36).slice(2,10);C.prices[r.priceKey]=Object.assign({cost:0,sale:null},C.prices[r.ref]||{});}
+   if(field==='cost'||field==='sale'){var key=extraKey(r);C.prices[key]=C.prices[key]||{cost:0,sale:null};C.prices[key][field]=field==='sale'&&node.value===''?null:M.num(node.value);}
+   else r[field]=field==='qty'?M.num(node.value):node.value;if(field==='qty'&&r.suggestionKey)r.autoQuantity=false;}
   changed();refresh();
  });});
- host.querySelectorAll('[data-remove]').forEach(function(b){b.disabled=archived();b.onclick=function(){C.extras.splice(Number(b.dataset.remove),1);changed();draw();};});
- el('v8-add').disabled=archived();el('v8-add').onclick=function(){C.extras.push({ref:'EXTRA-'+Date.now(),name:'Material adicional',qty:1,unit:'un.'});changed();draw();};
+ host.querySelectorAll('[data-remove]').forEach(function(b){b.disabled=archived();b.onclick=function(){if(archived())return;C.extras.splice(Number(b.dataset.remove),1);changed();draw();};});
+ el('v8-add').disabled=archived();el('v8-add').onclick=function(){addExtra(false);};el('v8-add-installation').disabled=archived();el('v8-add-installation').onclick=function(){addExtra(true);};
  el('v8-print').onclick=function(){window.sigsV8PrintQuote();};el('v8-csv').onclick=function(){exportBOM('csv');};if(typeof sigsV10EnhanceBudget==='function')sigsV10EnhanceBudget();
 }
-function refresh(){var t=quote(),host=el('m-bom');if(host&&!host.classList.contains('hide')&&!host.contains(document.activeElement)&&shownSignature!==JSON.stringify(t.lines.map(function(r){return [r.ref,r.qty];}))){draw();return;}if(el('v8-totals'))el('v8-totals').innerHTML=footer(t);if(host)host.querySelectorAll('[data-total-ref]').forEach(function(n){var r=t.lines.find(function(x){return x.ref===n.dataset.totalRef;});n.textContent=r?money(r.net):'—';});panel(t);}
+function refresh(){var t=quote(),host=el('m-bom');if(host&&!host.classList.contains('hide')&&!host.contains(document.activeElement)&&shownSignature!==JSON.stringify(t.lines.map(function(r){return [r.priceKey||r.ref,r.ref,r.name,r.qty,r.unit];}))){draw();return;}if(el('v8-totals'))el('v8-totals').innerHTML=footer(t);if(host)host.querySelectorAll('[data-total-ref]').forEach(function(n){var r=t.lines.find(function(x){return (x.priceKey||x.ref)===n.dataset.totalRef;});n.textContent=r?money(r.net):'—';});if(host){host.querySelectorAll('[data-line-key]').forEach(function(n){var r=t.lines.find(function(x){return (x.priceKey||x.ref)===n.dataset.lineKey;});if(!r)return;n.querySelector('b').textContent=r.ref;n.querySelector('small').textContent=r.name;n.querySelector('[data-line-quantity]').textContent=r.qty+' '+r.unit;});host.querySelectorAll('[data-price]').forEach(function(n){if(n===document.activeElement)return;var p=C.prices[n.dataset.ref]||{};n.value=p[n.dataset.price]==null?'':p[n.dataset.price];});host.querySelectorAll('[data-extra]').forEach(function(n){if(n===document.activeElement||!['cost','sale'].includes(n.dataset.field))return;var r=C.extras[Number(n.dataset.extra)],p=C.prices[extraKey(r)]||{};n.value=p[n.dataset.field]==null?'':p[n.dataset.field];});}panel(t);}
 function panel(t){var n=el('tc-budget');if(n)n.innerHTML='<div style="padding:12px;overflow:auto"><div class="stl">Orçamento do projeto</div><p>'+t.lines.length+' referências · todos os pisos</p>'+footer(t)+'<button class="btn ba bfw" onclick="openBOM()">Editar materiais e orçamento</button><button class="btn ba bfw" style="margin-top:8px" onclick="sigsV8PrintQuote()">Proposta / PDF</button></div>';}
 function download(txt,name,type){var url=URL.createObjectURL(new Blob([txt],{type:type})),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(function(){URL.revokeObjectURL(url);},1000);}
 function csv(v){v=String(v);if(/^[=+@\-\t\r]/.test(v))v="'"+v;return '"'+v.replace(/"/g,'""')+'"';}

@@ -7,7 +7,7 @@ function defaults(){return {version:1,prices:{},margin:0,marginMode:'markup',dis
 function calculate(rows,c){
  var discount=Math.min(100,num(c.discount)),margin=Math.min(c.marginMode==='margin'?99:500,num(c.margin));
  var lines=rows.map(function(r){
-  var p=c.prices[r.ref]||{},cost=num(p.cost),sale=p.sale===null||p.sale===undefined||p.sale===''?
+  var p=c.prices[r.priceKey||r.ref]||{},cost=num(p.cost),sale=p.sale===null||p.sale===undefined||p.sale===''?
    (c.marginMode==='margin'?cost/(1-margin/100):cost*(1+margin/100)):num(p.sale);
   sale=round(sale);
   return Object.assign({},r,{cost:cost,sale:sale,costTotal:round(cost*num(r.qty)),gross:round(sale*num(r.qty)),net:round(sale*num(r.qty)*(1-discount/100)),missing:sale===0});

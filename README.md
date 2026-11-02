@@ -2,6 +2,15 @@
 
 Aplicação de projeto para CCTV, intrusão e incêndio. Esta pasta contém o código completo, os testes e as migrações Supabase.
 
+## Atualização V122
+
+- Acrescenta AJAX Superior `AJ-NVR208-HAC2G-AI-S-B` e `-W`: 8 canais, 12 MP, 384 Mbps, 2 discos até 24 TB por disco, HDMI e 2 × RJ45 Gigabit. É a preferência automática para câmaras AJAX quando os requisitos de canais, banda, discos e alimentação são cumpridos. Seleções manuais válidas são preservadas; este modelo exige PoE externo.
+- Networking com escolha independente Reyee / Uniview em Sistema e filtro por switch na engenharia de rede. Adiciona `UV-NSW3000-8T2GT-POE-IN`: 8 portas 100 Mbps PoE+, 2 uplinks Gigabit, 120 W e 30 W por porta. Os modelos novos sobrevivem ao carregamento do catálogo remoto.
+- Orçamento com botões Adicionar artigo / Adicionar instalação, referência, descrição, quantidade, unidade, custo e venda. Instalação pode ser faturada com valor global ou usando as horas existentes. Identidade de preço independente da referência permite editar referências e repetir artigos com preços distintos, sem perder os valores.
+- Artigos e serviços acompanham gravação, restauro, alternativas, proposta/PDF, CSV e snapshot comercial público. Custos internos e identidades de preço não entram na proposta pública. Projetos arquivados mantêm a proteção de edição.
+- Teste integrado: `node tests/catalog-proposal-v122.test.cjs`.
+- Fontes: [Superior AJAX](https://www.visiotechsecurity.com/pt/produtos/intrus%C3%A3o-8/ajax-cctv-740/nvrs-739/aj-nvr208-hac2g-ai-s-w-detail) e [switch Uniview](https://www.visiotechsecurity.com/pt/produtos/networking/switching-550/gerenciavel-551/uv-nsw3000-8t2gt-poe-in-detail).
+
 ## Atualização V113
 
 - Colocar um equipamento regressa por defeito à edição, mantendo o modelo disponível no botão Colocar. “Colocar vários equipamentos” permite ativar a colocação contínua explicitamente; clicar num equipamento existente sai sempre desse modo para editar.

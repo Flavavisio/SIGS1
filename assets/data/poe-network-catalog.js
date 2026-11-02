@@ -35,6 +35,9 @@ var POE_MODEL_WATTS = {
 };
 
 var POE_SWITCH_DB = [
+  {name:'UV-NSW3000-8T2GT-POE-IN',reference:'UV-NSW3000-8T2GT-POE-IN',brand:'Uniview',ports:8,poePorts:8,rj45Ports:8,uplinkPorts:2,sfpPorts:0,accessMbps:100,uplinkMbps:1000,budget:120,maxPortW:30,poeStandard:'802.3at',
+   sourceURL:'https://www.visiotechsecurity.com/pt/produtos/networking/switching-550/gerenciavel-551/uv-nsw3000-8t2gt-poe-in-detail',
+   note:'Cloud gerível L2 · 8 × 10/100 Mbps PoE+ + 2 uplinks Gigabit RJ45 · 120 W · até 30 W/porta'},
   {name:'Reyee RG-ES108GD-P',ports:8,budget:65,brand:'Reyee',uplinkMbps:1000,note:'8x GE PoE, 65W'},
   {name:'Reyee RG-ES108GD-P-I',ports:8,budget:120,brand:'Reyee',uplinkMbps:1000,note:'8x GE PoE, 120W'},
   {name:'Reyee RG-ES116G-P',ports:16,budget:125,brand:'Reyee',uplinkMbps:1000,note:'16x GE PoE, 125W'},
@@ -56,3 +59,10 @@ var POE_SWITCH_DB = [
   {name:'Uniview NSW5000-24T4GF-POE-IN',ports:24,budget:400,brand:'Uniview',uplinkMbps:1000,note:'24x GE PoE L2+, 400W'},
   {name:'Uniview NSW5000-48T4GF-POE-IN',ports:48,budget:740,brand:'Uniview',uplinkMbps:1000,note:'48x GE PoE L2+, 740W'}
 ];
+
+// Keep the new verified SKU when the remote infrastructure catalogue is loaded.
+(function(local){var verified=local.find(function(d){return d.reference==='UV-NSW3000-8T2GT-POE-IN';});window.SIGSNetworkCatalog={merge:function(catalog){
+  var rows=(catalog||[]).slice();
+  if(!rows.some(function(d){return String(d.brand).toLowerCase()==='reyee';}))rows=rows.concat(local.filter(function(d){return d.brand==='Reyee';}));
+  return rows.filter(function(d){return (d.reference||d.name)!==verified.reference;}).concat(verified);
+}};})(POE_SWITCH_DB.slice());
