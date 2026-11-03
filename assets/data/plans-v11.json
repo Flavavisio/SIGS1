@@ -10,6 +10,8 @@
       "max_items_per_project": 15,
       "included_modules": [
         "CCTV",
+        "Intrusão",
+        "Incêndio",
         "Armazenamento"
       ]
     },
