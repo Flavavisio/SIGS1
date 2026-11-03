@@ -27,7 +27,7 @@ function policy(d){d=d||{};const optics=d.optics||{},text=[d.lensType,d.lens_typ
  return {kind:'varifocal',adjustable:true,min,max,initial:min,base:number(d.baseLens??d.refLens)||min,documented,label:documented?'Lente varifocal · '+mm(min)+'–'+mm(max)+' mm':'Lente ajustável · intervalo de simulação 2,8–13 mm; limites do modelo por confirmar'};
 }
 function effective(p,d){const q=policy(d);return q.adjustable?Math.max(q.min,Math.min(q.max,number(p&&p.lens)||q.initial)):q.initial;}
-function fov(p,d){d=d||{};const q=policy(d),lens=effective(p,d),base=Math.max(1,Math.min(179,number(d.fov)||90));
+function fov(p,d){d=d||{};const q=policy(d),lens=effective(p,d);if(!q.adjustable&&number(d.fov))return Math.min(360,Number(d.fov));const base=Math.max(1,Math.min(179,number(d.fov)||90));
  if(q.adjustable&&q.documented&&number(d.fovWide)&&number(d.fovTele)){const w=Math.max(0,Math.min(1,(1/lens-1/q.max)/(1/q.min-1/q.max))),wide=Math.tan(Math.min(179,d.fovWide)*Math.PI/360),tele=Math.tan(Math.min(179,d.fovTele)*Math.PI/360);return 2*Math.atan(tele+(wide-tele)*w)*180/Math.PI;}
  return 2*Math.atan(Math.tan(base*Math.PI/360)*q.base/lens)*180/Math.PI;
 }

@@ -2190,7 +2190,7 @@ document.addEventListener('keydown',function(e){
 // Effective horizontal FOV from the catalogue FOV at the reference focal length.
 // The previous version scaled FOV linearly; optics follow atan geometry.
 function lFOV(baseFov,mm,baseMm,device){
-  if(device&&typeof SIGSLensModel!=='undefined'&&device.fovWide&&device.fovTele)return SIGSLensModel.fov({lens:mm},device);
+  if(device&&typeof SIGSLensModel!=='undefined')return SIGSLensModel.fov({lens:mm},device);
   if(!baseFov)return 90;
   mm=Number(mm)||2.8;
   baseMm=Number(baseMm)||2.8;
@@ -2251,6 +2251,7 @@ function doriCalc(dev,lens){
   var baseLens=typeof SIGSLensModel!=='undefined'?SIGSLensModel.policy(dev).base:(Number(dev.baseLens||dev.refLens||2.8)||2.8);
   var hfov=lFOV(Number(dev.fov)||90,Number(lens)||baseLens,baseLens,dev);
   var hpx=cameraHorizontalPixels(dev);
+  if(hfov>=180)return Object.assign({d:0,o:0,r:0,i:0},dev.dori&&hpx===(dev.doriReferenceWidth||dev.resW)?dev.dori:{},{hfov:hfov,hpx:hpx,basis:dev.dori&&hpx===(dev.doriReferenceWidth||dev.resW)?'published-reference':'unavailable'});
   return {
     d:doriDistanceForPpm(hpx,hfov,DORI_PPM.d),
     o:doriDistanceForPpm(hpx,hfov,DORI_PPM.o),
@@ -2268,10 +2269,10 @@ function updateDoriPanel(dev,lens){
   if(!dev){if(panel)panel.style.display='none';return;}
   if(panel)panel.style.display='';
   var dr=doriCalc(window.SIGSEngineeringModel&&typeof p!=='undefined'?Object.assign({},dev,{resW:SIGSEngineeringModel.widthPixels(p,dev)}):dev,lens);
-  document.getElementById('dori-dv').textContent=dr.d.toFixed(1)+'m';
-  document.getElementById('dori-ov').textContent=dr.o.toFixed(1)+'m';
-  document.getElementById('dori-rv').textContent=dr.r.toFixed(1)+'m';
-  document.getElementById('dori-iv').textContent=dr.i.toFixed(1)+'m';
+  document.getElementById('dori-dv').textContent=dr.basis==='unavailable'?'—':dr.d.toFixed(1)+'m';
+  document.getElementById('dori-ov').textContent=dr.basis==='unavailable'?'—':dr.o.toFixed(1)+'m';
+  document.getElementById('dori-rv').textContent=dr.basis==='unavailable'?'—':dr.r.toFixed(1)+'m';
+  document.getElementById('dori-iv').textContent=dr.basis==='unavailable'?'—':dr.i.toFixed(1)+'m';
   // Progress bar — scale to Detection distance
   var maxD=dr.d||1;
   document.getElementById('dori-bar-d').style.width=Math.min(100,dr.d/maxD*100)+'%';
@@ -2279,7 +2280,7 @@ function updateDoriPanel(dev,lens){
   document.getElementById('dori-bar-r').style.width=Math.min(100,dr.r/maxD*100)+'%';
   document.getElementById('dori-bar-i').style.width=Math.min(100,dr.i/maxD*100)+'%';
   var info=(dev.mp?dev.mp+'MP · ':'')+(dr.hpx?dr.hpx+'px horiz. · ':'')+lens.toFixed(1)+'mm · FOV '+dr.hfov.toFixed(1)+'°';
-  document.getElementById('dori-hint').textContent=info;
+  document.getElementById('dori-hint').textContent=info+(dr.basis==='published-reference'?' · DORI publicado à resolução nativa; não é alcance de analítica':dr.basis==='unavailable'?' · DORI panorâmico por validar nesta resolução':'');
 }
 
 // ════════════════════════════════════════
@@ -3178,7 +3179,7 @@ syncP=function(){
   _origSyncP();
   var pc=fP(S.selId); if(!pc)return;
   var dev=gD(pc.libId);
-  var isCCTV=MOD==='cctv'&&dev&&['dome','bullet','ptz','fisheye','cube','doorbell'].indexOf(dev.type)>=0;
+  var isCCTV=MOD==='cctv'&&dev&&['dome','bullet','turret','ptz','fisheye','cube','doorbell'].indexOf(dev.type)>=0;
   var storPanel=document.getElementById('cctv-storage');
   var cablePanel=document.getElementById('cctv-cable');
   if(storPanel)storPanel.style.display=isCCTV?'':'none';

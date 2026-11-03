@@ -157,3 +157,7 @@ A vista 3D resolve a superfície mais próxima por pixel, com interpolação de 
 Corrigida a atualização do título da janela de projetos, que podia substituir um contentor e apagar os seus controlos. A janela abre também acima do portal. Alterações feitas imediatamente após abrir/retomar um projeto mantêm o estado Por guardar; callbacks de apresentação já não substituem a referência de gravação.
 
 Validação local: 29 suites Node passaram, incluindo regressões com o drawCov real, paredes fora do FOV, altura de parede, superfícies cruzadas e alterações rápidas após retomar. Build estático e sintaxe verificados. Estes testes não equivalem a validação física no iPhone nem a receção de emails numa caixa de entrada.
+
+## V123 — Hikvision panorâmicas, TandemVu e VPro
+
+30 referências do filtro Visiotech 180°, speed dome TandemVu 42× e NVR VPro sem PoE. Ótica e DORI publicados, iluminação e alcances de analítica separados, canal panorâmico independente e dimensionamento dos fluxos. Especificações e limites de verificação em `README-HIKVISION-V123.md`.

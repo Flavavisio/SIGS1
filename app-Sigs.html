@@ -6,7 +6,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="SIGS Studio — ferramenta profissional de design de sistemas CCTV e intrusão: plantas, cobertura de câmaras, DORI, cálculo de armazenamento, PoE e orçamento.">
-<meta name="sigs-release" content="20261102-catalog122">
+<meta name="sigs-release" content="20261103-panorama123">
 <meta name="theme-color" content="#050810">
 <title>SIGS Studio</title>
 
@@ -640,8 +640,11 @@
                 <option value="2">2 MP (1080p)</option>
                 <option value="4" selected>4 MP (2.5K)</option>
                 <option value="5">5 MP (3K)</option>
+                <option value="6">6 MP</option>
                 <option value="8">8 MP (4K)</option>
                 <option value="12">12 MP (4K+)</option>
+                <option value="16">16 MP</option>
+                <option value="32">32 MP</option>
               </select>
             </div>
             <div class="fr">
@@ -835,7 +838,7 @@
   <div id="multi-storage-controls" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
   <select id="multi-mp" onchange="applyMultiStorage()" style="padding:3px 6px;border-radius:5px;background:var(--bg4);border:1px solid var(--bdr2);color:var(--txt2);font-size:10px;cursor:pointer;font-family:var(--m)" title="Resolução MP para todos">
     <option value="2">2MP</option><option value="4" selected>4MP</option><option value="5">5MP</option>
-    <option value="8">8MP</option><option value="12">12MP</option>
+    <option value="6">6MP</option><option value="8">8MP</option><option value="12">12MP</option><option value="16">16MP</option><option value="32">32MP</option>
   </select>
   <select id="multi-codec" onchange="applyMultiStorage()" style="padding:3px 6px;border-radius:5px;background:var(--bg4);border:1px solid var(--bdr2);color:var(--txt2);font-size:10px;cursor:pointer;font-family:var(--m)" title="Codec para todos">
     <option value="ultra265m">Ultra 265 · muito calma</option>
@@ -1256,7 +1259,7 @@
 <script src="assets/data/ajax-cctv-images-v90.js?v=20261011-ajax90"></script>
 <script src="assets/data/ajax-cctv-v90.js?v=20261011-ajax90"></script>
 <script src="assets/data/product-images.js?v=20261007-0700"></script>
-<script src="assets/js/lens-model-v45.js?v=20261011-ajax90"></script>
+<script src="assets/js/lens-model-v45.js?v=20261103-panorama123"></script>
 <script src="assets/data/cctv-expansion-v52.js?v=20261008-2230"></script>
 <script src="assets/data/visiotech-cctv-v53.js?v=20261008-2250"></script>
 <script src="assets/data/visiotech-cctv-v54.js?v=20261008-2320"></script>
@@ -1266,13 +1269,14 @@
 <script src="assets/data/hikvision-perimeter-v116.js?v=20261013-perimeter116"></script>
 <script src="assets/data/thermal-review-v118.js?v=20261014-analytics121"></script>
 <script src="assets/data/optical-review-v121.js?v=20261014-analytics121"></script>
+<script src="assets/data/hikvision-panoramic-v123.js?v=20261103-panorama123"></script>
 <script src="assets/js/optics-v13.js?v=20261011-ajax90"></script>
 <script src="assets/js/engineering-model-v39.js?v=20261007-0700"></script>
-<script src="assets/js/engineering-advanced-model-v43.js?v=20261013-o2dcpvs117"></script>
+<script src="assets/js/engineering-advanced-model-v43.js?v=20261103-panorama123"></script>
 <script src="assets/js/disk-model-v64.js?v=20261009-disk64"></script>
 <script src="assets/js/catalog-activation-v68.js?v=20261009-activation68"></script>
 <script src="assets/js/analytics-v85.js?v=20261012-links106"></script>
-<script src="assets/js/analytics-range-v86.js?v=20261014-analytics121"></script>
+<script src="assets/js/analytics-range-v86.js?v=20261103-panorama123"></script>
 <link rel="stylesheet" href="assets/css/intrusion-v87.css?v=20261011-intrusion88">
 <script src="assets/data/intrusion-images-v88.js?v=20261011-intrusion88"></script>
 <script src="assets/data/intrusion-catalog-v88.js?v=20261011-intrusion88"></script>
@@ -1280,7 +1284,7 @@
 <link rel="stylesheet" href="assets/css/ajax-fire-v99.css?v=20261011-fire101">
 <script src="assets/data/product-destinations-v106.js?v=20261012-links106"></script>
 <script src="assets/js/product-links-v106.js?v=20261102-catalog122"></script>
-<script src="assets/js/block-03.js?v=20261014-analytics121"></script>
+<script src="assets/js/block-03.js?v=20261103-panorama123"></script>
 
 <!-- ══ PRESENTATION MODE OVERLAY ══ -->
 <div id="pres-overlay">
@@ -1309,7 +1313,7 @@
 
 
 <script src="assets/js/block-05.js?v=20261011-hikvision92"></script>
-<script src="assets/js/catalog-supabase.js?v=20261102-catalog122"></script>
+<script src="assets/js/catalog-supabase.js?v=20261103-panorama123"></script>
 <script src="assets/js/ux-v5.js?v=20261011-ajax90"></script>
 <script src="assets/js/projects-v6.js?v=20261013-o2dcpvs117"></script>
 <script src="assets/js/engineering-v7.js?v=20261008-0010"></script>
@@ -1318,7 +1322,7 @@
 <script src="assets/js/premium-v9.js?v=20261007-0700"></script>
 <script src="assets/js/accessory-model-v10.js?v=20261011-ajax90"></script>
 <script src="assets/js/site-geometry-model-v28.js?v=20261007-0700"></script>
-<script src="assets/js/proposal-optics-v27.js?v=20261014-analytics121"></script>
+<script src="assets/js/proposal-optics-v27.js?v=20261103-panorama123"></script>
 <script src="assets/js/proposal-v10.js?v=20261012-links106"></script>
 
 <script src="assets/js/workflow-model-v12.js?v=20261011-ajax90"></script>
@@ -1330,17 +1334,17 @@
 <script src="assets/js/brand-v23.js?v=20261007-0700"></script>
 <link rel="stylesheet" href="assets/css/modules-v75.css?v=20261010-login81">
 <script src="assets/js/modules-v75.js?v=20261010-modules76"></script>
-<script src="assets/js/technical-report-v22.js?v=20261014-analytics121"></script>
+<script src="assets/js/technical-report-v22.js?v=20261103-panorama123"></script>
 <script src="assets/data/nvr-poe-v55.js?v=20261008-2340"></script>
 <script src="assets/data/ajax-nvr-v102.js?v=20261102-catalog122"></script>
 <script src="assets/js/recommendation-model-v24.js?v=20261102-catalog122"></script>
-<script src="assets/js/recommendations-v24.js?v=20261102-catalog122"></script>
+<script src="assets/js/recommendations-v24.js?v=20261103-panorama123"></script>
 <script src="assets/js/ajax-nvr-h-v103.js?v=20261012-links106"></script>
 <link rel="stylesheet" href="assets/css/site-geometry-v28.css?v=20261007-0700">
 <script src="assets/js/site-geometry-v28.js?v=20261011-ajax90"></script>
 <link rel="stylesheet" href="assets/css/scene-v29.css?v=20261007-0700">
-<script src="assets/js/scene-model-v29.js?v=20261011-ajax90"></script>
-<script src="assets/js/scene-v29.js?v=20261011-targets96"></script>
+<script src="assets/js/scene-model-v29.js?v=20261103-panorama123"></script>
+<script src="assets/js/scene-v29.js?v=20261103-panorama123"></script>
 <link rel="stylesheet" href="assets/css/engineering-v39.css?v=20261007-0700">
 <script src="assets/js/engineering-v39.js?v=20261011-uniview91"></script>
 <link rel="stylesheet" href="assets/css/engineering-advanced-v43.css?v=20261008-0010">
@@ -1348,8 +1352,8 @@
 
 <script src="assets/js/activity-v42.js?v=20261009-activation68" defer></script>
 <link rel="stylesheet" href="assets/css/network-v60.css?v=20261014-analytics121">
-<script src="assets/js/network-model-v60.js?v=20261102-catalog122"></script>
-<script src="assets/js/network-v60.js?v=20261102-catalog122"></script>
+<script src="assets/js/network-model-v60.js?v=20261103-panorama123"></script>
+<script src="assets/js/network-v60.js?v=20261103-panorama123"></script>
 <link rel="stylesheet" href="assets/css/network-map-v120.css?v=20261014-analytics121">
 <script src="assets/js/network-map-model-v120.js?v=20261014-analytics121"></script>
 <script src="assets/js/network-map-v120.js?v=20261014-analytics121"></script>
@@ -1361,5 +1365,6 @@
 <script src="assets/js/ptz-coverage-v109.js?v=20261013-select113"></script>
 <link rel="stylesheet" href="assets/css/app-update-v109.css?v=20261012-update109">
 <script src="assets/js/app-update-v109.js?v=20261012-update109"></script>
+<script src="assets/js/hikvision-planning-v123.js?v=20261103-panorama123"></script>
 </body>
 </html>
