@@ -175,3 +175,11 @@ Verificação: `tests/nvr-alternatives-v124.test.cjs` cobre as quatro combinaç�
 Corrigido o aviso de atualização que reaparecia após instalar: a lista de scripts e estilos é recolhida depois de terminar a leitura do HTML, incluindo ficheiros posteriores ao próprio verificador. Mudanças nos validadores de cache só mostram o aviso quando os bytes do recurso mudam, confirmados por SHA-256. A versão HTML e a lista de recursos continuam a detetar publicações; guardar/retomar projetos e as proteções de falhas mantêm-se.
 
 Verificação: `tests/app-update-v109.test.cjs` reproduz a ordem real dos scripts antes/depois de instalar, verificações repetidas, diferenças GET/HEAD e alterações de cache sem mudança de conteúdo, além de atualizações reais, falhas de ligação/descarga/gravação e recuperação autenticada dos projetos.
+
+## Atualização V126 — preparada, aplicação no servidor pendente
+
+O Gratuito permite 1 projeto no total por empresa, partilhado por Admin e Comerciais, à escolha entre CCTV, Intrusão ou Incêndio. Mantém 15 equipamentos por projeto e a calculadora de armazenamento. Criação e abertura deixam de excluir Intrusão/Incêndio pelo código FREE; módulos explicitamente desativados e licenças inativas continuam bloqueados. O Express mantém os módulos anteriores.
+
+Aplicar `supabase/sql/free-specialties-v126.sql` no projeto SIGS antes de publicar esta versão: ativa os módulos do plano e das licenças gratuitas existentes, confirma o limite de um projeto e remove apenas FREE da exclusão de Intrusão/Incêndio na função privada. A criação de novas licenças continua a herdar `plan_modules`. Não apaga projetos existentes. Rever a definição atual da função e verificar a quota/RLS autenticada no servidor antes da aplicação; a ligação disponível nesta sessão não tem acesso ao projeto SIGS, pelo que não foi executado SQL remoto.
+
+Verificação da APP: `tests/free-specialties-v126.test.cjs` cobre criação/abertura nas três áreas por Admin e Comerciais, segundo projeto em qualquer área, duplicação, arquivo, módulos desativados, licença suspensa, manutenção do Express e apresentação pública. `tests/licenses-demo-ui-v58.test.cjs` verifica também os módulos na emissão de licenças gratuitas.

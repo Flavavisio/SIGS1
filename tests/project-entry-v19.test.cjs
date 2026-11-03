@@ -2,7 +2,7 @@ const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/st
 const nodes={},calls=[],timers=[];
 let context={company:{id:'company-a'},license:{status:'ACTIVE',maxProjects:10},projects:[]},failure=null,locked=true;
 function node(id){
- const n={id,value:'',style:{},dataset:{},textContent:'',isConnected:true,disabled:false,
+ const n={id,value:'',style:{},dataset:{},textContent:'',isConnected:true,disabled:false,options:id==='v6-p-module'?['CCTV','INTRUSION','FIRE'].map(value=>({value,disabled:false})):[],
  classList:{add(){},remove(){},contains(){return false;}},
  focus(){},addEventListener(){},getClientRects(){return [1];},querySelector(){return node();},querySelectorAll(){return [];},
  remove(){delete nodes[this.id];},appendChild(child){if(child.id)nodes[child.id]=child;},insertBefore(child){this.appendChild(child);}};
