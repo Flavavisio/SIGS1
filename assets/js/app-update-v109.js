@@ -4,9 +4,14 @@ const entry=new URL(w.location.href);entry.search='';entry.hash='';
 const resumeKey='sigs-update-resume-v109',baseline=new Map();
 let checking=false,available=false,installing=false,ready=false;
 function assets(doc){return [...new Set([...doc.querySelectorAll('script[src],link[rel="stylesheet"][href]')].map(n=>new URL(n.getAttribute('src')||n.getAttribute('href'),entry).href).filter(u=>new URL(u).origin===entry.origin))].sort();}
-const loadedAssets=assets(document),release=document.querySelector('meta[name="sigs-release"]')?.content||'';
+let loadedAssets=[],release='';
 function revision(doc){return doc.querySelector('meta[name="sigs-release"]')?.content||'';}
 function validator(response){return [response.headers.get('etag'),response.headers.get('last-modified')].filter(Boolean).join('|');}
+async function fingerprint(response){
+ const bytes=await response.arrayBuffer();
+ if(!w.crypto?.subtle)return null;
+ return Array.from(new Uint8Array(await w.crypto.subtle.digest('SHA-256',bytes)),b=>b.toString(16).padStart(2,'0')).join('');
+}
 async function request(url,options){
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),20000);
  try{const r=await fetch(url,{credentials:'same-origin',...options,signal:controller.signal});if(!r.ok)throw new Error('Ligação indisponível. Tenta novamente.');return r;}finally{clearTimeout(timer);}
@@ -24,8 +29,10 @@ function banner(){
 }
 function announce(){available=true;banner();}
 async function seed(){
- // Cache metadata belongs to the resources this tab loaded, rather than a later release.
- await batch([entry.href,...loadedAssets],async url=>{try{const r=await request(url,{cache:'force-cache'});const tag=validator(r);if(tag)baseline.set(url,tag);if(r.body)await r.body.cancel();}catch(_){}});
+ // Snapshot only after parsing finishes, including scripts after this updater.
+ loadedAssets=assets(document);release=revision(document);
+ // Compare asset bytes if cache validators change; HTML is checked by release and asset list.
+ await batch(loadedAssets,async url=>{try{const r=await request(url,{cache:'force-cache'}),tag=validator(r),hash=await fingerprint(r);if(hash)baseline.set(url,{tag,hash});}catch(_){}});
  ready=true;await check();
 }
 async function check(){
@@ -34,7 +41,13 @@ async function check(){
  try{
   const doc=await current();
   if(revision(doc)!==release||JSON.stringify(assets(doc))!==JSON.stringify(loadedAssets)){announce();return;}
-  await batch([...baseline.keys()],async url=>{const tag=validator(await request(url,{method:'HEAD',cache:'no-store'}));if(tag&&tag!==baseline.get(url))announce();});
+  await batch([...baseline.keys()],async url=>{
+   const previous=baseline.get(url),tag=validator(await request(url,{method:'HEAD',cache:'no-store'}));
+   if(tag&&tag===previous.tag)return;
+   const r=await request(url,{cache:'no-store'}),hash=await fingerprint(r);
+   if(hash&&hash!==previous.hash)announce();
+   else if(hash)baseline.set(url,{tag,hash});
+  });
  }catch(_){/* Offline checks leave the current app and project untouched. */}finally{checking=false;}
 }
 function activeProject(){return document.getElementById('app')?.classList.contains('show')||document.getElementById('disk-calc-app')?.classList.contains('visible');}

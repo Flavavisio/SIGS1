@@ -44,9 +44,9 @@ Aplicação de projeto para CCTV, intrusão e incêndio. Esta pasta contém o c�
 
 - Satélite MapLibre até zoom 22; compatibilidade Leaflet até 23. A ampliação reutiliza os mosaicos nativos até 19 e mantém a escala métrica da captura.
 - PTZ: área potencial de rotação a 360° em preenchimento suave, por baixo do FOV da direção atual. Respeita a escala, focal, alcance no solo, zona cega e visibilidade; não representa visão simultânea nem substitui a análise de obstáculos do FOV atual.
-- A app verifica publicações de dois em dois minutos, ao regressar à janela e ao recuperar ligação. Alterações à versão HTML, à lista de scripts/estilos ou aos seus validadores HTTP mostram “Nova atualização” / “Instalar”, sem recarregar automaticamente.
+- A app verifica publicações de dois em dois minutos, ao regressar à janela e ao recuperar ligação. Alterações à versão HTML, à lista de scripts/estilos ou ao conteúdo dos recursos mostram “Nova atualização” / “Instalar”, sem recarregar automaticamente.
 - Instalar atualiza a cache dos recursos, guarda o projeto aberto e retoma-o na mesma conta. Falhas de descarga/gravação impedem o recarregamento. Rascunhos locais são preservados na sessão; falta de espaço impede instalar até guardar/fechar o projeto.
-- Em próximas publicações, atualizar `meta[name="sigs-release"]` e o parâmetro `v` dos recursos alterados assegura deteção imediata e carregamento consistente. A verificação de ETag/Last-Modified também deteta alterações a recursos com URLs iguais.
+- Em próximas publicações, atualizar `meta[name="sigs-release"]` e o parâmetro `v` dos recursos alterados assegura deteção imediata e carregamento consistente. Alterações a ETag/Last-Modified são confirmadas pelo conteúdo para detetar recursos com URLs iguais sem confundir alterações de cache com atualizações.
 - Testes: `node tests/app-update-v109.test.cjs`, `node tests/ptz-coverage-v109.test.cjs`, `node tests/maplibre-v56.test.cjs`.
 
 ## Atualização V32
@@ -169,3 +169,9 @@ A marca das câmaras tem prioridade automática, com seleção de gravadores de 
 Inclui os Uniview UV-NVR301-08B-IQ e UV-NVR302-16B-IQ sem PoE, com capacidades conservadoras da ficha por série (10 TB por disco) e retenção após carregar o catálogo remoto. Mantém limites de canais, resolução, banda, baias/discos, portas PoE, potência total e por porta. A engenharia de rede também ordena pela marca das câmaras sem excluir restantes marcas.
 
 Verificação: `tests/nvr-alternatives-v124.test.cjs` cobre as quatro combinações, três cartões destacados, prioridade nas três marcas, escolhas manuais, mudança PoE/switch/proposta, guardar/reabrir, arquivo e catálogo remoto. As suites anteriores de recomendação foram atualizadas para a prioridade entre marcas agora pedida.
+
+## Atualização V125
+
+Corrigido o aviso de atualização que reaparecia após instalar: a lista de scripts e estilos é recolhida depois de terminar a leitura do HTML, incluindo ficheiros posteriores ao próprio verificador. Mudanças nos validadores de cache só mostram o aviso quando os bytes do recurso mudam, confirmados por SHA-256. A versão HTML e a lista de recursos continuam a detetar publicações; guardar/retomar projetos e as proteções de falhas mantêm-se.
+
+Verificação: `tests/app-update-v109.test.cjs` reproduz a ordem real dos scripts antes/depois de instalar, verificações repetidas, diferenças GET/HEAD e alterações de cache sem mudança de conteúdo, além de atualizações reais, falhas de ligação/descarga/gravação e recuperação autenticada dos projetos.

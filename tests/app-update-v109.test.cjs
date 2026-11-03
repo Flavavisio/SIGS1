@@ -3,21 +3,28 @@ const {JSDOM,VirtualConsole}=require('jsdom');
 const source=fs.readFileSync('assets/js/app-update-v109.js','utf8');
 const html=version=>`<meta name="sigs-release" content="${version}"><script src="assets/js/block-03.js?v=same"></script><link rel="stylesheet" href="assets/css/sigs.css"><div id="app" class="show"></div>`;
 const tick=()=>new Promise(r=>setImmediate(r));
-async function fixture(){
- let tag='old',version='v1',offline=false,reloadFailures=false,navigations=0,saves=0;
+async function fixture(options={}){
+ let tag='old',content='old',version='v1',offline=false,reloadFailures=false,navigations=0,saves=0;
+ const serverHTML=()=>options.realPage?fs.readFileSync('app-Sigs.html','utf8'):html(version);
  const requests=[],vc=new VirtualConsole();vc.on('jsdomError',e=>{if(e.message.includes('navigation'))navigations++;else throw e;});
- const dom=new JSDOM(html(version),{url:'https://sigs.test/app-Sigs.html',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:vc}),w=dom.window;
- Object.defineProperty(w.document,'readyState',{value:'complete'});w.AbortController=AbortController;w.setInterval=()=>0;
- w.fetch=async(url,options)=>{
-  requests.push({url,options});if(offline||reloadFailures&&options.cache==='reload'&&url.includes('.css'))throw new Error('Ligação indisponível. Tenta novamente.');
-  return {ok:true,headers:{get:name=>name==='etag'?tag:null},body:{cancel:async()=>{}},text:async()=>html(version),arrayBuffer:async()=>new ArrayBuffer(1)};
+ const dom=new JSDOM(serverHTML(),{url:'https://sigs.test/app-Sigs.html'+(options.afterInstall?'?sigs_update=123':''),runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:vc}),w=dom.window;
+ const trailing=options.realPage?[...w.document.querySelectorAll('script[src]')].slice(-1):[];trailing.forEach(n=>n.remove());
+ Object.defineProperty(w.document,'readyState',{value:options.realPage?'loading':'complete'});w.AbortController=AbortController;w.setInterval=()=>0;
+ Object.defineProperty(w.crypto,'subtle',{value:{digest:async(_,bytes)=>require('node:crypto').createHash('sha256').update(Buffer.from(bytes)).digest()}});
+ w.fetch=async(url,requestOptions)=>{
+  requests.push({url,options:requestOptions});if(offline||reloadFailures&&requestOptions.cache==='reload'&&url.includes('.css'))throw new Error('Ligação indisponível. Tenta novamente.');
+  return {ok:true,headers:{get:name=>name==='etag'?(options.headTags&&requestOptions.method==='HEAD'?'W/"'+tag+'"':tag):null},body:{cancel:async()=>{}},text:async()=>serverHTML(),arrayBuffer:async()=>Buffer.from(content)};
  };
  w.CLOUD={projectId:'p1',projectName:'Projeto',user:{id:'u1'},access:'present'};w.SIGS_V6={dirty:true,currentStatus:'DRAFT'};
  w.sigsV6SaveProject=async()=>{saves++;w.SIGS_V6.dirty=false;return {id:'p1'};};
- w.eval(source);for(let i=0;i<10;i++)await tick();
- return {w,dom,requests,changeAsset:()=>tag='new',changeVersion:()=>version='v2',offline:b=>offline=b,reloadFailures:b=>reloadFailures=b,navigations:()=>navigations,saves:()=>saves};
+ w.eval(source);trailing.forEach(n=>w.document.body.appendChild(n));for(let i=0;i<30;i++)await tick();
+ return {w,dom,requests,changeAsset:()=>{tag='new';content='new';},changeHeaders:()=>tag='headers-only',changeVersion:()=>version='v2',offline:b=>offline=b,reloadFailures:b=>reloadFailures=b,navigations:()=>navigations,saves:()=>saves};
 }
 (async()=>{
+ for(const afterInstall of [false,true]){
+  const p=await fixture({realPage:true,afterInstall});for(let i=0;i<3;i++)await p.w.SIGSAppUpdate.check();assert(!p.w.document.getElementById('sigs-app-update'),'The actual page must include scripts parsed after the updater, including after installation');assert.equal(p.navigations(),0);p.dom.window.close();
+ }
+ const h=await fixture({headTags:true});assert(!h.w.document.getElementById('sigs-app-update'),'GET/HEAD validator differences are not updates');h.changeHeaders();for(let i=0;i<3;i++)await h.w.SIGSAppUpdate.check();assert(!h.w.document.getElementById('sigs-app-update'),'Changed cache headers with identical bytes must not repeat the update prompt');h.changeAsset();await h.w.SIGSAppUpdate.check();assert(h.w.document.getElementById('sigs-app-update'),'A real unversioned asset change is still detected');h.dom.window.close();
  const f=await fixture(),{w}=f;assert(!w.document.getElementById('sigs-app-update'));assert.equal(f.saves(),0);
  f.offline(true);await w.SIGSAppUpdate.check();assert(!w.document.getElementById('sigs-app-update'));f.offline(false);
  f.changeAsset();await w.SIGSAppUpdate.check();const banner=w.document.getElementById('sigs-app-update');assert(banner);assert.equal(banner.querySelector('button').textContent,'Instalar');assert.equal(f.navigations(),0,'Detection does not reload');assert.equal(f.saves(),0,'Detection does not write projects');
