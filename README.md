@@ -161,3 +161,11 @@ Validação local: 29 suites Node passaram, incluindo regressões com o drawCov 
 ## V123 — Hikvision panorâmicas, TandemVu e VPro
 
 30 referências do filtro Visiotech 180°, speed dome TandemVu 42× e NVR VPro sem PoE. Ótica e DORI publicados, iluminação e alcances de analítica separados, canal panorâmico independente e dimensionamento dos fluxos. Especificações e limites de verificação em `README-HIKVISION-V123.md`.
+
+## V124 — Gravadores alternativos entre marcas
+
+A marca das câmaras tem prioridade automática, com seleção de gravadores de outras marcas dimensionados para o projeto. Três alternativas destacadas e opções adicionais em Ver mais: Hikvision/Uniview com e sem PoE, incluindo a possibilidade inversa de selecionar Ajax para câmaras de outra marca. A escolha ajusta alimentação, switch, discos e proposta; é guardada no projeto. Compatibilidade ONVIF, áudio, eventos e funções proprietárias continua identificada como validação entre modelos.
+
+Inclui os Uniview UV-NVR301-08B-IQ e UV-NVR302-16B-IQ sem PoE, com capacidades conservadoras da ficha por série (10 TB por disco) e retenção após carregar o catálogo remoto. Mantém limites de canais, resolução, banda, baias/discos, portas PoE, potência total e por porta. A engenharia de rede também ordena pela marca das câmaras sem excluir restantes marcas.
+
+Verificação: `tests/nvr-alternatives-v124.test.cjs` cobre as quatro combinações, três cartões destacados, prioridade nas três marcas, escolhas manuais, mudança PoE/switch/proposta, guardar/reabrir, arquivo e catálogo remoto. As suites anteriores de recomendação foram atualizadas para a prioridade entre marcas agora pedida.

@@ -84,6 +84,7 @@
     if(window.SIGSNvrPoE)window.NVR_DB=SIGSNvrPoE.merge(window.NVR_DB);
     if(window.SIGSAjaxNVR)window.NVR_DB=SIGSAjaxNVR.merge(window.NVR_DB);
     if(window.SIGSHikvision123)window.NVR_DB=SIGSHikvision123.mergeNvr(window.NVR_DB);
+    if(window.SIGSNvrAlternatives124)window.NVR_DB=SIGSNvrAlternatives124.merge(window.NVR_DB);
     if(switches.length)window.POE_SWITCH_DB=switches;
     if(window.SIGSNetworkCatalog)window.POE_SWITCH_DB=SIGSNetworkCatalog.merge(window.POE_SWITCH_DB);
     window.SIGS_HDD_DB=hdds.sort(function(a,b){return a.capacityTB-b.capacityTB;});

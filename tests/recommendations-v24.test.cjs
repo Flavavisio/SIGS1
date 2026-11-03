@@ -6,7 +6,7 @@ r=m.design({...input,cameras:[{brand:'Uniview'}]});assert.equal(r.nvr.name,'UV')
 r=m.design({...input,cameras:[{brand:'UNV'},{model:'DS-2CD2087'}],count:2});assert.equal(r.profile.mixed,true);assert(r.warnings.some(x=>x.includes('ONVIF')));
 r=m.design({...input,preferred:'Uniview'});assert.equal(r.nvr.name,'UV');assert(r.warnings.some(x=>x.includes('difere')));
 r=m.design({...input,storageGB:6000,hdds:[{reference:'HDD-4',capacityTB:4}]});assert.equal(r.nvr.name,'HK');assert.equal(r.disk.qty,2);assert(!r.nvrs.some(x=>x.name==='UV'));
-r=m.design({...input,nvrs:input.nvrs.filter(x=>x.brand==='Uniview')});assert.equal(r.nvr,null);assert(r.warnings.some(x=>x.includes('Sem solução dimensionada Hikvision')));
+r=m.design({...input,nvrs:input.nvrs.filter(x=>x.brand==='Uniview')});assert.equal(r.nvr.name,'UV');assert(r.warnings.some(x=>x.includes('Sem solução dimensionada Hikvision')));
 r=m.design({...input,bandwidth:500});assert.equal(r.nvr,null);assert.equal(r.disk,null);
 r=m.design({...input,requiredUplink:1300});assert.equal(r.switch,null);
 r=m.design({...input,selectedNvr:'UV',selectedSwitch:'RE',preferred:'Uniview'});assert.equal(r.nvr.name,'UV');assert.equal(r.switch.name,'RE');
