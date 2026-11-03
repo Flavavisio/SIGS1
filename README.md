@@ -176,10 +176,10 @@ Corrigido o aviso de atualização que reaparecia após instalar: a lista de scr
 
 Verificação: `tests/app-update-v109.test.cjs` reproduz a ordem real dos scripts antes/depois de instalar, verificações repetidas, diferenças GET/HEAD e alterações de cache sem mudança de conteúdo, além de atualizações reais, falhas de ligação/descarga/gravação e recuperação autenticada dos projetos.
 
-## Atualização V126 — preparada, aplicação no servidor pendente
+## Atualização V126
 
 O Gratuito permite 1 projeto no total por empresa, partilhado por Admin e Comerciais, à escolha entre CCTV, Intrusão ou Incêndio. Mantém 15 equipamentos por projeto e a calculadora de armazenamento. Criação e abertura deixam de excluir Intrusão/Incêndio pelo código FREE; módulos explicitamente desativados e licenças inativas continuam bloqueados. O Express mantém os módulos anteriores.
 
-Aplicar `supabase/sql/free-specialties-v126.sql` no projeto SIGS antes de publicar esta versão: ativa os módulos do plano e das licenças gratuitas existentes, confirma o limite de um projeto e remove apenas FREE da exclusão de Intrusão/Incêndio na função privada. A criação de novas licenças continua a herdar `plan_modules`. Não apaga projetos existentes. Rever a definição atual da função e verificar a quota/RLS autenticada no servidor antes da aplicação; a ligação disponível nesta sessão não tem acesso ao projeto SIGS, pelo que não foi executado SQL remoto.
+O utilizador aplicou `supabase/sql/free-specialties-v126.sql` no projeto SIGS em 2026-11-03 e apresentou o resultado da consulta final: FREE, 1 projeto e 15 equipamentos, com os módulos ativados. O SQL sincroniza o plano e as licenças gratuitas existentes e remove apenas FREE da exclusão de Intrusão/Incêndio na função privada. Novas licenças continuam a herdar `plan_modules`. Não apaga projetos existentes. A verificação autenticada no servidor não foi executada nesta sessão por falta de acesso direto ao projeto.
 
 Verificação da APP: `tests/free-specialties-v126.test.cjs` cobre criação/abertura nas três áreas por Admin e Comerciais, segundo projeto em qualquer área, duplicação, arquivo, módulos desativados, licença suspensa, manutenção do Express e apresentação pública. `tests/licenses-demo-ui-v58.test.cjs` verifica também os módulos na emissão de licenças gratuitas.
