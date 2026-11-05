@@ -2,6 +2,15 @@
 
 Aplicação de projeto para CCTV, intrusão e incêndio. Esta pasta contém o código completo, os testes e as migrações Supabase.
 
+## Atualização V127 — Gravação de projetos
+
+- Corrige cancelamentos por tempo limite na gravação manual e automática com plantas incorporadas. Foi identificado em produção um pedido com cerca de 16 MB a falhar no checkpoint.
+- Antes de guardar, captura um estado independente do projeto e envia as imagens das plantas para o bucket privado `project-files`. O projeto, alternativas e especialidades guardam referências ao mesmo ficheiro quando a imagem coincide. SHA-256 evita sobrescrever imagens de versões anteriores.
+- Só atualiza os metadados locais após o checkpoint confirmado. Falhas no envio preservam a planta e o estado Por guardar; alterações feitas durante o envio continuam pendentes.
+- Pedidos com sessão expirada renovam o token uma vez e repetem o mesmo pedido. A renovação é partilhada entre pedidos simultâneos; falhas transitórias não apagam a sessão.
+- SQL `supabase/sql/project-save-v127.sql` aplicado: timeout de 45 segundos apenas nos RPC de gravação/restauro para compatibilidade com clientes já abertos; uploads do Super Admin limitados a pastas de plantas de projetos existentes com a empresa correta. O bucket continua privado.
+- Validação: `tests/project-save-v127.test.cjs`, testes de checkpoints, restauro, criação e atualização; `tests/project-save-v127.sql` executado com gravações manuais/automáticas e permissões de ficheiros, dentro de transação revertida. Impressão e relatórios mantêm o carregamento das plantas por URL assinada.
+
 ## Atualização V122
 
 - Acrescenta AJAX Superior `AJ-NVR208-HAC2G-AI-S-B` e `-W`: 8 canais, 12 MP, 384 Mbps, 2 discos até 24 TB por disco, HDMI e 2 × RJ45 Gigabit. É a preferência automática para câmaras AJAX quando os requisitos de canais, banda, discos e alimentação são cumpridos. Seleções manuais válidas são preservadas; este modelo exige PoE externo.

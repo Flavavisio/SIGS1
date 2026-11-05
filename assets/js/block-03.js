@@ -1960,7 +1960,13 @@ function _sigsSbHeaders(extra){
   return Object.assign({'apikey':c.key,'Authorization':'Bearer '+token,'Content-Type':'application/json'},extra||{});
 }
 function _sigsSbJson(url,opts){
-  return fetch(url,opts||{}).then(function(r){return r.text().then(function(tx){var b={};try{b=tx?JSON.parse(tx):{};}catch(e){b={message:tx};}if(!r.ok){var er=new Error((b&&b.message)||(b&&b.error)||('Erro '+r.status));er.status=r.status;er.code=b&&b.code;throw er;}return b;});});
+  function request(retried){return fetch(url,opts||{}).then(function(r){
+    if(r.status===401&&!retried&&typeof _cloudTryRefresh==='function')return _cloudTryRefresh().then(function(ok){
+      if(ok){opts=Object.assign({},opts,{headers:Object.assign({},opts&&opts.headers,{'Authorization':'Bearer '+CLOUD.access})});return request(true);}
+      var expired=new Error('Sessão expirada. Volta a iniciar sessão para guardar o projeto.');expired.status=401;throw expired;
+    });
+    return r.text().then(function(tx){var b={};try{b=tx?JSON.parse(tx):{};}catch(e){b={message:tx};}if(!r.ok){var er=new Error((b&&b.message)||(b&&b.error)||('Erro '+r.status));er.status=r.status;er.code=b&&b.code;throw er;}return b;});
+  });}return request(false);
 }
 function _sigsProjectItems(counts){return (counts.cameraCount||0)+(counts.detectorCount||0)+(counts.fireDetectorCount||0);}
 function _sigsProjectModule(){return String(MOD||'CCTV').toUpperCase()==='ALARM'?'INTRUSION':String(MOD||'CCTV').toUpperCase();}

@@ -78,12 +78,14 @@ function saveProject(mode){
   if(V6.saving||V6.restoring||V6.deleting)return Promise.resolve(null);
   if(mode==='auto'&&!V6.dirty)return Promise.resolve(null);
   V6.saving=true;saveChip('saving');
-  var patch,pid=projectId(),savedFingerprint;try{patch=buildPatch();savedFingerprint=fingerprint();}catch(e){V6.saving=false;V6.dirty=true;saveChip('error');return Promise.reject(e);}
-  return rpc('sigs_save_project_checkpoint',{p_project:pid,p_patch:patch,p_reason:mode==='auto'?'AUTO':'MANUAL'})
+  var patch,pid=projectId(),owner=CLOUD.user.id,savedFingerprint,prepared;try{patch=JSON.parse(JSON.stringify(buildPatch()));savedFingerprint=fingerprint();}catch(e){V6.saving=false;V6.dirty=true;saveChip('error');if(mode!=='auto'&&typeof notify==='function')notify('Erro ao preparar a gravação: '+e.message);return Promise.reject(e);}
+  return Promise.resolve().then(function(){return window.SIGSProjectSave?SIGSProjectSave.prepare(patch,{projectId:pid,userId:owner}):{patch:patch};})
+    .then(function(result){prepared=result;if(pid!==projectId()||owner!==CLOUD.user?.id)throw new Error('O projeto ou a sessão mudou durante a gravação.');return rpc('sigs_save_project_checkpoint',{p_project:pid,p_patch:prepared.patch,p_reason:mode==='auto'?'AUTO':'MANUAL'});})
     .then(function(result){
       var row=Array.isArray(result)?result[0]:result;if(!row)throw new Error('Gravação não autorizada ou projeto indisponível.');
-      if(pid!==projectId())return row;
-      V6.lastSavedAt=new Date();V6.lastSavedMode=mode;V6.lastFingerprint=savedFingerprint;V6.dirty=fingerprint()!==savedFingerprint;
+      if(pid!==projectId()||owner!==CLOUD.user?.id)return row;
+      var unchanged=fingerprint()===savedFingerprint;if(prepared.commit)prepared.commit();
+      V6.lastSavedAt=new Date();V6.lastSavedMode=mode;V6.lastFingerprint=unchanged?fingerprint():savedFingerprint;V6.dirty=!unchanged;
       saveChip(V6.dirty?'dirty':'clean',V6.dirty?null:(mode==='auto'?'✓ Cópia automática ':'✓ Gravação manual ')+V6.lastSavedAt.toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'}));
       return row;
     })

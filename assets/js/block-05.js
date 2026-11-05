@@ -44,11 +44,14 @@
       return cloudLoadMe().then(function(){return {}});
     })});
   };
+  var refreshInFlight=null;
   window._cloudTryRefresh=function(){
+    if(refreshInFlight)return refreshInFlight;
     var rt=storedRefresh(); if(!rt)return Promise.resolve(false);
-    return fetch(SB_URL+'/auth/v1/token?grant_type=refresh_token',{
+    refreshInFlight=fetch(SB_URL+'/auth/v1/token?grant_type=refresh_token',{
       method:'POST',headers:sbHeaders(),body:JSON.stringify({refresh_token:rt})
-    }).then(function(r){return r.json().catch(function(){return {}}).then(function(b){if(!r.ok){clearSession();return false}saveSession(b);return true})}).catch(function(){return false});
+    }).then(function(r){return r.json().catch(function(){return {}}).then(function(b){if(!r.ok){if(r.status===400||r.status===401)clearSession();return false}saveSession(b);return true})}).catch(function(){return false}).finally(function(){refreshInFlight=null;});
+    return refreshInFlight;
   };
   window.cloudLoadMe=function(){
     var token=CLOUD.access||storedAccess(); if(!token)return Promise.reject(new Error('Sessão inexistente.'));
